@@ -7,9 +7,10 @@ import { defineAuth } from '@aws-amplify/backend';
 export const auth = defineAuth({
   loginWith: {
     email: true,
+    
     externalProviders: {
-      callbackUrls: ["https://main.d1csidv6wig1cv.amplifyapp.com/api/auth/sign-in-callback"],
-      logoutUrls: ["https://main.d1csidv6wig1cv.amplifyapp.com/api/auth/sign-out-callback"],
+      callbackUrls: ["https://main.d1ajb21hsxi2dm.amplifyapp.com/api/auth/sign-in-callback"],
+      logoutUrls: ["https://main.d1ajb21hsxi2dm.amplifyapp.com/api/auth/sign-out-callback"],
     },
   },
 
