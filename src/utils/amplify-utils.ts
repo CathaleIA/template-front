@@ -6,7 +6,7 @@ export const { runWithAmplifyServerContext, createAuthRouteHandlers } =
         config: outputs,
         runtimeOptions: {
             cookies: {
-                domain: '.localhost', //Para subdominios
+                domain: '.d1csidv6wig1cv.amplifyapp.com', //Para subdominios
                 sameSite: 'strict',
                 maxAge: 60 * 60 * 24 * 7, // 7 days
             }
