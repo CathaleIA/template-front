@@ -23,7 +23,6 @@ interface NavbarProps {
   } | null;
 }
 
-export const dynamic = 'force-dynamic';
 
 export default function NavBar({ currentUser }: NavbarProps) {
 
