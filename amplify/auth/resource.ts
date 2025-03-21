@@ -11,6 +11,7 @@ export const auth = defineAuth({
     externalProviders: {
       callbackUrls: ["https://main.d1ajb21hsxi2dm.amplifyapp.com/api/auth/sign-in-callback"],
       logoutUrls: ["https://main.d1ajb21hsxi2dm.amplifyapp.com/api/auth/sign-out-callback"],
+
     },
   },
 
