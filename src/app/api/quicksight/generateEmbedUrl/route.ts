@@ -4,8 +4,8 @@ import AWS from 'aws-sdk';
 export async function GET(req: NextRequest) {
     // Configure AWS SDK with your credentials and region
     AWS.config.update({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: 'AKIATP6YY7AVNZSNDN42'       ,
+        secretAccessKey: '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',
         region: 'us-east-1',
     });
 
