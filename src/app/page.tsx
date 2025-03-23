@@ -153,7 +153,7 @@ export default function LandingPage() {
                 {t.dashboard.tabs.map((tab) => (
                   <TabsContent key={tab.value} value={tab.value} className="relative border rounded-lg p-1">
                     <div className="absolute top-4 right-4 z-10 flex gap-2">
-                      <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white hidden sm:flex">
+                      <Button variant="outline" size="sm" className="bg-background/90 hover:bg-background hidden sm:flex">
                         <FaPlayCircle className="h-4 w-4 mr-2" /> {t.dashboard.demo.watch}
                       </Button>
                       <Button size="sm" className="bg-primary/90 hover:bg-primary">
@@ -390,10 +390,11 @@ export default function LandingPage() {
               {t.pricing.plans.map((plan, index) => (
                 <div
                   key={index}
-                  className={`flex flex-col rounded-lg border p-6 shadow-sm ${plan.popular ? "border-primary ring-1 ring-primary" : ""}`}
+                  className={`flex flex-col rounded-lg border p-6 shadow-sm ${plan.popular ? `border-primary ring-2 ${isYearly ? "ring-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.3)]" : "ring-primary"}` : ""}`}
                 >
                   {plan.popular && (
-                    <div className="inline-block rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground mb-4 self-start">
+                    <div className="flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground mb-4 self-start">
+                      {isYearly && <span className="text-yellow-300">👑</span>}
                       Most Popular
                     </div>
                   )}
@@ -403,7 +404,13 @@ export default function LandingPage() {
                     <span className="ml-1 text-muted-foreground">{pricingPeriod}</span>
                   </div>
                   {isYearly && (
-                    <p className="text-sm text-primary mt-1">{`$${plan.monthlyPrice}/mo billed annually`}</p>
+                    <div className="mt-2">
+                      <p className="text-sm text-primary">{`$${plan.monthlyPrice}/mo billed annually`}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">+1 months free</span>
+                        <span className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Priority support</span>
+                      </div>
+                    </div>
                   )}
                   <p className="mt-2 text-muted-foreground">{plan.description}</p>
                   <ul className="mt-6 space-y-2">
@@ -454,6 +461,7 @@ export default function LandingPage() {
               width={40}
               height={40}
               className="rounded"
+              style={{ width: "auto", height: "auto" }}
             />
             <span className="text-xl font-bold">CathaleIA</span>
           </div>

@@ -12,9 +12,13 @@ export async function getCurrentAuthUser() {
       nextServerContext: { cookies },
       operation: (contextSpec) => getCurrentUser(contextSpec),
     });
-    console.log(currentUser)
     return currentUser;
-  } catch (error) {
+  } catch (error: any) {
+    // If the error is specifically about unauthenticated user, return null silently
+    if (error?.name === 'UserUnAuthenticatedException') {
+      return null;
+    }
+    // For other errors, log them and return null
     console.error('Error obteniendo el usuario actual:', error);
     return null;
   }

@@ -35,15 +35,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const currentUser = await getCurrentAuthUser();
 
   return (
     <html lang="es">
       <body className={`${montserrat.variable} ${poppins.variable} ${openSans.variable} font-[--font-inter]`}>
         <LanguageProvider>
-            <ClientNavBar currentUser={currentUser} />
-            {children}
+          <ClientNavBar currentUser={currentUser} />
+          {children}
         </LanguageProvider>
       </body>
     </html>

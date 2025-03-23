@@ -1,17 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { FaAlignJustify  } from "react-icons/fa"
 
 import { useRouter } from "next/navigation";
-import { signOut } from "aws-amplify/auth";
-import { Hub } from "aws-amplify/utils";
-// import { useAuthenticator } from '@aws-amplify/ui-react';
 
 import { useTranslation } from "@/../hooks/useTranlation";
+
 
 export default function MobileMenu() {
     const [open, setOpen] = useState(false)
@@ -21,29 +19,6 @@ export default function MobileMenu() {
     }
 
     const router = useRouter();
-
-    // const { authStatus } = useAuthenticator(context => [context.authStatus]);
-    // useEffect(() => {
-    //     const hubListenerCancel = Hub.listen("auth", (data) => {
-    //         switch (data.payload.event) {
-    //             case "signedIn":
-    //                 router.push("/");
-    //                 break;
-    //             case "signedOut":
-    //                 router.push("/");
-    //                 break;
-    //         }
-    //     });
-    //     return () => hubListenerCancel();
-    // }, [router]);
-
-    // const signOutSignIn = async () => {
-    //     if (authStatus === "authenticated") {
-    //         await signOut();
-    //     } else {
-    //         router.push("/signin");
-    //     }
-    // }
 
     const t = useTranslation();
 
@@ -56,6 +31,10 @@ export default function MobileMenu() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[80%] sm:w-[350px] pr-0">
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                    Site navigation menu with links to different sections
+                </SheetDescription>
                 <div className="flex flex-col h-full">
                     <div className="flex items-center justify-between mb-6">
                         <span className="text-lg font-bold">Menu</span>
