@@ -86,30 +86,28 @@ export default function Sidebar () {
 
   return (
     <div
-      className={`${collapsed ? "w-16" : "w-64"
-        } bg-[var(--background2)] border-r border-[var(--primary)] h-screen fixed top-0 left-0 z-10 transition-all duration-300 flex flex-col shadow-xl`}
+      className={`${
+        collapsed ? "w-16" : "w-64"
+      } bg-background border-r border-primary h-screen fixed top-0 left-0 z-10 transition-all duration-300 flex flex-col shadow-xl`}
     >
-      {/* Contenedor del header con logo, título y botón de hamburguesa */}
-      <div className="flex items-center py-4 px-2 border-b border-[var(--primary)]">
-        {/* Botón de hamburguesa - solo visible cuando está colapsado */}
+      {/* Header section */}
+      <div className="flex items-center py-4 px-2 border-b border-primary">
         {collapsed && (
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-full bg-[var(--primary)] text-[var(--background2)] hover:bg-[#1a1a2e] transition-all mx-auto"
+            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all mx-auto"
           >
             <FaBars />
           </button>
         )}
-        {/* Logo y título - solo visible cuando no está colapsado */}
         {!collapsed && (
           <>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="p-2 rounded-full bg-[var(--primary)] text-[var(--background2)] hover:bg-[#1a1a2e] transition-all mr-2"
+              className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all mr-2"
             >
               <FaBars />
             </button>
-            {/* Logo sin fondo */}
             <Image
               src="/assets/insignia_degrade.png"
               alt="Logo"
@@ -117,11 +115,12 @@ export default function Sidebar () {
               height={100}
               className="w-8 transition-all duration-300"
             />
-            <h2 className="ml-3 text-lg font-bold text-[var(--foreground)]">Aeteris</h2>
+            <h2 className="ml-3 text-lg font-bold text-foreground">Aeteris</h2>
           </>
         )}
       </div>
-      {/* Navegación */}
+
+      {/* Navigation section */}
       <nav className="flex-1 px-2 py-4 overflow-y-auto">
         <ul className="space-y-2">
           {menuItems.map((item) => {
@@ -130,8 +129,11 @@ export default function Sidebar () {
               <li key={item.id}>
                 <Link href={item.route}>
                   <div
-                    className={`flex items-center p-2 rounded-lg transition-all duration-300 border border-transparent hover:border-[var(--primary)] hover:shadow-lg shadow-[var(--secondary)]
-                      ${isActive ? "bg-[var(--primary)] text-[var(--background2)]" : "text-[var(--foreground)] hover:bg-[var(--secondary)]/50"}
+                    className={`flex items-center p-2 rounded-lg transition-all duration-300 border border-transparent hover:border-primary hover:shadow-lg
+                      ${isActive 
+                        ? "bg-primary text-primary-foreground" 
+                        : "text-foreground hover:bg-secondary/50"
+                      }
                     `}
                   >
                     {renderIcon(item.icon)}
@@ -145,28 +147,25 @@ export default function Sidebar () {
           })}
         </ul>
       </nav>
-      {/* Pie de página con perfil de usuario */}
-      <div className="p-2 border-t border-[var(--primary)]">
-        {/* Información del usuario */}
+
+      {/* Footer section */}
+      <div className="p-2 border-t border-primary">
         {!collapsed ? (
           <>
             <div className="flex items-center mb-3">
-              <div className="bg-[var(--primary)] rounded-full p-2 flex-shrink-0 shadow-md">
-                <FaUserCircle className="text-xl text-[var(--background2)]" />
+              <div className="bg-primary rounded-full p-2 flex-shrink-0 shadow-md">
+                <FaUserCircle className="text-xl text-primary-foreground" />
               </div>
               <div className="ml-2">
-                <p className="font-medium text-sm text-[var(--foreground)]">
+                <p className="font-medium text-sm text-foreground">
                   username
-                  {/* {user?.username || "Admin"} */}
                 </p>
-                <p className="text-xs text-[var(--primary)]">Administrador</p>
+                <p className="text-xs text-primary">Administrador</p>
               </div>
             </div>
-            {/* Contenedor para el botón de cerrar sesión */}
             <div className="flex justify-center">
               <button
-                // onClick={handleSignOut}
-                className="flex items-center p-2 rounded-full bg-[var(--primary)] text-[var(--background2)] hover:bg-[#1a1a2e] transition-all duration-300 shadow-md"
+                className="flex items-center p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all duration-300 shadow-md"
                 title="Cerrar Sesión"
               >
                 <FaSignOutAlt className="text-lg" />
@@ -175,14 +174,12 @@ export default function Sidebar () {
             </div>
           </>
         ) : (
-          // Footer cuando está colapsado
           <div className="flex flex-col items-center space-y-3">
-            <div className="bg-[var(--primary)] rounded-full p-2 flex-shrink-0 shadow-md">
-              <FaUserCircle className="text-xl text-[var(--background2)]" />
+            <div className="bg-primary rounded-full p-2 flex-shrink-0 shadow-md">
+              <FaUserCircle className="text-xl text-primary-foreground" />
             </div>
             <button
-              // onClick={handleSignOut}
-              className="p-2 rounded-full bg-[var(--primary)] text-[var(--background2)] hover:bg-[#1a1a2e] transition-all duration-300 shadow-md"
+              className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all duration-300 shadow-md"
               title="Cerrar Sesión"
             >
               <FaSignOutAlt className="text-lg" />
