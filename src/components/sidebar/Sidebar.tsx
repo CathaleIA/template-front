@@ -12,7 +12,8 @@ import {
   FaFolder,
   FaChartBar,
   FaCog,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaBell
 } from "react-icons/fa";
 // import { useAuthenticator } from "@aws-amplify/ui-react";
 
@@ -29,6 +30,7 @@ const iconComponents: { [key: string]: React.ComponentType<any> } = {
   FaFolder,
   FaChartBar,
   FaCog,
+  FaBell
 };
 
 export const dynamic = 'force-dynamic';
@@ -115,7 +117,7 @@ export default function Sidebar () {
               height={100}
               className="w-8 transition-all duration-300"
             />
-            <h2 className="ml-3 text-lg font-bold text-foreground">Aeteris</h2>
+            <h2 className="ml-3 text-lg font-bold text-foreground">CathaleIA</h2>
           </>
         )}
       </div>

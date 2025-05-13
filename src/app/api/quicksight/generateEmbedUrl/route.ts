@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
         SessionLifetimeInMinutes: 600,
         ExperienceConfiguration: {
             Dashboard: {
-                InitialDashboardId: '57aab648-7a18-4f91-9c8a-0d89ffb98823',
+                InitialDashboardId: '34c6f29e-da26-4c46-93e9-afe512a5af78',
             },
         },
         // Add allowed domains
