@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, Fuel } from "lucide-react";
-// Importar los componentes UI directamente si no están disponibles
-// Si usas ShadCN, asegúrate de haber ejecutado los comandos de instalación para cada componente
+import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, Fuel, TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 // Define threshold types and interfaces
 type AlertLevel = "normal" | "warning" | "danger";
@@ -47,6 +45,31 @@ interface MotorData {
   };
 }
 
+interface HistoricalDataPoint {
+  alertas: string[];
+  estadoGeneral: string;
+  torque: number;
+  timestamp: string;
+  voltaje: number;
+  createdAt: string;
+  revoluciones: number;
+  potencia: number;
+  temperatura: number;
+  eficiencia: number;
+  consumoCombustible: number;
+  id: string;
+  presionAceite: number;
+  nivelAceite: number;
+}
+
+interface HistoricalStats {
+  avg: number;
+  min: number;
+  max: number;
+  current: number;
+  trend: 'up' | 'down' | 'stable';
+}
+
 // Define thresholds for each metric
 const thresholds = {
   temperaturaAgua: { normal: 105, warning: 120, danger: 170 },
@@ -64,11 +87,19 @@ const thresholds = {
   tiempoEncendidoAvance: { normal: 20, warning: 30, danger: 40 },
 };
 
+// Map historical data fields to current data fields
+const fieldMapping = {
+  rpm: 'revoluciones',
+  temperaturaAgua: 'temperatura',
+  voltajeBateria: 'voltaje',
+  consumoCombustibleLh: 'consumoCombustible',
+  presionAceite: 'presionAceite'
+};
+
 // Function to determine alert level
 const getAlertLevel = (value: number, metric: keyof typeof thresholds): AlertLevel => {
   const limits = thresholds[metric];
   
-  // Custom logic for each metric type (some are higher-is-better, some are lower-is-better)
   if (metric === "voltajeBateria" || metric === "presionAceite" || metric === "presionCombustible") {
     if (value < limits.danger) return "danger";
     if (value < limits.warning) return "warning";
@@ -94,6 +125,31 @@ const getColorClass = (alertLevel: AlertLevel): string => {
   }
 };
 
+// Calculate historical statistics
+const calculateStats = (historicalData: HistoricalDataPoint[], field: string, currentValue: number): HistoricalStats => {
+  const values = historicalData.map(item => item[field as keyof HistoricalDataPoint] as number).filter(val => typeof val === 'number' && !isNaN(val));
+  
+  if (values.length === 0) {
+    return { avg: currentValue, min: currentValue, max: currentValue, current: currentValue, trend: 'stable' };
+  }
+
+  const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  
+  // Calculate trend based on recent values vs average
+  const recentValues = values.slice(-10); // Last 10 readings
+  const recentAvg = recentValues.length > 0 ? recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length : avg;
+  
+  let trend: 'up' | 'down' | 'stable' = 'stable';
+  const trendThreshold = avg * 0.05; // 5% threshold
+  
+  if (recentAvg > avg + trendThreshold) trend = 'up';
+  else if (recentAvg < avg - trendThreshold) trend = 'down';
+  
+  return { avg: Number(avg.toFixed(2)), min, max, current: currentValue, trend };
+};
+
 // Generate historical chart data for demo
 const generateHistoricalData = (currentValue: number, count = 15) => {
   const result = [];
@@ -110,11 +166,14 @@ const generateHistoricalData = (currentValue: number, count = 15) => {
   return result.reverse();
 };
 
-export default function AlertsPage() {
+export default function EnhancedAlertsPage() {
   const [data, setData] = useState<MotorData | null>(null);
+  const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingHistorical, setLoadingHistorical] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<Record<string, any[]>>({});
+  const [historicalStats, setHistoricalStats] = useState<Record<string, HistoricalStats>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,6 +214,37 @@ export default function AlertsPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const fetchHistoricalData = async () => {
+    try {
+      setLoadingHistorical(true);
+      const response = await fetch("https://46ou4qrae1.execute-api.us-east-1.amazonaws.com/prod/history?hours=500000");
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener datos históricos: ${response.status}`);
+      }
+      
+      const historicalJsonData = await response.json();
+      setHistoricalData(historicalJsonData);
+      
+      // Calculate statistics for each metric if we have current data
+      if (data) {
+        const stats: Record<string, HistoricalStats> = {};
+        
+        // Calculate stats for mapped fields
+        Object.entries(fieldMapping).forEach(([currentField, historicalField]) => {
+          const currentValue = data.motor[currentField as keyof typeof data.motor] as number;
+          stats[currentField] = calculateStats(historicalJsonData, historicalField, currentValue);
+        });
+        
+        setHistoricalStats(stats);
+      }
+    } catch (err) {
+      console.error("Error fetching historical data:", err);
+    } finally {
+      setLoadingHistorical(false);
+    }
+  };
+
   // Render loading state
   if (loading) {
     return (
@@ -189,7 +279,19 @@ export default function AlertsPage() {
   // Render data
   if (!data) return null;
 
-  // Function to render a KPI card
+  // Function to render trend icon
+  const renderTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+      case 'up':
+        return <TrendingUp className="h-4 w-4 text-red-500" />;
+      case 'down':
+        return <TrendingDown className="h-4 w-4 text-green-500" />;
+      default:
+        return <Minus className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  // Function to render a KPI card with historical comparison
   const renderKpiCard = (
     title: string, 
     value: number, 
@@ -199,6 +301,7 @@ export default function AlertsPage() {
   ) => {
     const alertLevel = getAlertLevel(value, metric);
     const colorClass = getColorClass(alertLevel);
+    const stats = historicalStats[metric];
     
     return (
       <Card className="overflow-hidden">
@@ -207,9 +310,31 @@ export default function AlertsPage() {
           <div className={colorClass}>{icon}</div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
+          <div className="text-2xl font-bold mb-2">
             <span className={colorClass}>{value}</span> {unit}
+            {stats && (
+              <div className="ml-2 inline-flex items-center">
+                {renderTrendIcon(stats.trend)}
+              </div>
+            )}
           </div>
+          
+          {stats && (
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
+              <div>
+                <p className="font-medium">Promedio</p>
+                <p>{stats.avg} {unit}</p>
+              </div>
+              <div>
+                <p className="font-medium">Mínimo</p>
+                <p>{stats.min} {unit}</p>
+              </div>
+              <div>
+                <p className="font-medium">Máximo</p>
+                <p>{stats.max} {unit}</p>
+              </div>
+            </div>
+          )}
           
           <div className="mt-4 h-20">
             <ResponsiveContainer width="100%" height="100%">
@@ -245,26 +370,105 @@ export default function AlertsPage() {
     );
   };
 
+  // Function to render historical comparison chart
+  const renderHistoricalComparison = () => {
+    if (!historicalData.length) return null;
+
+    const comparisonData = Object.entries(fieldMapping).map(([currentField, historicalField]) => {
+      const stats = historicalStats[currentField];
+      if (!stats) return null;
+
+      return {
+        metric: currentField,
+        current: stats.current,
+        average: stats.avg,
+        min: stats.min,
+        max: stats.max
+      };
+    }).filter(Boolean);
+
+    return (
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Comparación Histórica</CardTitle>
+          <CardDescription>
+            Comparación de valores actuales vs históricos
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={comparisonData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="metric" 
+                stroke="#9ca3af"
+                tick={{ fontSize: 12 }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip 
+                contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
+                labelStyle={{ color: "#9ca3af" }}
+                itemStyle={{ color: "#f3f4f6" }}
+              />
+              <Bar dataKey="current" name="Actual" fill="#3b82f6" />
+              <Bar dataKey="average" name="Promedio" fill="#10b981" />
+              <Bar dataKey="min" name="Mínimo" fill="#f59e0b" />
+              <Bar dataKey="max" name="Máximo" fill="#ef4444" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col space-y-4">
-        <h1 className="text-3xl font-bold text-gray-500">Detección de alarmas del motor</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-500">Detección de alarmas del motor</h1>
+          <button
+            onClick={fetchHistoricalData}
+            disabled={loadingHistorical}
+            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+          >
+            {loadingHistorical ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BarChart3 className="h-4 w-4" />
+            )}
+            <span>{loadingHistorical ? "Cargando..." : "Cargar Históricos"}</span>
+          </button>
+        </div>
         
         <div className="flex items-center justify-between">
-          <p className=" text-gray-500 ">
+          <p className="text-gray-500">
             Última actualización: {new Date(data.timestamp).toLocaleString()}
           </p>
           <div className="flex items-center space-x-2">
             <div className={`h-3 w-3 rounded-full ${data.motor.modoOperacion === "Freno motor" ? "bg-blue-500" : "bg-green-500"}`}></div>
-            <p className = "text-gray-500">Estado: {data.motor.modoOperacion}</p>
+            <p className="text-gray-500">Estado: {data.motor.modoOperacion}</p>
           </div>
         </div>
 
+        {historicalData.length > 0 && (
+          <Alert>
+            <BarChart3 className="h-4 w-4" />
+            <AlertTitle>Datos Históricos Cargados</AlertTitle>
+            <AlertDescription>
+              Se han cargado {historicalData.length} registros históricos para comparación.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="motor" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="motor">Motor</TabsTrigger>
             <TabsTrigger value="bancoA">Banco A1</TabsTrigger>
             <TabsTrigger value="bancoB">Banco B1</TabsTrigger>
+            <TabsTrigger value="comparison">Comparación</TabsTrigger>
           </TabsList>
           
           <TabsContent value="motor" className="p-1">
@@ -445,7 +649,7 @@ export default function AlertsPage() {
                         <Tooltip 
                           contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
                           labelStyle={{ color: "#9ca3af" }}
-                          itemStyle={{ color: "#f3f4f6" }}
+                                                    itemStyle={{ color: "#f3f4f6" }}
                           formatter={(value: any) => [`${value}`, ""]}
                         />
                       </LineChart>
@@ -509,34 +713,75 @@ export default function AlertsPage() {
               </Card>
             </div>
           </TabsContent>
-        </Tabs>
 
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Estado del Sistema</h2>
-          <Alert variant={
-            Object.keys(data.motor).some(key => 
-              key in thresholds && 
-              getAlertLevel(data.motor[key as keyof typeof data.motor] as number, key as keyof typeof thresholds) === "danger"
-            ) ? "destructive" : "default"
-          }>
-            <AlertTriangle className="h-5 w-5" />
-            <AlertTitle>Estado General</AlertTitle>
-            <AlertDescription>
-              {Object.keys(data.motor).some(key => 
-                key in thresholds && 
-                getAlertLevel(data.motor[key as keyof typeof data.motor] as number, key as keyof typeof thresholds) === "danger"
-              ) 
-                ? "¡Se detectaron valores críticos! Se requiere atención inmediata."
-                : Object.keys(data.motor).some(key => 
-                    key in thresholds && 
-                    getAlertLevel(data.motor[key as keyof typeof data.motor] as number, key as keyof typeof thresholds) === "warning"
-                  )
-                    ? "Se detectaron valores elevados. Monitorear con atención."
-                    : "Todos los sistemas operando dentro de parámetros normales."
-              }
-            </AlertDescription>
-          </Alert>
-        </div>
+          <TabsContent value="comparison" className="p-1">
+            <div className="grid grid-cols-1 gap-4">
+              {renderHistoricalComparison()}
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resumen de Alarmas</CardTitle>
+                  <CardDescription>
+                    Estado actual de todas las métricas monitoreadas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(thresholds).map(([metric, limits]) => {
+                      let value: number;
+                      let title: string;
+                      let unit = "";
+                      
+                      // Determine where to get the value from based on the metric
+                      if (metric in data.motor) {
+                        value = data.motor[metric as keyof typeof data.motor] as number;
+                        title = metric;
+                      } else if (metric in data.bancos.A1) {
+                        value = data.bancos.A1[metric as keyof typeof data.bancos.A1] as number;
+                        title = `Banco A1 ${metric}`;
+                      } else if (metric in data.bancos.B1) {
+                        value = data.bancos.B1[metric as keyof typeof data.bancos.B1] as number;
+                        title = `Banco B1 ${metric}`;
+                      } else {
+                        return null;
+                      }
+                      
+                      // Set appropriate units
+                      if (metric.includes("temperatura")) unit = "°C";
+                      if (metric.includes("presion")) unit = "bar";
+                      if (metric === "rpm") unit = "rpm";
+                      if (metric === "voltajeBateria") unit = "V";
+                      if (metric === "consumoCombustibleLh") unit = "L/h";
+                      if (metric === "tiempoInyeccionMs") unit = "ms";
+                      if (metric === "tiempoEncendidoAvance") unit = "°";
+                      
+                      const alertLevel = getAlertLevel(value, metric as keyof typeof thresholds);
+                      const colorClass = getColorClass(alertLevel);
+                      
+                      return (
+                        <div key={metric} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{title}</h3>
+                            <div className={`h-3 w-3 rounded-full ${colorClass.replace("text", "bg")}`}></div>
+                          </div>
+                          <div className="mt-2">
+                            <p className="text-xl font-bold">
+                              <span className={colorClass}>{value}</span> {unit}
+                            </p>
+                            <div className="flex justify-between text-xs text-gray-500 mt-2">
+                              <span>Límite: {limits.warning}</span>
+                              <span>Crítico: {limits.danger}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
