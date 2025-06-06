@@ -5,7 +5,7 @@ import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Area, ComposedChart, ReferenceLine } from "recharts";
 
 // Define threshold types and interfaces
 type AlertLevel = "normal" | "warning" | "danger";
@@ -70,21 +70,99 @@ interface HistoricalStats {
   trend: 'up' | 'down' | 'stable';
 }
 
-// Define thresholds for each metric
+// Define thresholds for each metric with operational zones
 const thresholds = {
-  temperaturaAgua: { normal: 105, warning: 120, danger: 170 },
-  temperaturaAceite: { normal: 90, warning: 110, danger: 130 },
-  presionAceite: { normal: 2, warning: 1.5, danger: 1 },
-  rpm: { normal: 6000, warning: 6500, danger: 7000 },
-  voltajeBateria: { normal: 12, warning: 11.5, danger: 11 },
-  consumoCombustibleLh: { normal: 10, warning: 15, danger: 20 },
-  cargaMotor: { normal: 80, warning: 90, danger: 95 },
-  temperaturaEGT: { normal: 450, warning: 550, danger: 650 },
-  presionCombustible: { normal: 3, warning: 2.5, danger: 2 },
-  presionTurbo: { normal: 1.8, warning: 2.2, danger: 2.5 },
-  lambda: { normal: 1, warning: 1.2, danger: 1.5 },
-  tiempoInyeccionMs: { normal: 5, warning: 8, danger: 10 },
-  tiempoEncendidoAvance: { normal: 20, warning: 30, danger: 40 },
+  temperaturaAgua: { 
+    min: 0, 
+    normal: 105, 
+    warning: 120, 
+    danger: 170, 
+    max: 200 
+  },
+  temperaturaAceite: { 
+    min: 0, 
+    normal: 90, 
+    warning: 110, 
+    danger: 130, 
+    max: 150 
+  },
+  presionAceite: { 
+    min: 0, 
+    normal: 2, 
+    warning: 1.5, 
+    danger: 1, 
+    max: 5 
+  },
+  rpm: { 
+    min: 0, 
+    normal: 6000, 
+    warning: 6500, 
+    danger: 7000, 
+    max: 8000 
+  },
+  voltajeBateria: { 
+    min: 10, 
+    normal: 12, 
+    warning: 11.5, 
+    danger: 11, 
+    max: 15 
+  },
+  consumoCombustibleLh: { 
+    min: 0, 
+    normal: 10, 
+    warning: 15, 
+    danger: 20, 
+    max: 25 
+  },
+  cargaMotor: { 
+    min: 0, 
+    normal: 80, 
+    warning: 90, 
+    danger: 95, 
+    max: 100 
+  },
+  temperaturaEGT: { 
+    min: 0, 
+    normal: 450, 
+    warning: 550, 
+    danger: 650, 
+    max: 800 
+  },
+  presionCombustible: { 
+    min: 0, 
+    normal: 3, 
+    warning: 2.5, 
+    danger: 2, 
+    max: 5 
+  },
+  presionTurbo: { 
+    min: 0, 
+    normal: 1.8, 
+    warning: 2.2, 
+    danger: 2.5, 
+    max: 3 
+  },
+  lambda: { 
+    min: 0.5, 
+    normal: 1, 
+    warning: 1.2, 
+    danger: 1.5, 
+    max: 2 
+  },
+  tiempoInyeccionMs: { 
+    min: 0, 
+    normal: 5, 
+    warning: 8, 
+    danger: 10, 
+    max: 15 
+  },
+  tiempoEncendidoAvance: { 
+    min: 0, 
+    normal: 20, 
+    warning: 30, 
+    danger: 40, 
+    max: 50 
+  },
 };
 
 // Map historical data fields to current data fields
@@ -150,16 +228,25 @@ const calculateStats = (historicalData: HistoricalDataPoint[], field: string, cu
   return { avg: Number(avg.toFixed(2)), min, max, current: currentValue, trend };
 };
 
-// Generate historical chart data for demo
-const generateHistoricalData = (currentValue: number, count = 15) => {
+// Generate threshold chart data
+const generateThresholdData = (currentValue: number, metric: keyof typeof thresholds, count = 15) => {
+  const limits = thresholds[metric];
   const result = [];
-  let baseValue = currentValue - (Math.random() * currentValue * 0.3);
+  let baseValue = currentValue;
   
   for (let i = 0; i < count; i++) {
-    baseValue += (Math.random() - 0.5) * (currentValue * 0.1);
+    // Add some variation to simulate real data
+    baseValue += (Math.random() - 0.5) * (currentValue * 0.05);
+    baseValue = Math.max(limits.min, Math.min(limits.max, baseValue));
+    
     result.push({
-      time: `${14 - i}m ago`,
-      value: parseFloat(baseValue.toFixed(2))
+      time: `${14 - i}m`,
+      value: parseFloat(baseValue.toFixed(2)),
+      normalZone: limits.normal,
+      warningZone: limits.warning,
+      dangerZone: limits.danger,
+      maxZone: limits.max,
+      minZone: limits.min
     });
   }
   
@@ -188,14 +275,26 @@ export default function EnhancedAlertsPage() {
         const jsonData = await response.json();
         setData(jsonData);
         
-        // Generate chart data for various metrics
+        // Generate threshold chart data for various metrics
         const newChartData: Record<string, any[]> = {
-          temperaturaAgua: generateHistoricalData(jsonData.motor.temperaturaAgua),
-          temperaturaAceite: generateHistoricalData(jsonData.motor.temperaturaAceite),
-          rpm: generateHistoricalData(jsonData.motor.rpm),
-          presionAceite: generateHistoricalData(jsonData.motor.presionAceite),
-          voltajeBateria: generateHistoricalData(jsonData.motor.voltajeBateria),
-          consumoCombustibleLh: generateHistoricalData(jsonData.motor.consumoCombustibleLh),
+          temperaturaAgua: generateThresholdData(jsonData.motor.temperaturaAgua, 'temperaturaAgua'),
+          temperaturaAceite: generateThresholdData(jsonData.motor.temperaturaAceite, 'temperaturaAceite'),
+          rpm: generateThresholdData(jsonData.motor.rpm, 'rpm'),
+          presionAceite: generateThresholdData(jsonData.motor.presionAceite, 'presionAceite'),
+          voltajeBateria: generateThresholdData(jsonData.motor.voltajeBateria, 'voltajeBateria'),
+          consumoCombustibleLh: generateThresholdData(jsonData.motor.consumoCombustibleLh, 'consumoCombustibleLh'),
+          temperaturaEGT_A1: generateThresholdData(jsonData.bancos.A1.temperaturaEGT, 'temperaturaEGT'),
+          presionCombustible_A1: generateThresholdData(jsonData.bancos.A1.presionCombustible, 'presionCombustible'),
+          presionTurbo_A1: generateThresholdData(jsonData.bancos.A1.presionTurbo, 'presionTurbo'),
+          lambda_A1: generateThresholdData(jsonData.bancos.A1.lambda, 'lambda'),
+          tiempoInyeccionMs_A1: generateThresholdData(jsonData.bancos.A1.tiempoInyeccionMs, 'tiempoInyeccionMs'),
+          tiempoEncendidoAvance_A1: generateThresholdData(jsonData.bancos.A1.tiempoEncendidoAvance, 'tiempoEncendidoAvance'),
+          temperaturaEGT_B1: generateThresholdData(jsonData.bancos.B1.temperaturaEGT, 'temperaturaEGT'),
+          presionCombustible_B1: generateThresholdData(jsonData.bancos.B1.presionCombustible, 'presionCombustible'),
+          presionTurbo_B1: generateThresholdData(jsonData.bancos.B1.presionTurbo, 'presionTurbo'),
+          lambda_B1: generateThresholdData(jsonData.bancos.B1.lambda, 'lambda'),
+          tiempoInyeccionMs_B1: generateThresholdData(jsonData.bancos.B1.tiempoInyeccionMs, 'tiempoInyeccionMs'),
+          tiempoEncendidoAvance_B1: generateThresholdData(jsonData.bancos.B1.tiempoEncendidoAvance, 'tiempoEncendidoAvance'),
         };
         
         setChartData(newChartData);
@@ -209,7 +308,7 @@ export default function EnhancedAlertsPage() {
     fetchData();
     
     // Set up interval to refresh data every 30 seconds
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 300000);
     
     return () => clearInterval(interval);
   }, []);
@@ -243,6 +342,34 @@ export default function EnhancedAlertsPage() {
     } finally {
       setLoadingHistorical(false);
     }
+  };
+
+  // Custom Tooltip for threshold charts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
+          <p className="text-gray-300 text-sm">{`Tiempo: ${label}`}</p>
+          <p className="text-blue-400 font-semibold">{`Valor: ${data.value}`}</p>
+          <div className="mt-2 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-green-500 rounded"></div>
+              <span className="text-green-400">Normal: ≤ {data.normalZone}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-yellow-500 rounded"></div>
+              <span className="text-yellow-400">Advertencia: ≤ {data.warningZone}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-red-500 rounded"></div>
+              <span className="text-red-400">Peligro: ≤ {data.dangerZone}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   // Render loading state
@@ -291,17 +418,23 @@ export default function EnhancedAlertsPage() {
     }
   };
 
-  // Function to render a KPI card with historical comparison
-  const renderKpiCard = (
+  // Function to render threshold chart
+  const renderThresholdChart = (
     title: string, 
     value: number, 
     unit: string, 
     metric: keyof typeof thresholds,
-    icon: React.ReactNode
+    icon: React.ReactNode,
+    chartKey: string
   ) => {
     const alertLevel = getAlertLevel(value, metric);
     const colorClass = getColorClass(alertLevel);
     const stats = historicalStats[metric];
+    const data = chartData[chartKey] || [];
+    const limits = thresholds[metric];
+    
+    // Determine if it's a "lower is better" metric
+    const isLowerBetter = metric === "voltajeBateria" || metric === "presionAceite" || metric === "presionCombustible";
     
     return (
       <Card className="overflow-hidden">
@@ -336,9 +469,50 @@ export default function EnhancedAlertsPage() {
             </div>
           )}
           
-          <div className="mt-4 h-20">
+          <div className="mt-4 h-32">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData[metric] || []}>
+              <ComposedChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#9ca3af" 
+                  tick={{ fontSize: 10 }}
+                />
+                <YAxis 
+                  stroke="#9ca3af" 
+                  domain={[limits.min, limits.max]}
+                  tick={{ fontSize: 10 }}
+                />
+                
+                {/* Área de peligro */}
+                <Area 
+                  type="monotone" 
+                  dataKey={() => limits.max}
+                  fill="rgba(239, 68, 68, 0.2)" 
+                  stroke="none"
+                />
+                
+                {/* Líneas de referencia para zonas operativas */}
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.danger : limits.danger} 
+                  stroke="#ef4444" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.warning : limits.warning} 
+                  stroke="#f59e0b" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.normal : limits.normal} 
+                  stroke="#10b981" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                
+                {/* Línea de datos actual */}
                 <Line 
                   type="monotone" 
                   dataKey="value" 
@@ -347,23 +521,36 @@ export default function EnhancedAlertsPage() {
                     alertLevel === "warning" ? "#f59e0b" : 
                     "#ef4444"
                   } 
-                  strokeWidth={2} 
-                  dot={false}
+                  strokeWidth={3} 
+                  dot={{ r: 2 }}
                 />
-                <Tooltip 
-                  contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                  labelStyle={{ color: "#9ca3af" }}
-                  itemStyle={{ color: "#f3f4f6" }}
-                  formatter={(value: any) => [`${value} ${unit}`, ""]}
-                />
-              </LineChart>
+                
+                <Tooltip content={<CustomTooltip />} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           
+          <div className="mt-4 text-xs">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-green-500 rounded"></div>
+                <span className="text-green-500">Normal</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-yellow-500 rounded"></div>
+                <span className="text-yellow-500">Advertencia</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-red-500 rounded"></div>
+                <span className="text-red-500">Peligro</span>
+              </div>
+            </div>
+          </div>
+          
           <CardDescription className="pt-2">
-            {alertLevel === "normal" && "Estado: Normal"}
-            {alertLevel === "warning" && "¡Atención! Valor elevado"}
-            {alertLevel === "danger" && "¡ALERTA! Nivel crítico"}
+            {alertLevel === "normal" && "Estado: Área operativa normal"}
+            {alertLevel === "warning" && "¡Atención! Área de advertencia"}
+            {alertLevel === "danger" && "¡ALERTA! Área de peligro"}
           </CardDescription>
         </CardContent>
       </Card>
@@ -428,7 +615,7 @@ export default function EnhancedAlertsPage() {
     <div className="container mx-auto p-4">
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-500">Detección de alarmas del motor</h1>
+          <h1 className="text-3xl font-bold text-gray-500">Áreas Operativas del Motor</h1>
           <button
             onClick={fetchHistoricalData}
             disabled={loadingHistorical}
@@ -473,18 +660,18 @@ export default function EnhancedAlertsPage() {
           
           <TabsContent value="motor" className="p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {renderKpiCard("RPM", data.motor.rpm, "rpm", "rpm", <Gauge className="h-5 w-5" />)}
-              {renderKpiCard("Temperatura Agua", data.motor.temperaturaAgua, "°C", "temperaturaAgua", <Thermometer className="h-5 w-5" />)}
-              {renderKpiCard("Temperatura Aceite", data.motor.temperaturaAceite, "°C", "temperaturaAceite", <Thermometer className="h-5 w-5" />)}
-              {renderKpiCard("Presión Aceite", data.motor.presionAceite, "bar", "presionAceite", <Droplets className="h-5 w-5" />)}
-              {renderKpiCard("Voltaje Batería", data.motor.voltajeBateria, "V", "voltajeBateria", <BatteryCharging className="h-5 w-5" />)}
-              {renderKpiCard("Consumo Combustible", data.motor.consumoCombustibleLh, "L/h", "consumoCombustibleLh", <Fuel className="h-5 w-5" />)}
+              {renderThresholdChart("RPM", data.motor.rpm, "rpm", "rpm", <Gauge className="h-5 w-5" />, "rpm")}
+              {renderThresholdChart("Temperatura Agua", data.motor.temperaturaAgua, "°C", "temperaturaAgua", <Thermometer className="h-5 w-5" />, "temperaturaAgua")}
+              {renderThresholdChart("Temperatura Aceite", data.motor.temperaturaAceite, "°C", "temperaturaAceite", <Thermometer className="h-5 w-5" />, "temperaturaAceite")}
+              {renderThresholdChart("Presión Aceite", data.motor.presionAceite, "bar", "presionAceite", <Droplets className="h-5 w-5" />, "presionAceite")}
+              {renderThresholdChart("Voltaje Batería", data.motor.voltajeBateria, "V", "voltajeBateria", <BatteryCharging className="h-5 w-5" />, "voltajeBateria")}
+              {renderThresholdChart("Consumo Combustible", data.motor.consumoCombustibleLh, "L/h", "consumoCombustibleLh", <Fuel className="h-5 w-5" />, "consumoCombustibleLh")}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Información Adicional</CardTitle>
+                  <CardTitle>Información Adicional del Motor</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
                   <div>
@@ -508,274 +695,163 @@ export default function EnhancedAlertsPage() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Tendencia RPM vs Temperatura</CardTitle>
-                </CardHeader>
-                <CardContent className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData.rpm?.map((item, index) => ({
-                      ...item,
-                      temp: chartData.temperaturaAgua?.[index]?.value || 0
-                    })) || []}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="time" stroke="#9ca3af" />
-                      <YAxis yAxisId="left" stroke="#10b981" />
-                      <YAxis yAxisId="right" orientation="right" stroke="#ef4444" />
-                      <Tooltip 
-                        contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                        labelStyle={{ color: "#9ca3af" }}
-                        itemStyle={{ color: "#f3f4f6" }}
-                      />
-                      <Line 
-                        yAxisId="left"
-                        type="monotone" 
-                        dataKey="value" 
-                        name="RPM" 
-                        stroke="#10b981" 
-                        strokeWidth={2}
-                      />
-                      <Line 
-                        yAxisId="right"
-                        type="monotone" 
-                        dataKey="temp" 
-                        name="Temp. Agua" 
-                        stroke="#ef4444" 
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="bancoA" className="p-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Lambda</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
+                   <CardTitle>Estadísticas Operativas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.A1.lambda}</span>
-                  </div>
-                  <div className="mt-4 h-20">
+                  <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.A1.lambda)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
+                      <LineChart data={Object.entries(historicalStats).map(([metric, stats]) => ({
+                        metric,
+                        current: stats.current,
+                        average: stats.avg
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis 
+                          dataKey="metric" 
+                          stroke="#9ca3af"
+                          tick={{ fontSize: 10 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={40}
+                        />
+                        <YAxis stroke="#9ca3af" />
                         <Tooltip 
                           contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
                           labelStyle={{ color: "#9ca3af" }}
                           itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value}`, ""]}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="current" 
+                          name="Actual" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2} 
+                          dot={{ r: 4 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="average" 
+                          name="Promedio" 
+                          stroke="#10b981" 
+                          strokeWidth={2} 
+                          dot={{ r: 4 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
-                </CardContent>
-              </Card>
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tiempo Inyección</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.A1.tiempoInyeccionMs}</span> ms
-                  </div>
-                  <div className="mt-4 h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.A1.tiempoInyeccionMs)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Tooltip 
-                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                          labelStyle={{ color: "#9ca3af" }}
-                          itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value} ms`, ""]}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
-                </CardContent>
-              </Card>
-              {renderKpiCard("Temperatura EGT", data.bancos.A1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />)}
-              {renderKpiCard("Presión Combustible", data.bancos.A1.presionCombustible, "bar", "presionCombustible", <Gauge className="h-5 w-5" />)}
-              {renderKpiCard("Presión Turbo", data.bancos.A1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />)}
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tiempo Encendido</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.A1.tiempoEncendidoAvance}</span> °
-                  </div>
-                  <div className="mt-4 h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.A1.tiempoEncendidoAvance)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Tooltip 
-                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                          labelStyle={{ color: "#9ca3af" }}
-                          itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value} °`, ""]}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="bancoB" className="p-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Lambda</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.B1.lambda}</span>
-                  </div>
-                  <div className="mt-4 h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.B1.lambda)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Tooltip 
-                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                          labelStyle={{ color: "#9ca3af" }}
-                                                    itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value}`, ""]}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
-                </CardContent>
-              </Card>
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tiempo Inyección</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.B1.tiempoInyeccionMs}</span> ms
-                  </div>
-                  <div className="mt-4 h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.B1.tiempoInyeccionMs)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Tooltip 
-                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                          labelStyle={{ color: "#9ca3af" }}
-                          itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value} ms`, ""]}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
-                </CardContent>
-              </Card>
-              {renderKpiCard("Temperatura EGT", data.bancos.B1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />)}
-              {renderKpiCard("Presión Combustible", data.bancos.B1.presionCombustible, "bar", "presionCombustible", <Gauge className="h-5 w-5" />)}
-              {renderKpiCard("Presión Turbo", data.bancos.B1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />)}
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tiempo Encendido</CardTitle>
-                  <div className="text-green-500"><Gauge className="h-5 w-5" /></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <span className="text-green-500">{data.bancos.B1.tiempoEncendidoAvance}</span> °
-                  </div>
-                  <div className="mt-4 h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={generateHistoricalData(data.bancos.B1.tiempoEncendidoAvance)}>
-                        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Tooltip 
-                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
-                          labelStyle={{ color: "#9ca3af" }}
-                          itemStyle={{ color: "#f3f4f6" }}
-                          formatter={(value: any) => [`${value} °`, ""]}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <CardDescription className="pt-2">Estado: Normal</CardDescription>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
+          <TabsContent value="bancoA" className="p-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {renderThresholdChart("Lambda A1", data.bancos.A1.lambda, "", "lambda", <Thermometer className="h-5 w-5" />, "lambda_A1")}
+              {renderThresholdChart("Tiempo Inyección A1", data.bancos.A1.tiempoInyeccionMs, "ms", "tiempoInyeccionMs", <Gauge className="h-5 w-5" />, "tiempoInyeccionMs_A1")}
+              {renderThresholdChart("Avance Encendido A1", data.bancos.A1.tiempoEncendidoAvance, "°", "tiempoEncendidoAvance", <Gauge className="h-5 w-5" />, "tiempoEncendidoAvance_A1")}
+              {renderThresholdChart("Temperatura EGT A1", data.bancos.A1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />, "temperaturaEGT_A1")}
+              {renderThresholdChart("Presión Combustible A1", data.bancos.A1.presionCombustible, "bar", "presionCombustible", <Droplets className="h-5 w-5" />, "presionCombustible_A1")}
+              {renderThresholdChart("Presión Turbo A1", data.bancos.A1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />, "presionTurbo_A1")}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="bancoB" className="p-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {renderThresholdChart("Lambda B1", data.bancos.B1.lambda, "", "lambda", <Thermometer className="h-5 w-5" />, "lambda_B1")}
+              {renderThresholdChart("Tiempo Inyección B1", data.bancos.B1.tiempoInyeccionMs, "ms", "tiempoInyeccionMs", <Gauge className="h-5 w-5" />, "tiempoInyeccionMs_B1")}
+              {renderThresholdChart("Avance Encendido B1", data.bancos.B1.tiempoEncendidoAvance, "°", "tiempoEncendidoAvance", <Gauge className="h-5 w-5" />, "tiempoEncendidoAvance_B1")}
+              {renderThresholdChart("Temperatura EGT B1", data.bancos.B1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />, "temperaturaEGT_B1")}
+              {renderThresholdChart("Presión Combustible B1", data.bancos.B1.presionCombustible, "bar", "presionCombustible", <Droplets className="h-5 w-5" />, "presionCombustible_B1")}
+              {renderThresholdChart("Presión Turbo B1", data.bancos.B1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />, "presionTurbo_B1")}
+            </div>
+          </TabsContent>
+
           <TabsContent value="comparison" className="p-1">
-            <div className="grid grid-cols-1 gap-4">
-              {renderHistoricalComparison()}
-              
+            {renderHistoricalComparison()}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Resumen de Alarmas</CardTitle>
-                  <CardDescription>
-                    Estado actual de todas las métricas monitoreadas
-                  </CardDescription>
+                  <CardTitle>Resumen de Alertas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(thresholds).map(([metric, limits]) => {
-                      let value: number;
-                      let title: string;
-                      let unit = "";
+                  <div className="space-y-4">
+                    {Object.entries({
+                      rpm: "RPM",
+                      temperaturaAgua: "Temperatura Agua",
+                      temperaturaAceite: "Temperatura Aceite",
+                      presionAceite: "Presión Aceite",
+                      voltajeBateria: "Voltaje Batería",
+                      consumoCombustibleLh: "Consumo Combustible",
+                      lambda_A1: "Lambda Banco A1",
+                      lambda_B1: "Lambda Banco B1",
+                      temperaturaEGT_A1: "EGT Banco A1",
+                      temperaturaEGT_B1: "EGT Banco B1"
+                    }).map(([metric, name]) => {
+                      const value = metric.includes('_') 
+                        ? metric.split('_')[0] === 'lambda' 
+                          ? data.bancos[metric.split('_')[1] as 'A1'|'B1'].lambda
+                          : data.bancos[metric.split('_')[1] as 'A1'|'B1'][metric.split('_')[0] as keyof typeof data.bancos.A1]
+                        : data.motor[metric as keyof typeof data.motor];
                       
-                      // Determine where to get the value from based on the metric
-                      if (metric in data.motor) {
-                        value = data.motor[metric as keyof typeof data.motor] as number;
-                        title = metric;
-                      } else if (metric in data.bancos.A1) {
-                        value = data.bancos.A1[metric as keyof typeof data.bancos.A1] as number;
-                        title = `Banco A1 ${metric}`;
-                      } else if (metric in data.bancos.B1) {
-                        value = data.bancos.B1[metric as keyof typeof data.bancos.B1] as number;
-                        title = `Banco B1 ${metric}`;
-                      } else {
-                        return null;
-                      }
-                      
-                      // Set appropriate units
-                      if (metric.includes("temperatura")) unit = "°C";
-                      if (metric.includes("presion")) unit = "bar";
-                      if (metric === "rpm") unit = "rpm";
-                      if (metric === "voltajeBateria") unit = "V";
-                      if (metric === "consumoCombustibleLh") unit = "L/h";
-                      if (metric === "tiempoInyeccionMs") unit = "ms";
-                      if (metric === "tiempoEncendidoAvance") unit = "°";
-                      
-                      const alertLevel = getAlertLevel(value, metric as keyof typeof thresholds);
+                      const alertLevel = getAlertLevel(value as number, metric.split('_')[0] as keyof typeof thresholds);
                       const colorClass = getColorClass(alertLevel);
                       
                       return (
-                        <div key={metric} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{title}</h3>
-                            <div className={`h-3 w-3 rounded-full ${colorClass.replace("text", "bg")}`}></div>
-                          </div>
-                          <div className="mt-2">
-                            <p className="text-xl font-bold">
-                              <span className={colorClass}>{value}</span> {unit}
-                            </p>
-                            <div className="flex justify-between text-xs text-gray-500 mt-2">
-                              <span>Límite: {limits.warning}</span>
-                              <span>Crítico: {limits.danger}</span>
-                            </div>
+                        <div key={metric} className="flex items-center justify-between">
+                          <span>{name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium ${colorClass}`}>
+                              {value} {metric === 'rpm' ? 'rpm' : 
+                                metric.includes('temperatura') ? '°C' : 
+                                metric.includes('presion') ? 'bar' : 
+                                metric === 'voltajeBateria' ? 'V' : 
+                                metric === 'consumoCombustibleLh' ? 'L/h' : ''}
+                            </span>
+                            <div className={`w-3 h-3 rounded-full ${colorClass.replace('text', 'bg')}`}></div>
                           </div>
                         </div>
                       );
                     })}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tendencias Históricas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={Object.entries(historicalStats).map(([metric, stats]) => ({
+                        metric,
+                        current: stats.current,
+                        average: stats.avg,
+                        min: stats.min,
+                        max: stats.max
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis 
+                          dataKey="metric" 
+                          stroke="#9ca3af"
+                          tick={{ fontSize: 10 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={40}
+                        />
+                        <YAxis stroke="#9ca3af" />
+                        <Tooltip 
+                          contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
+                          labelStyle={{ color: "#9ca3af" }}
+                          itemStyle={{ color: "#f3f4f6" }}
+                        />
+                        <Bar dataKey="current" name="Actual" fill="#3b82f6" />
+                        <Bar dataKey="average" name="Promedio" fill="#10b981" />
+                        <Bar dataKey="min" name="Mínimo" fill="#f59e0b" />
+                        <Bar dataKey="max" name="Máximo" fill="#ef4444" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
