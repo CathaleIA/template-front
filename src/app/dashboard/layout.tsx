@@ -17,7 +17,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setSidebarCollapsed(e.detail.collapsed);
     };
 
-
     window.addEventListener('sidebarStateChange' as any, handleSidebarChange as EventListener);
 
     // Cleanup
@@ -30,7 +29,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <main className={`flex-1 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} transition-all duration-300 overflow-auto`}>
-        {children}
+       {children}
       </main>
     </div>
   );

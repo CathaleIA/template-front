@@ -1,102 +1,150 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
+  /* Colores principales */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
 
+  /* Colores de gráficos */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Colores del sidebar */
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Breakpoints personalizados */
+  --breakpoint-xs: 480px;
+}
+
+/* Valores por defecto en :root */
+:root {
+  --radius: 0.5rem;
+
+  /* Colores personalizados que tenías originalmente */
+  --background: 251 39% 11%;
+  --foreground: 0 0% 98%;
+  --card: 248 39% 19%;
+  --card-foreground: 0 0% 98%;
+  --popover: 248 39% 19%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 196 42% 27%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 248 39% 24%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 251 39% 16%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 196 42% 32%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 248 39% 24%;
+  --input: 248 39% 24%;
+  --ring: 196 42% 27%;
+  --chart-1: 196 42% 27%;
+  --chart-2: 248 39% 19%;
+  --chart-3: 251 39% 11%;
+  --chart-4: 196 42% 32%;
+  --chart-5: 248 39% 24%;
+
+  /* Sidebar colors */
+  --sidebar: 248 39% 19%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 196 42% 27%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 196 42% 32%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 248 39% 24%;
+  --sidebar-ring: 196 42% 27%;
+}
+
+/* Modo oscuro */
+.dark {
+  --background: 251 39% 8%;
+  --foreground: 0 0% 98%;
+  --card: 248 39% 15%;
+  --card-foreground: 0 0% 98%;
+  --popover: 248 39% 15%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 196 42% 22%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 248 39% 19%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 251 39% 13%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 196 42% 27%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 248 39% 19%;
+  --input: 248 39% 19%;
+  --ring: 196 42% 27%;
+  --chart-1: 196 42% 32%;
+  --chart-2: 248 39% 24%;
+  --chart-3: 251 39% 16%;
+  --chart-4: 196 42% 27%;
+  --chart-5: 248 39% 19%;
+
+  /* Sidebar colors for dark mode */
+  --sidebar: 248 39% 15%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 196 42% 22%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 196 42% 27%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 248 39% 19%;
+  --sidebar-ring: 196 42% 27%;
+}
 
 @layer base {
-  :root {
-    --background: 251 39% 11%;
-    --foreground: 0 0% 98%;
-
-    --card: 248 39% 19%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 248 39% 19%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 196 42% 27%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 248 39% 24%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 251 39% 16%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 196 42% 32%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 248 39% 24%;
-    --input: 248 39% 24%;
-    --ring: 196 42% 27%;
-
-    --chart-1: 196 42% 27%;
-    --chart-2: 248 39% 19%;
-    --chart-3: 251 39% 11%;
-    --chart-4: 196 42% 32%;
-    --chart-5: 248 39% 24%;
-
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 251 39% 8%;
-    --foreground: 0 0% 98%;
-
-    --card: 248 39% 15%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 248 39% 15%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 196 42% 22%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 248 39% 19%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 251 39% 13%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --accent: 196 42% 27%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 248 39% 19%;
-    --input: 248 39% 19%;
-    --ring: 196 42% 27%;
-
-    --chart-1: 196 42% 32%;
-    --chart-2: 248 39% 24%;
-    --chart-3: 251 39% 16%;
-    --chart-4: 196 42% 27%;
-    --chart-5: 248 39% 19%;
-  }
   * {
-    @apply border-border;
-    box-sizing: border-box;
+    @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 
-  /* Prevent horizontal overflow */
   html,
   body {
-    max-width: 100%;
+    max-width: 100vw;
     overflow-x: hidden;
-    width: 100%;
     margin: 0;
     padding: 0;
   }
 
-  /* Fix for fractional pixel overflow */
   #__next,
   main,
   .container {
@@ -104,7 +152,6 @@
     max-width: 100vw;
   }
 
-  /* Responsive container adjustments */
   .container {
     width: 100%;
     margin-left: auto;
@@ -144,7 +191,69 @@
   }
 }
 
+/* Animaciones personalizadas */
+@keyframes fade-particle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(var(--move-x, 0) * 30px),
+      calc(var(--move-y, -1) * 30px)
+    ) scale(0.3);
+  }
+}
 
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
 
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
 
+@layer utilities {
+  .animate-fade-particle {
+    animation: fade-particle 0.8s ease-out forwards;
+  }
 
+  .animate-accordion-down {
+    animation: accordion-down 0.2s ease-out;
+  }
+
+  .animate-accordion-up {
+    animation: accordion-up 0.2s ease-out;
+  }
+
+  /* Breakpoint personalizado */
+  @media (max-width: 920px) {
+    .max-770\:hidden {
+      display: none !important;
+    }
+  }
+}
+
+/* Enlaces */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Soporte de dark mode */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}

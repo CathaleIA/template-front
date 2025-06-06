@@ -4,6 +4,7 @@ import Image from 'next/image'
 import MobileMenu from '@/components/mobile-menu/MobileMenu';
 import Link from 'next/link'
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { FaUserCircle, FaUserMinus } from "react-icons/fa";
 
@@ -30,7 +31,7 @@ export default function NavBar({ currentUser }: NavbarProps) {
 
   // console.log(currentUser)
   const t = useTranslation();
-
+  const router = useRouter();
 
   //logica de posicion de navbar despues de hacer scroll
   const [scrolled, setScrolled] = useState(false);
@@ -83,10 +84,10 @@ export default function NavBar({ currentUser }: NavbarProps) {
                   onClick={() => {
                     if (isAuthenticated) {
                       // Redirigir a la API de cierre de sesión
-                      window.location.href = '/api/auth/sign-out';
+                      router.push('/api/auth/sign-out');
                     } else {
                       // Redirigir a la API de inicio de sesión
-                      window.location.href = '/api/auth/sign-in';
+                      router.push('/api/auth/sign-in');
                     }
                   }}
               >

@@ -8,7 +8,7 @@ import ClientNavBar from "@/components/navbar/ClientNavBar";
 
 import {LanguageProvider} from "@/context/LanguageContext";
 
-import { getCurrentAuthUser } from '@/utils/cognito-user-current'; //Datos del usuario desde el lado del servidor.
+// import { getCurrentAuthUser } from '@/utils/cognito-user-current'; //Datos del usuario desde el lado del servidor.
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -35,13 +35,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const currentUser = await getCurrentAuthUser();
+  // const currentUser = await getCurrentAuthUser();
 
   return (
     <html lang="es">
-      <body className={`${montserrat.variable} ${poppins.variable} ${openSans.variable} font-[--font-inter]`}>
+      <body className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat`}>
         <LanguageProvider>
-          <ClientNavBar currentUser={currentUser} />
+          {/* <ClientNavBar currentUser={currentUser} /> */}
           {children}
         </LanguageProvider>
       </body>
