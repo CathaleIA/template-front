@@ -18,7 +18,7 @@ export default function SelectTenantPage() {
     if (userPoolDomain && clientId) {
       const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
       // const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || 'http://localhost:3000/api/auth/callback';
-      const redirectUri = '/dashboard';
+      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard'; // Cambia esto al URL de tu aplicación
       const scope = 'email+openid+profile';
 
       const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
@@ -51,7 +51,7 @@ export default function SelectTenantPage() {
 
       const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
       // const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || 'http://localhost:3000/api/auth/callback';
-      const redirectUri = '/dashboard';
+      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard'; // Cambia esto al URL de tu aplicación
       const scope = 'email+openid+profile';
 
       const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
