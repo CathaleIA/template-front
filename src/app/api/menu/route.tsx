@@ -12,7 +12,7 @@ export async function GET() {
     { id: 1, label: "Home", icon: "FaHome", route: "/dashboard/" },
     { id: 2, label: "Projects", icon: "FaFolder", route: "/dashboard/projects" },
     { id: 3, label: "Alerts", icon: "FaBell", route: "/dashboard/alerts" },
-    { id: 4, label: "Settings", icon: "FaCog", route: "/settings" },
+    { id: 4, label: "Administrar", icon: "FaCog", route: "/dashboard/admin"},
   ];
 
   return NextResponse.json(menuItems);
