@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     // 2. Canjear el código por tokens
     const tokenEndpoint = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/oauth2/token`;
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`;
+    const redirectUri = `${process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN}api/auth/callback`;
 
     const tokenResponse = await fetch(tokenEndpoint, {
       method: 'POST',
