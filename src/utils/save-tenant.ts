@@ -1,4 +1,4 @@
-// utils/tenant.ts
+// utils/save-tenant.ts
 export async function setTenantConfig(tenantName: string): Promise<{
   userPoolId: string;
   appClientId: string;
@@ -25,11 +25,16 @@ export async function setTenantConfig(tenantName: string): Promise<{
 
   const data = await res.json();
 
-  // ✅ Guardar en localStorage
+  // Guardar en localStorage (para el cliente)
   localStorage.setItem('userPoolId', data.userPoolId);
   localStorage.setItem('appClientId', data.appClientId);
   localStorage.setItem('apiGatewayUrl', data.apiGatewayUrl);
   localStorage.setItem('userPoolDomain', data.userPoolDomain);
+
+  // Guardar en cookies (para el servidor)
+  document.cookie = `userPoolId=${data.userPoolId}; path=/; max-age=3600`; // 1 hora
+  document.cookie = `appClientId=${data.appClientId}; path=/; max-age=3600`;
+  document.cookie = `userPoolDomain=${data.userPoolDomain}; path=/; max-age=3600`;
 
   return data;
 }
