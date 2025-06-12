@@ -24,6 +24,7 @@ export async function setTenantConfig(tenantName: string): Promise<{
   }
 
   const data = await res.json();
+  console.log('Datos del tenant:', data);
 
   // Guardar en localStorage (para el cliente)
   localStorage.setItem('userPoolId', data.userPoolId);

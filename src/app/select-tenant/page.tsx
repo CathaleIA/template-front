@@ -17,7 +17,7 @@ export default function SelectTenantPage() {
 
     if (userPoolDomain && clientId) {
       const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
-      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback';
+      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard';
       // const redirectUri = 'localhost:3000/api/auth/callback/'; // Cambia esto al URL de tu aplicación
       const scope = 'email+openid+profile';
 
@@ -50,7 +50,7 @@ export default function SelectTenantPage() {
       }
 
       const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
-      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback'; // Cambia esto al URL de tu aplicación
+      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard'; // Cambia esto al URL de tu aplicación
       // const redirectUri = 'localhost:3000/api/auth/callback/'; // Cambia esto al URL de tu aplicación
       const scope = 'email+openid+profile';
 
