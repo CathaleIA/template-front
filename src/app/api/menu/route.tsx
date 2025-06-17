@@ -9,8 +9,8 @@ type MenuItem = {
 
 export async function GET() {
   const menuItems: MenuItem[] = [
-    { id: 1, label: "Home", icon: "FaHome", route: "/dashboard/" },
-    { id: 2, label: "Projects", icon: "FaFolder", route: "/dashboard/projects" },
+    { id: 1, label: "Snowflake", icon: "FaHome", route: "/dashboard/" },
+    { id: 5, label: "Reports", icon: "FaFileSignature", route: "/dashboard/reports"},
     { id: 3, label: "Alerts", icon: "FaBell", route: "/dashboard/alerts" },
     { id: 4, label: "Administrar", icon: "FaCog", route: "/dashboard/admin"},
   ];

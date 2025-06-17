@@ -13,7 +13,8 @@ import {
   FaChartBar,
   FaCog,
   FaSignOutAlt,
-  FaBell
+  FaBell,
+  FaFileSignature,
 } from "react-icons/fa";
 // import { useAuthenticator } from "@aws-amplify/ui-react";
 
@@ -30,7 +31,8 @@ const iconComponents: { [key: string]: React.ComponentType<any> } = {
   FaFolder,
   FaChartBar,
   FaCog,
-  FaBell
+  FaBell,
+  FaFileSignature,
 };
 
 export const dynamic = 'force-dynamic';
