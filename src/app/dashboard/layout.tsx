@@ -1,36 +1,31 @@
-"use client"
-import { ReactNode, useState, useEffect } from "react";
-import Sidebar from "@/components/sidebar/Sidebar";
+import type React from "react"
+import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { TopNavbar } from "@/components/navbar/top-navbar"
 
-interface DashboardLayoutProps {
-  children: ReactNode;
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
-
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-
-  useEffect(() => {
-
-    const handleSidebarChange = (e: CustomEvent) => {
-      setSidebarCollapsed(e.detail.collapsed);
-    };
-
-    window.addEventListener('sidebarStateChange' as any, handleSidebarChange as EventListener);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('sidebarStateChange' as any, handleSidebarChange as EventListener);
-    };
-  }, []);
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // Datos del usuario
+  const userData = {
+    name: "Usuario Admin",
+    email: "admin@copower.com",
+    avatar: "/placeholder.svg?height=40&width=40",
+  }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <main className={`flex-1 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} transition-all duration-200 overflow-auto`}>
-       {children}
-      </main>
-    </div>
-  );
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <SidebarInset className="flex flex-1 flex-col">
+          <TopNavbar user={userData} />
+          <main className="flex flex-1 flex-col overflow-hidden mt-16">
+            <div className="flex-1 overflow-auto p-6">{children}</div>
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  )
 }

@@ -1,0 +1,52 @@
+/* Mejoras para el sidebar */
+.sidebar-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejorar el hover del toggle */
+.sidebar-trigger:hover {
+  transform: scale(1.05);
+}
+
+/* Animación suave para los elementos del menú */
+.menu-item-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+.menu-item-transition:hover {
+  transform: translateX(2px);
+}
+
+/* Indicador visual para items activos */
+.sidebar-menu-button[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: hsl(var(--primary));
+  border-radius: 0 2px 2px 0;
+}
+
+/* Mejorar la visibilidad del rail */
+.sidebar-rail {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.sidebar-rail:hover {
+  opacity: 1;
+}
+
+/* Efecto de hover para el sidebar colapsado */
+[data-collapsible="icon"] .sidebar-menu-button:hover {
+  background-color: hsl(var(--accent));
+  transform: scale(1.02);
+}
+
+/* Transición suave para la expansión del sidebar */
+.sidebar-wrapper {
+  transition: width 0.3s ease-in-out;
+}
