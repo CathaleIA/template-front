@@ -1,108 +1,231 @@
-// app/select-tenant/page.tsx
-'use client';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { setTenantConfig } from '@/utils/save-tenant';
+"use client"
+
+import type React from "react"
+
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { setTenantConfig } from "@/utils/save-tenant"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Building2, Loader2, CheckCircle, ArrowRight } from "lucide-react"
 
 export default function SelectTenantPage() {
-  const router = useRouter();
-  const [tenant, setTenant] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const [tenant, setTenant] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState("")
 
   // ✅ Si ya tenemos los datos del tenant → redirige directamente a Cognito
   useEffect(() => {
-    const userPoolDomain = localStorage.getItem('userPoolDomain');
-    const clientId = localStorage.getItem('appClientId');
+    const userPoolDomain = localStorage.getItem("userPoolDomain")
+    const clientId = localStorage.getItem("appClientId")
 
     if (userPoolDomain && clientId) {
-      const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
-      // const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || 'http://localhost:3000/api/auth/callback';
-      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com'; // Cambia esto al URL de tu aplicación
-      const scope = 'email+openid+profile';
+      setLoading(true)
+      setLoadingStage("Redirigiendo a autenticación...")
 
-      const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
+      setTimeout(() => {
+        const region = localStorage.getItem("userPoolId")?.split("_")[0] || "us-east-1"
+        const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com"
+        const scope = "email+openid+profile"
 
-      window.location.href = cognitoLoginUrl;
+        const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`
+
+        window.location.href = cognitoLoginUrl
+      }, 1000)
     }
-  }, [router]);
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     if (!tenant.trim()) {
-      setError('Por favor ingresa el nombre de tu empresa');
-      setLoading(false);
-      return;
+      setError("Por favor ingresa el nombre de tu empresa")
+      setLoading(false)
+      return
     }
 
     try {
-      await setTenantConfig(tenant.trim());
+      // Etapa 1: Validando empresa
+      setLoadingStage("Validando empresa...")
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      // Etapa 2: Configurando tenant
+      setLoadingStage("Configurando acceso...")
+      await setTenantConfig(tenant.trim())
+      await new Promise((resolve) => setTimeout(resolve, 600))
+
+      // Etapa 3: Preparando autenticación
+      setLoadingStage("Preparando autenticación...")
+      await new Promise((resolve) => setTimeout(resolve, 400))
 
       // ✅ En lugar de redirigir a /login, vamos directo a Cognito
-      const userPoolDomain = localStorage.getItem('userPoolDomain');
-      const clientId = localStorage.getItem('appClientId');
+      const userPoolDomain = localStorage.getItem("userPoolDomain")
+      const clientId = localStorage.getItem("appClientId")
 
       if (!userPoolDomain || !clientId) {
-        throw new Error('Faltan datos después de configurar el tenant');
+        throw new Error("Faltan datos después de configurar el tenant")
       }
 
-      const region = localStorage.getItem('userPoolId')?.split('_')[0] || 'us-east-1';
-      // const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || 'http://localhost:3000/api/auth/callback';
-      const redirectUri = 'https://appui.d1ajb21hsxi2dm.amplifyapp.com'; // Cambia esto al URL de tu aplicación
-      const scope = 'email+openid+profile';
+      // Etapa 4: Redirigiendo
+      setLoadingStage("Redirigiendo...")
+      await new Promise((resolve) => setTimeout(resolve, 400))
 
-      const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
+      const region = localStorage.getItem("userPoolId")?.split("_")[0] || "us-east-1"
+      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com"
+      const scope = "email+openid+profile"
 
-      window.location.href = cognitoLoginUrl;
+      const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`
 
+      window.location.href = cognitoLoginUrl
     } catch (err: any) {
-      console.error('Error seleccionando empresa:', err);
-      setError('Empresa no encontrada. Verifica el nombre e inténtalo nuevamente.');
-      setLoading(false);
+      console.error("Error seleccionando empresa:", err)
+      setError("Empresa no encontrada. Verifica el nombre e inténtalo nuevamente.")
+      setLoading(false)
+      setLoadingStage("")
     }
-  };
+  }
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <div className="w-full max-w-md p-6 rounded-lg shadow-lg bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] animate-accordion-down">
-        <h2 className="text-2xl font-bold mb-4 text-center">Selecciona tu empresa</h2>
-        <p className="mb-6 text-sm text-center text-[hsl(var(--muted-foreground)]">
-          Ingresa el nombre de tu organización para continuar
-        </p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="w-full max-w-md mx-4 shadow-xl border border-border bg-card/95 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center space-y-6">
+              {/* Logo animado */}
+              <div className="relative">
+                <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+                  <Building2 className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="tenant" className="block text-sm font-medium mb-1">Nombre de la Empresa</label>
-            <input
-              id="tenant"
-              type="text"
-              value={tenant}
-              onChange={(e) => setTenant(e.target.value)}
-              placeholder="Ej: Copower"
-              className="w-full px-3 py-2 border border-[hsl(var(--border))] rounded-md focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-              autoFocus
-            />
+              {/* Título */}
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold text-card-foreground">Configurando Acceso</h2>
+                <p className="text-muted-foreground">Preparando tu entorno empresarial</p>
+              </div>
+
+              {/* Indicador de progreso */}
+              <div className="w-full space-y-4">
+                <div className="flex items-center justify-center space-x-3">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <span className="text-sm font-medium text-card-foreground">{loadingStage}</span>
+                </div>
+
+                {/* Barra de progreso animada */}
+                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                  <div className="h-full bg-primary rounded-full animate-pulse"></div>
+                </div>
+              </div>
+
+              {/* Pasos del proceso */}
+              <div className="w-full space-y-3 text-sm">
+                <div className="flex items-center space-x-3 text-muted-foreground">
+                  <CheckCircle className="w-4 h-4 text-accent" />
+                  <span>Empresa identificada</span>
+                </div>
+                <div className="flex items-center space-x-3 text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span>Configurando permisos</span>
+                </div>
+                <div className="flex items-center space-x-3 text-muted-foreground/60">
+                  <div className="w-4 h-4 rounded-full border-2 border-border"></div>
+                  <span>Iniciando sesión</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+return (
+  <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 ">
+    <div className="w-full max-w-md">
+      {/* Header con logo */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
+          <Building2 className="w-8 h-8 text-primary-foreground" />
+        </div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Bienvenido</h1>
+        <p className="text-muted-foreground">Accede a tu plataforma empresarial</p>
+      </div>
+
+      <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-xl text-center text-card-foreground">Selecciona tu Empresa</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            Ingresa el nombre de tu organización para continuar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="tenant" className="text-sm font-medium text-card-foreground">
+                Nombre de la Empresa
+              </Label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="tenant"
+                  type="text"
+                  value={tenant}
+                  onChange={(e) => setTenant(e.target.value)}
+                  placeholder="Ej: Copower"
+                  className="pl-10 h-11 bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {error && (
+              <Alert variant="destructive" className="border-destructive/20 bg-destructive/10">
+                <AlertDescription className="text-sm text-destructive">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading || !tenant.trim()}
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Procesando...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span>Continuar</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              )}
+            </Button>
+          </form>
+
+          {/* Footer info */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-xs text-center text-muted-foreground">
+              ¿Necesitas ayuda? Contacta a tu administrador de sistema
+            </p>
           </div>
+        </CardContent>
+      </Card>
 
-          {error && (
-            <p className="text-sm text-[hsl(var(--destructive))]">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !tenant.trim()}
-            className={`w-full py-2 px-4 rounded-md text-white font-semibold transition-colors ${loading || !tenant.trim()
-                ? 'bg-[hsl(var(--secondary))] cursor-not-allowed'
-                : 'bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/90%)]'
-              }`}
-          >
-            {loading ? 'Cargando...' : 'Ingresar'}
-          </button>
-        </form>
+      {/* Decoración de fondo sutil */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
       </div>
     </div>
-  );
+  </div>
+)
 }

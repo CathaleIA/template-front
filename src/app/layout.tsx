@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Poppins, Open_Sans, Montserrat } from "next/font/google"
 import { LanguageProvider } from "@/context/LanguageContext"
 import { ThemeProvider } from "@/context/theme-provider"
+import { Navbar } from "@/components/navbar"
 
 import "@/app/styles/globals.css"
 import "@/app/styles/sidebar.css"
@@ -41,7 +42,12 @@ export default function RootLayout({
         className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>
+            <div className="min-h-screen bg-background">
+              <Navbar />
+              <main className="pt-14">{children}</main>
+            </div>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

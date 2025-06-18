@@ -1,52 +1,70 @@
-/* Mejoras para el sidebar */
-.sidebar-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Mejorar el hover del toggle */
-.sidebar-trigger:hover {
-  transform: scale(1.05);
-}
-
-/* Animación suave para los elementos del menú */
-.menu-item-transition {
+/* Estilos personalizados para comportamiento Gmail */
+.gmail-sidebar {
+  /* Configuración base del sidebar */
   transition: all 0.2s ease-in-out;
 }
 
-.menu-item-transition:hover {
-  transform: translateX(2px);
+/* Cuando está colapsado (solo iconos) */
+.gmail-sidebar[data-state="collapsed"] {
+  /* Mantener el ancho mínimo para iconos */
+  width: var(--sidebar-width-icon);
 }
 
-/* Indicador visual para items activos */
-.sidebar-menu-button[data-active="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 16px;
-  background: hsl(var(--primary));
-  border-radius: 0 2px 2px 0;
+/* Hover sobre sidebar colapsado - se expande temporalmente */
+.gmail-sidebar[data-state="collapsed"]:hover {
+  /* Se expande temporalmente con hover */
+  width: var(--sidebar-width);
+  /* Se sobrepone sobre el contenido */
+  z-index: 50;
+  /* Sombra para indicar que está sobre el contenido */
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Mejorar la visibilidad del rail */
-.sidebar-rail {
-  opacity: 0;
+/* Cuando está expandido permanentemente */
+.gmail-sidebar[data-state="expanded"] {
+  /* Ancho completo fijo */
+  width: var(--sidebar-width);
+  /* No se sobrepone, modifica el layout */
+  z-index: auto;
+  box-shadow: none;
+}
+
+/* Contenido del sidebar durante hover */
+.gmail-sidebar[data-state="collapsed"]:hover [data-sidebar="content"] {
+  /* Mostrar contenido completo durante hover */
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Labels y texto durante hover en modo colapsado */
+.gmail-sidebar[data-state="collapsed"]:hover [data-sidebar="group-label"],
+.gmail-sidebar[data-state="collapsed"]:hover .sidebar-menu-button span {
+  /* Mostrar texto durante hover */
+  opacity: 1;
+  visibility: visible;
   transition: opacity 0.2s ease-in-out;
 }
 
-.sidebar-rail:hover {
-  opacity: 1;
+/* Ocultar tooltips durante hover expandido */
+.gmail-sidebar[data-state="collapsed"]:hover [data-tooltip-content] {
+  display: none !important;
 }
 
-/* Efecto de hover para el sidebar colapsado */
-[data-collapsible="icon"] .sidebar-menu-button:hover {
-  background-color: hsl(var(--accent));
-  transform: scale(1.02);
+/* Animaciones suaves para el contenido */
+.gmail-sidebar [data-sidebar="content"] {
+  transition: all 0.2s ease-in-out;
 }
 
-/* Transición suave para la expansión del sidebar */
-.sidebar-wrapper {
-  transition: width 0.3s ease-in-out;
+/* Mejorar la transición del rail */
+.gmail-sidebar [data-sidebar="rail"] {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Asegurar que el hover funcione en toda el área del sidebar */
+.gmail-sidebar[data-state="collapsed"] {
+  overflow: visible;
+}
+
+.gmail-sidebar[data-state="collapsed"]:hover {
+  overflow: visible;
 }
