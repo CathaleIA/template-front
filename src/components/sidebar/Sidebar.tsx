@@ -16,7 +16,6 @@ import {
   FaBell,
   FaFileSignature,
 } from "react-icons/fa";
-// import { useAuthenticator } from "@aws-amplify/ui-react";
 
 type MenuItem = {
   id: number;
@@ -42,7 +41,6 @@ export default function Sidebar () {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const pathname = usePathname();
   const router = useRouter();
-  // const { signOut, user } = useAuthenticator((context) => [context.user]);
 
   // Emitir evento cuando cambia el estado del sidebar
   useEffect(() => {
@@ -82,11 +80,6 @@ export default function Sidebar () {
     }
     return null;
   };
-
-  // const handleSignOut = () => {
-  //   signOut();
-  //   router.push("/"); // Redirige a la página principal después de cerrar sesión
-  // };
 
   return (
     <div

@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Description } from '@radix-ui/react-dialog';
 
 // Definir el tipo para las traducciones
 type Translations = {

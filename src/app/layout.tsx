@@ -4,11 +4,7 @@ import { Inter, Poppins, Open_Sans, Montserrat } from "next/font/google";
 
 import "@/app/styles/globals.css";
 
-import ClientNavBar from "@/components/navbar/ClientNavBar";
-
 import {LanguageProvider} from "@/context/LanguageContext";
-
-// import { getCurrentAuthUser } from '@/utils/cognito-user-current'; //Datos del usuario desde el lado del servidor.
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -35,13 +31,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const currentUser = await getCurrentAuthUser();
 
   return (
     <html lang="es">
       <body className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat`}>
         <LanguageProvider>
-          {/* <ClientNavBar currentUser={currentUser} /> */}
           {children}
         </LanguageProvider>
       </body>

@@ -1,0 +1,1 @@
+//logics de listar

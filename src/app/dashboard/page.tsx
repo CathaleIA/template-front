@@ -8,7 +8,6 @@ const DashboardPage = () => {
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">Dashboard</h1>
                   <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1">Monitoreo de Motores y Sistemas</p>
               </header>
-
               {/* Incrustar el dashboard de QuickSight */}
               <QuickSightDashboard />
           </div>

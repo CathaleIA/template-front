@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <main className={`flex-1 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} transition-all duration-300 overflow-auto`}>
+      <main className={`flex-1 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} transition-all duration-200 overflow-auto`}>
        {children}
       </main>
     </div>
