@@ -1,1 +1,0 @@
-//logics de enviar
