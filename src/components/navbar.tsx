@@ -70,8 +70,8 @@ export function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={async () => {
-                  // Forzar navegación completa para seguir redirección del backend
+                onClick={() => {
+                  // Redirige directamente al endpoint de logout de Cognito
                   window.location.href = "/api/auth/logout"
                 }}
               >

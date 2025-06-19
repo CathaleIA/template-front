@@ -1,44 +1,31 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server";
 
-export async function POST(request: NextRequest) {
-  try {
-    const userPoolId = request.cookies.get("userPoolId")?.value
-    const appClientId = request.cookies.get("appClientId")?.value
-    const userPoolDomain = request.cookies.get("userPoolDomain")?.value
+export async function GET(request: NextRequest) {
+  // Puedes obtener estos de cookies o variables de entorno según tu arquitectura
+  const userPoolDomain = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_DOMAIN || request.cookies.get("userPoolDomain")?.value;
+  const appClientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || request.cookies.get("appClientId")?.value;
+  const userPoolId = request.cookies.get("userPoolId")?.value;
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      path: "/",
-      expires: new Date(0),
-    }
-
-    const response = NextResponse.redirect(`${request.nextUrl.origin}/select-tenant`, {
-      status: 302,
-    })
-
-    // Eliminar todas las cookies relacionadas con la sesión
-    response.cookies.set("cognito_access_token", "", cookieOptions)
-    response.cookies.set("cognito_id_token", "", cookieOptions)
-    response.cookies.set("cognito_refresh_token", "", cookieOptions)
-    response.cookies.set("cognito_token_type", "", cookieOptions)
-    response.cookies.set("cognito_expires_at", "", cookieOptions)
-
-    // Si tenemos datos del tenant, redirigimos al logout de Cognito
-    if (userPoolId && appClientId && userPoolDomain) {
-      const region = userPoolId.split("_")[0] || "us-east-1"
-      const logoutRedirectUri = encodeURIComponent(`${request.nextUrl.origin}/select-tenant`)
-      const cognitoLogoutUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/logout?client_id=${appClientId}&logout_uri=${logoutRedirectUri}`
-
-      return NextResponse.redirect(cognitoLogoutUrl, {
-        status: 302,
-      })
-    }
-
-    return response
-  } catch (error) {
-    console.error("Error en logout:", error)
-    return NextResponse.json({ error: "Logout failed" }, { status: 500 })
+  if (!userPoolDomain || !appClientId) {
+    return new Response("Missing required configuration", {
+      status: 400,
+    });
   }
+
+  const region = userPoolId?.split("_")[0] || "us-east-1";
+
+  // La URL a donde quieres redirigir tras el logout
+  const logoutUri = encodeURIComponent("https://appui.d1ajb21hsxi2dm.amplifyapp.com"); 
+
+  // Construcción de la URL de Cognito Logout
+  const cognitoLogoutUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/logout?client_id=${encodeURIComponent(
+    appClientId
+  )}&logout_uri=${logoutUri}`;
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: cognitoLogoutUrl,
+    },
+  });
 }
