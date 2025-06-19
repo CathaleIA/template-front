@@ -69,7 +69,14 @@ export function Navbar() {
                 <span>Perfil</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  const res = await fetch("/api/auth/logout", { method: "POST" });
+                  if (res.ok) {
+                    window.location.href = "/select-tenant"; // Cambia por tu ruta de login
+                  }
+                }}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
