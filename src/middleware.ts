@@ -9,11 +9,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // EXCLUIR /select-tenant para evitar loops
+  if (pathname === "/select-tenant") {
+    return NextResponse.next()
+  }
+
   // Rutas que requieren autenticación
   const protectedPaths = ["/dashboard", "/profile", "/settings"]
-
-  // Rutas públicas que no requieren autenticación
-  const publicPaths = ["/select-tenant", "/auth"]
 
   // Verificar si la ruta actual está protegida
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
@@ -24,7 +26,7 @@ export function middleware(request: NextRequest) {
     const idToken = request.cookies.get("cognito_id_token")
     const expiresAt = request.cookies.get("cognito_expires_at")
 
-    // Si no hay tokens o han expirado, redirigir a select-tenant
+    // Si no hay tokens, redirigir a select-tenant
     if (!accessToken || !idToken || !expiresAt) {
       return NextResponse.redirect(new URL("/select-tenant", request.url))
     }
@@ -38,7 +40,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Si está autenticado y trata de acceder a páginas de auth (excepto select-tenant), redirigir al dashboard
+  // Si está autenticado y trata de acceder a rutas de auth, redirigir al dashboard
   if (pathname.startsWith("/auth") && pathname !== "/select-tenant") {
     const accessToken = request.cookies.get("cognito_access_token")
     const expiresAt = request.cookies.get("cognito_expires_at")
@@ -46,11 +48,6 @@ export function middleware(request: NextRequest) {
     if (accessToken && expiresAt && Date.now() < Number.parseInt(expiresAt.value)) {
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
-  }
-
-  // Manejar la ruta raíz "/" - permitir que pase al componente que hace redirect
-  if (pathname === "/") {
-    return NextResponse.next()
   }
 
   return NextResponse.next()

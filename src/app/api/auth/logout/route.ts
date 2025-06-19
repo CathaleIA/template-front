@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   // Puedes obtener estos de cookies o variables de entorno según tu arquitectura
@@ -22,10 +22,28 @@ export async function GET(request: NextRequest) {
     appClientId
   )}&logout_uri=${logoutUri}`;
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: cognitoLogoutUrl,
-    },
+  // Crear la respuesta de redirección
+  const response = NextResponse.redirect(cognitoLogoutUrl);
+
+  // Lista de cookies que quieres eliminar (basado en tu middleware)
+  const cookiesToDelete = [
+    "cognito_access_token",
+    "cognito_id_token", 
+    "cognito_expires_at",
+    "cognito_refresh_token",
+    "userPoolDomain",
+    "appClientId",
+    "userPoolId",
+    // Agrega aquí cualquier otra cookie que uses para autenticación
+  ];
+
+  // Eliminar cada cookie usando NextResponse.cookies.delete()
+  cookiesToDelete.forEach(cookieName => {
+    response.cookies.delete({
+      name: cookieName,
+      path: "/",
+    });
   });
+
+  return response;
 }
