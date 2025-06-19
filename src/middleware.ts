@@ -14,47 +14,38 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Rutas que requieren autenticación
-  const protectedPaths = ["/dashboard", "/profile", "/settings"]
+  // Verificar autenticación
+  const accessToken = request.cookies.get("cognito_access_token")
+  const idToken = request.cookies.get("cognito_id_token")
+  const expiresAt = request.cookies.get("cognito_expires_at")
 
-  // Verificar si la ruta actual está protegida
-  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
+  const isAuthenticated = accessToken && idToken && expiresAt && Date.now() < Number.parseInt(expiresAt.value)
 
-  // Si es una ruta protegida, verificar autenticación
-  if (isProtectedPath) {
-    const accessToken = request.cookies.get("cognito_access_token")
-    const idToken = request.cookies.get("cognito_id_token")
-    const expiresAt = request.cookies.get("cognito_expires_at")
-
-    // Si no hay tokens, redirigir a select-tenant
-    if (!accessToken || !idToken || !expiresAt) {
-      return NextResponse.redirect(new URL("/select-tenant", request.url))
-    }
-
-    // Verificar si el token ha expirado
-    const now = Date.now()
-    const expirationTime = Number.parseInt(expiresAt.value)
-
-    if (now >= expirationTime) {
+  // MANEJAR LA RUTA RAÍZ
+  if (pathname === "/") {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
+    } else {
       return NextResponse.redirect(new URL("/select-tenant", request.url))
     }
   }
 
-  // Si está autenticado y trata de acceder a rutas de auth, redirigir al dashboard
-  if (pathname.startsWith("/auth") && pathname !== "/select-tenant") {
-    const accessToken = request.cookies.get("cognito_access_token")
-    const expiresAt = request.cookies.get("cognito_expires_at")
+  // Rutas que requieren autenticación
+  const protectedPaths = ["/dashboard", "/profile", "/settings"]
+  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
 
-    if (accessToken && expiresAt && Date.now() < Number.parseInt(expiresAt.value)) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
-    }
+  if (isProtectedPath && !isAuthenticated) {
+    return NextResponse.redirect(new URL("/select-tenant", request.url))
+  }
+
+  // Si está autenticado y trata de acceder a rutas de auth, redirigir al dashboard
+  if (pathname.startsWith("/auth") && pathname !== "/select-tenant" && isAuthenticated) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }
