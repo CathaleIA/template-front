@@ -79,7 +79,7 @@ export default function SelectTenantPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex justify-center min-h-screen bg-background pt-10">
         <Card className="w-full max-w-md mx-4 shadow-xl border border-border bg-card/95 backdrop-blur-sm">
           <CardContent className="p-8">
             <div className="flex flex-col items-center space-y-6">

@@ -71,10 +71,8 @@ export function Navbar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={async () => {
-                  const res = await fetch("/api/auth/logout", { method: "POST" });
-                  if (res.ok) {
-                    window.location.href = "/select-tenant"; // Cambia por tu ruta de login
-                  }
+                  // Forzar navegación completa para seguir redirección del backend
+                  window.location.href = "/api/auth/logout"
                 }}
               >
                 <LogOut className="mr-2 h-4 w-4" />

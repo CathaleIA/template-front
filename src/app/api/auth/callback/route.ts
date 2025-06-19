@@ -8,19 +8,20 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 🔑 Obtener datos desde cookies (guardados previamente con /api/tenant)
+    //Obtener datos desde cookies (guardados previamente con /api/tenant)
+    const userPoolId = request.cookies.get("userPoolId")?.value
     const userPoolDomain = request.cookies.get("userPoolDomain")?.value
     const clientId = request.cookies.get("appClientId")?.value
 
-    if (!userPoolDomain || !clientId) {
+    if (!userPoolDomain || !clientId || !userPoolId) {
       return NextResponse.json(
         { error: "Missing required tenant configuration in cookies" },
         { status: 400 }
       )
     }
 
-    // 🌐 Construir la URL dinámicamente usando userPoolDomain
-    const region = userPoolDomain.split("-").slice(-2).join("-") // Extrae región si es necesario
+    //Construir la URL dinámicamente usando userPoolDomain
+    const region = userPoolId.split("_")[0] || "us-east-1"
     const cognitoTokenEndpoint = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/oauth2/token` 
 
     // 🔄 Hacer el intercambio de código por tokens
@@ -48,10 +49,10 @@ export async function GET(request: NextRequest) {
 
     const tokens = await response.json()
 
-    // 🕒 Calcular expiración
+    //Calcular expiración
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
-    // 🚀 Redirección final
+    //Redirección final
     const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
       ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
       : "https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard" 
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
       status: 302,
     })
 
-    // 🍪 Guardar tokens en cookies (httpOnly)
+    //Guardar tokens en cookies (httpOnly)
     redirectResponse.cookies.set("cognito_access_token", tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
