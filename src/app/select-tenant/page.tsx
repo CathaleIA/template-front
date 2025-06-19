@@ -44,24 +44,20 @@ export default function SelectTenantPage() {
       setLoadingStage("Preparando autenticación...")
       await new Promise((resolve) => setTimeout(resolve, 400))
 
-      // Obtener datos del tenant desde cookies/localStorage
-      const userPoolDomain = localStorage.getItem("userPoolDomain")
-      const clientId = localStorage.getItem("appClientId")
-      const userPoolId = localStorage.getItem("userPoolId")
+      // Llamada al endpoint para obtener cookies seguras
+      const infoRes = await fetch("/api/auth/tenantget")
+      if (!infoRes.ok) throw new Error("No se pudieron obtener los datos del tenant")
 
-      if (!userPoolDomain || !clientId || !userPoolId) {
+      const { userPoolId, appClientId: clientId, userPoolDomain } = await infoRes.json()
+
+      if (!userPoolId || !clientId || !userPoolDomain) {
         throw new Error("Faltan datos después de configurar el tenant")
       }
 
-      // Etapa 4: Redirigiendo
-      setLoadingStage("Redirigiendo...")
-      await new Promise((resolve) => setTimeout(resolve, 400))
-
       const region = userPoolId.split("_")[0] || "us-east-1"
-      const redirectUri = `https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback`
+      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
       const scope = "email+openid+profile"
 
-      // Crear estado con la configuración del tenant
       const state = encodeURIComponent(
         JSON.stringify({
           userPoolId,

@@ -1,4 +1,5 @@
-// Función actualizada para guardar también en cookies
+// utils/set-tenant.ts o donde la tengas
+
 export async function setTenantConfig(tenantName: string): Promise<{
   userPoolId: string
   appClientId: string
@@ -11,6 +12,7 @@ export async function setTenantConfig(tenantName: string): Promise<{
     throw new Error("Falta NEXT_PUBLIC_REG_API_GATEWAY_URL en variables de entorno")
   }
 
+  // 1. Obtener datos del tenant desde tu API externa
   const res = await fetch(`${apiBaseUrl}/tenant/init/${tenantName}`, {
     method: "GET",
     headers: {
@@ -25,22 +27,23 @@ export async function setTenantConfig(tenantName: string): Promise<{
 
   const data = await res.json()
 
-  // Guardar en localStorage (para compatibilidad)
-  localStorage.setItem("userPoolId", data.userPoolId)
-  localStorage.setItem("appClientId", data.appClientId)
-  localStorage.setItem("apiGatewayUrl", data.apiGatewayUrl)
-  localStorage.setItem("userPoolDomain", data.userPoolDomain)
+  // 2. Enviar los datos al endpoint local para guardarlos como cookies seguras
+  const response = await fetch("/api/auth/tenantset", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userPoolId: data.userPoolId,
+      appClientId: data.appClientId,
+      apiGatewayUrl: data.apiGatewayUrl,
+      userPoolDomain: data.userPoolDomain,
+    }),
+  })
 
-  // También guardar en cookies para el servidor con configuración más robusta
-  const cookieOptions = "path=/; max-age=86400; SameSite=Lax; Secure"
-  const isSecure = window.location.protocol === "https:"
-
-  const cookieString = isSecure ? cookieOptions : "path=/; max-age=86400; SameSite=Lax"
-
-  document.cookie = `userPoolId=${data.userPoolId}; ${cookieString}`
-  document.cookie = `appClientId=${data.appClientId}; ${cookieString}`
-  document.cookie = `apiGatewayUrl=${data.apiGatewayUrl}; ${cookieString}`
-  document.cookie = `userPoolDomain=${data.userPoolDomain}; ${cookieString}`
+  if (!response.ok) {
+    throw new Error("Error setting secure cookies for tenant")
+  }
 
   return data
 }
