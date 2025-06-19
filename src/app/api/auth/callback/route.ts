@@ -8,42 +8,62 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      "https://pooledtenant-serverlesssaas-240435918890.auth.us-east-1.amazoncognito.com/oauth2/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-        },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          client_id: "2s9e6hdscshv3a7si9k3asul5o",
-          code: code,
-          redirect_uri: "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",
-        }),
+    // 🔑 Obtener datos desde cookies (guardados previamente con /api/tenant)
+    const userPoolDomain = request.cookies.get("userPoolDomain")?.value
+    const clientId = request.cookies.get("appClientId")?.value
+
+    if (!userPoolDomain || !clientId) {
+      return NextResponse.json(
+        { error: "Missing required tenant configuration in cookies" },
+        { status: 400 }
+      )
+    }
+
+    // 🌐 Construir la URL dinámicamente usando userPoolDomain
+    const region = userPoolDomain.split("-").slice(-2).join("-") // Extrae región si es necesario
+    const cognitoTokenEndpoint = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/oauth2/token` 
+
+    // 🔄 Hacer el intercambio de código por tokens
+    const response = await fetch(cognitoTokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
       },
-    )
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        code: code,
+        redirect_uri: "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",  // <- puedes moverlo a env después
+      }),
+    })
 
     if (!response.ok) {
-      const error = await response.text()
-      return NextResponse.json({ error: `Token exchange failed: ${error}` }, { status: 400 })
+      const errorText = await response.text()
+      return NextResponse.json(
+        { error: `Token exchange failed: ${errorText}` },
+        { status: 400 }
+      )
     }
 
     const tokens = await response.json()
 
-    // Usar la variable de entorno para construir la URL de redirección
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://appui.d1ajb21hsxi2dm.amplifyapp.com"
-    const redirectUrl = `${baseUrl}/dashboard`
-
-    const redirectResponse = NextResponse.redirect(redirectUrl, { status: 302 })
-
-    // Set cookies
+    // 🕒 Calcular expiración
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
+    // 🚀 Redirección final
+    const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      : "https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard" 
+
+    const redirectResponse = NextResponse.redirect(redirectUrl, {
+      status: 302,
+    })
+
+    // 🍪 Guardar tokens en cookies (httpOnly)
     redirectResponse.cookies.set("cognito_access_token", tokens.access_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       expires: expiresAt,
       path: "/",
@@ -51,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     redirectResponse.cookies.set("cognito_id_token", tokens.id_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       expires: expiresAt,
       path: "/",
@@ -59,15 +79,15 @@ export async function GET(request: NextRequest) {
 
     redirectResponse.cookies.set("cognito_refresh_token", tokens.refresh_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // ~30 días
       path: "/",
     })
 
     redirectResponse.cookies.set("cognito_expires_at", expiresAt.getTime().toString(), {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       expires: expiresAt,
       path: "/",
@@ -75,6 +95,7 @@ export async function GET(request: NextRequest) {
 
     return redirectResponse
   } catch (error) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    console.error("Error en callback:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

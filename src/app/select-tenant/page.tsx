@@ -128,7 +128,7 @@ export default function SelectTenantPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4">
+    <div className="flex justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 pt-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
