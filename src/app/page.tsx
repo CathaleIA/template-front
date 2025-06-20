@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation"
+// src/app/page.tsx
 
 export default function HomePage() {
-  redirect("/dashboard")
+  return (
+    <div>Cargando...</div>
+  )
 }
