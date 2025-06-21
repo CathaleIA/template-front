@@ -3,10 +3,8 @@ import type { Metadata } from "next"
 import { Inter, Poppins, Open_Sans, Montserrat } from "next/font/google"
 import { LanguageProvider } from "@/context/LanguageContext"
 import { ThemeProvider } from "@/context/theme-provider"
-import { Navbar } from "@/components/navbar"
 
 import "@/app/styles/globals.css"
-import "@/app/styles/sidebar.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const poppins = Poppins({
@@ -44,8 +42,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
             <div className="min-h-screen bg-background">
-              <Navbar />
-              <main className="pt-14">{children}</main>
+              <main>{children}</main>
             </div>
           </LanguageProvider>
         </ThemeProvider>

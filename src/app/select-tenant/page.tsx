@@ -79,36 +79,37 @@ export default function SelectTenantPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center h-auto bg-background pt-10">
-        <Card className="w-full max-w-md mx-4 shadow-xl border border-border bg-card/95 backdrop-blur-sm">
-          <CardContent className="p-8">
-            <div className="flex flex-col items-center space-y-6">
-              <div className="relative">
-                <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-                  <Building2 className="w-8 h-8 text-primary-foreground" />
-                </div>
-                <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
+      <div className="flex justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 pt-10">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="relative inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
+              <Building2 className="w-8 h-8 text-primary-foreground" />
+              <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Configurando Acceso</h1>
+            <p className="text-muted-foreground">Preparando tu entorno empresarial</p>
+          </div>
+
+          <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
+            <CardHeader className="space-y-1 pb-4">
+              <CardTitle className="text-xl text-center text-card-foreground">Procesando</CardTitle>
+              <CardDescription className="text-center text-muted-foreground">
+                Configurando tu acceso empresarial
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-center space-x-3">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-sm font-medium text-card-foreground">{loadingStage}</span>
               </div>
 
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold text-card-foreground">Configurando Acceso</h2>
-                <p className="text-muted-foreground">Preparando tu entorno empresarial</p>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div className="h-full bg-primary rounded-full animate-pulse"></div>
               </div>
 
-              <div className="w-full space-y-4">
-                <div className="flex items-center justify-center space-x-3">
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                  <span className="text-sm font-medium text-card-foreground">{loadingStage}</span>
-                </div>
-
-                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                  <div className="h-full bg-primary rounded-full animate-pulse"></div>
-                </div>
-              </div>
-
-              <div className="w-full space-y-3 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center space-x-3 text-muted-foreground">
-                  <CheckCircle className="w-4 h-4 text-accent" />
+                  <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>Empresa identificada</span>
                 </div>
                 <div className="flex items-center space-x-3 text-muted-foreground">
@@ -120,9 +121,20 @@ export default function SelectTenantPage() {
                   <span>Iniciando sesión</span>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+
+              <div className="pt-4 border-t border-border">
+                <p className="text-xs text-center text-muted-foreground">
+                  Este proceso puede tomar unos segundos...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
+          </div>
+        </div>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 
 import type React from "react"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardSidebar } from "@/components/dashboard-sidebar"
+import { DashboardNavbar } from "@/components/dashboard-navbar"
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -27,14 +28,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex">
-      <AppSidebar />
-      <main
-        className={`flex-1 pt-14 min-h-screen transition-all duration-200 ease-in-out 
-        }`}
-      >
-        {children}
-      </main>
+    <div className="flex h-screen bg-gray-50">
+      <DashboardSidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <DashboardNavbar />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   )
 }
