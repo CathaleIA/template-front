@@ -20,6 +20,8 @@ export async function setTenantConfig(tenantName: string): Promise<{
     },
   })
 
+  localStorage.setItem("tenant", tenantName);
+
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`Error obteniendo datos del tenant: ${text}`)

@@ -3,15 +3,10 @@
 import { useState } from "react"
 
 import { Moon, Sun, User, LogOut, Settings, ChevronDown } from "lucide-react"
-import { useTheme } from "next-themes"
+import ModeToggle from "@/components/ui/toggle-mode"
 
 export function DashboardNavbar() {
-  const { theme, setTheme } = useTheme()
   const [showUserMenu, setShowUserMenu] = useState(false)
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
 
   return (
     <header className="bg-card border-b border-border px-6 py-4">
@@ -32,16 +27,7 @@ export function DashboardNavbar() {
         {/* Controles del navbar */}
         <div className="flex items-center space-x-4">
           {/* Toggle de tema */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-radius hover:bg-accent hover:text-accent-foreground transition-colors"
-          >
-            {theme ? (
-              <Sun className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <Moon className="w-5 h-5 text-muted-foreground" />
-            )}
-          </button>
+          <ModeToggle />
 
           {/* Avatar y menú de usuario */}
           <div className="relative">

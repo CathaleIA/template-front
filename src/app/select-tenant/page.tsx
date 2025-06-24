@@ -87,7 +87,7 @@ export default function SelectTenantPage() {
               <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Configurando Acceso</h1>
-            <p className="text-muted-foreground">Preparando tu entorno empresarial</p>
+            <p className="text-muted-foreground">Preparando tu entorno de trabajo</p>
           </div>
 
           <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
@@ -143,11 +143,12 @@ export default function SelectTenantPage() {
     <div className="flex justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 pt-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
+          <div className="relative inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
             <Building2 className="w-8 h-8 text-primary-foreground" />
+            <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Bienvenido</h1>
-          <p className="text-muted-foreground">Accede a tu plataforma empresarial</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Configurando Acceso</h1>
+          <p className="text-muted-foreground">Preparando tu entorno de trabajo</p>
         </div>
 
         <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
@@ -169,7 +170,13 @@ export default function SelectTenantPage() {
                     id="tenant"
                     type="text"
                     value={tenant}
-                    onChange={(e) => setTenant(e.target.value)}
+                    onChange={(e) => {
+                      const inputValue = e.target.value
+                        .toLowerCase() // convertir a minúsculas
+                        .trim()        // quitar espacios al inicio y final
+                        .replace(/\s+/g, ''); // eliminar todos los espacios internos (opcional)
+                      setTenant(inputValue);
+                    }}
                     placeholder="Ej: Copower"
                     className="pl-10 h-11 bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
                     autoFocus
