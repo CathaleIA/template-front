@@ -23,9 +23,9 @@ export default async function DashboardLayout({
 
   const hasSession = protectedCookies.every((name) => cookiesList.has(name))
 
-  if (!hasSession) {
-    redirect('/select-tenant')
-  }
+  // if (!hasSession) {
+  //   redirect('/select-tenant')
+  // }
 
   return (
     <div className="flex h-screen bg-gray-50">
