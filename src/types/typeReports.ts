@@ -34,3 +34,7 @@ export interface ApiResponse {
     message?: string;
     error?: string;
 }
+
+// types/chart.ts
+// types/typeReports.ts
+

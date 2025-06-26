@@ -145,6 +145,7 @@ export default function ReportsPage() {
 
     const data: ApiResponse = await response.json();
     const sanitizedHtml = DOMPurify.sanitize(data.archivoHtml);
+    console.log(data)
 
     const decodeHtml = (html: string): string => {
       const txt = document.createElement('textarea');
@@ -186,23 +187,22 @@ export default function ReportsPage() {
 
       }
       if (data.graficaDataExi) {
-        const graficaExitacionBase64 = await generarGraficaExiBase64({
-          ...data.graficaDataExi,
-          puntosGrficar: { 'Exitacion': data.graficaDataExi.puntosEjeY }
-        });
+        const graficaExitacionBase64 = await generarGraficaExiBase64(data.graficaDataExi);
+
         const graficaExiContainer = document.getElementById('graficaExiChart-container');
         if (graficaExiContainer) {
-          const canvasCN = graficaExiContainer.querySelector('canvas');
-          if (canvasCN) {
-            const imgCN = document.createElement('img');
-            imgCN.src = graficaExitacionBase64;
-            imgCN.alt = "Gráfica Exi";
-            imgCN.style.width = "100%"; // Opcional: ajusta el estilo si es necesario
-            canvasCN.replaceWith(imgCN);
+          const canvas = graficaExiContainer.querySelector('canvas');
+          if (canvas) {
+            const img = document.createElement('img');
+            img.src = graficaExitacionBase64;
+            img.alt = "Gráfica Exi";
+            img.style.width = "100%";
+            canvas.replaceWith(img);
           }
         }
-
       }
+
+
     }, 0);
 
     if (response.ok) {
@@ -227,107 +227,114 @@ export default function ReportsPage() {
 
   return (
     (
-      <div className="grid grid-cols-2 lg:grid-cols-1 gap-6">
-        <h1 className="text-3xl font-bold">Reportes</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuración del Reporte</CardTitle>
-            <CardDescription>Completa los datos necesarios para enviar el archivo</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Activo */}
-            <div className="space-y-2">
-              <Label htmlFor="activo">Activo</Label>
-              <Select value={activo} onValueChange={(value) => setActivo(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un activo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CT">CTs</SelectItem>
-                  <SelectItem value="PT">PTs</SelectItem>
-                  <SelectItem value="TRANS">Transformadores</SelectItem>
-                  {/* Agrega más si necesitas */}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Empresa */}
-            <div className="space-y-2">
-              <Label htmlFor="empresa">Empresa</Label>
-              <Input
-                id="empresa"
-                type="text"
-                placeholder="Nombre de la empresa"
-                value={tenant}
-                onChange={(e) => setTenant(e.target.value)}
-              />
-            </div>
-
-            {/* Usuario */}
-            <div className="space-y-2">
-              <Label htmlFor="userPoolId">Usuario</Label>
-              <Input
-                id="poolUserId"
-                type="text"
-                placeholder="Nombre del usuario"
-                value={poolUserId}
-                onChange={(e) => setPoolUserId(e.target.value)}
-              />
-            </div>
-
-            {/* Cargar archivo */}
-            <div className="space-y-2">
-              <Label>Archivo</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="archivo"
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null
-                    setArchivo(file)
-                  }}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById("archivo")?.click()}
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {archivoToFront ? archivoToFront.name : "Cargar archivo"}
-                </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Columna izquierda: Formulario */}
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Reportes</h1>
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuración del Reporte</CardTitle>
+              <CardDescription>Completa los datos necesarios para enviar el archivo</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Activo */}
+              <div className="space-y-2">
+                <Label htmlFor="activo">Activo</Label>
+                <Select value={activo} onValueChange={(value) => setActivo(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un activo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CT">CTs</SelectItem>
+                    <SelectItem value="PT">PTs</SelectItem>
+                    <SelectItem value="TRANS">Transformadores</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {archivoToFront && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FileText className="w-4 h-4" />
-                  <span>{archivoToFront.name}</span>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setArchivo(null)}>
-                    <X className="w-4 h-4" />
+              {/* Empresa */}
+              <div className="space-y-2">
+                <Label htmlFor="empresa">Empresa</Label>
+                <Input
+                  id="empresa"
+                  type="text"
+                  placeholder="Nombre de la empresa"
+                  value={tenant}
+                  onChange={(e) => setTenant(e.target.value)}
+                />
+              </div>
+
+              {/* Usuario */}
+              <div className="space-y-2">
+                <Label htmlFor="userPoolId">Usuario</Label>
+                <Input
+                  id="poolUserId"
+                  type="text"
+                  placeholder="Nombre del usuario"
+                  value={poolUserId}
+                  onChange={(e) => setPoolUserId(e.target.value)}
+                />
+              </div>
+
+              {/* Cargar archivo */}
+              <div className="space-y-2">
+                <Label>Archivo</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="archivo"
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null
+                      setArchivo(file)
+                    }}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("archivo")?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {archivoToFront ? archivoToFront.name : "Cargar archivo"}
                   </Button>
                 </div>
-              )}
-            </div>
 
-            {/* Botón Enviar */}
-            <div className="pt-4">
-              <Button
-                onClick={processFile}
-                disabled={!activo || !archivoToFront}
-                className="w-full"
-                variant="default"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Enviar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-             {resultadoHtml && (
-                <div dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
-            )}
+                {archivoToFront && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <FileText className="w-4 h-4" />
+                    <span>{archivoToFront.name}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setArchivo(null)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Botón Enviar */}
+              <div className="pt-4">
+                <Button
+                  onClick={processFile}
+                  disabled={!activo || !archivoToFront}
+                  className="w-full"
+                  variant="default"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Enviar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Columna derecha: Resultado HTML */}
+        {resultadoHtml && (
+          <div className="max-h-[600px] overflow-y-auto border rounded-lg p-4 shadow-inner">
+            <div dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
+          </div>
+        )}
       </div>
+
     )
   )
 }

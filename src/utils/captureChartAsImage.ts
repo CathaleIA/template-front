@@ -1,7 +1,7 @@
 
 
 import { Chart, ChartConfiguration, ChartOptions, registerables } from 'chart.js';
-
+import { GraficaDataExi } from "../types/typeReports"
 Chart.register(...registerables);
 
 export const generarGraficaBase64 = async (chartData: any, width: number = 600, height: number = 400): Promise<string> => {
@@ -83,7 +83,12 @@ export const convertirArchivoABase64 = (file: File): Promise<string> => {
 
 
 
-export const generarGraficaExiBase64 = async (chartData: any, width: number = 600, height: number = 400): Promise<string> => {
+
+export const generarGraficaExiBase64 = async (
+    chartData: GraficaDataExi,
+    width: number = 600,
+    height: number = 400
+): Promise<string> => {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -95,21 +100,25 @@ export const generarGraficaExiBase64 = async (chartData: any, width: number = 60
             resolve('');
             return;
         }
+
+
         const data = {
-            labels: chartData.puntosEjeX,
+            labels : chartData.puntosEjeX,
             datasets: [
                 {
                     label: chartData.title,
                     data: chartData.puntosEjeY,
-                    boderColor: getRandomColor(),
+                    borderColor: getRandomColor(),
                     borderWidth: 2,
                     fill: false,
-                }
-            ]
-        }
+                    tension: 0.1,
+                    pointRadius: 2,
+                },
+            ],
+        };
 
         const options: ChartOptions<'line'> = {
-            responsive: true,
+            responsive: false,
             maintainAspectRatio: false,
             plugins: {
                 title: {
@@ -119,27 +128,27 @@ export const generarGraficaExiBase64 = async (chartData: any, width: number = 60
             },
             scales: {
                 x: {
-                    type: 'logarithmic' as const, // ✅ Forzamos tipo literal
-                    position: 'bottom' as const,
+                    type: 'logarithmic',
                     title: {
                         display: true,
                         text: chartData.xAxisLabel,
                     },
+                    ticks: {
+                        callback: (value) => Number(value).toExponential(1),
+                    }
                 },
                 y: {
-                    type: 'logarithmic' as const, // ✅ Forzamos tipo literal
-                    position: 'left' as const,
+                    type: 'logarithmic',
                     title: {
                         display: true,
                         text: chartData.yAxisLabel,
                     },
-                },
-            },
-        }
-
-
-        // Espera un breve tiempo para asegurar que la gráfica se renderice
-
+                    ticks: {
+                        callback: (value) => Number(value).toExponential(1),
+                    }
+                }
+            }
+        };
         const config: ChartConfiguration<'line'> = {
             type: 'line',
             data,
@@ -148,11 +157,10 @@ export const generarGraficaExiBase64 = async (chartData: any, width: number = 60
 
         const chart = new Chart(ctx, config);
 
-        // Esperamos a que se dibuje completamente
         setTimeout(() => {
             const base64 = canvas.toDataURL('image/png');
             chart.destroy();
             resolve(base64);
-        }, 500); // Puedes ajustar este tiempo si es necesario
+        }, 500);
     });
 };
