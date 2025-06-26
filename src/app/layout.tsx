@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/context/LanguageContext"
 import { ThemeProvider } from "@/context/theme-provider"
 
 import "@/app/styles/globals.css"
+import { UserProvider } from "@/context/UserContext"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const poppins = Poppins({
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
@@ -41,12 +42,14 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
-            <div className="min-h-screen bg-background">
-              <main>{children}</main>
-            </div>
+            <UserProvider>
+              <div className="min-h-screen bg-background">
+                <main>{children}</main>
+              </div>
+            </UserProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

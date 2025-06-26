@@ -1,39 +1,28 @@
-
 import type React from "react"
-import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { DashboardNavbar } from "@/components/dashboard-navbar"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import ProtectedRoute from "@/context/ProtectedRoute"
 
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-
-  const protectedCookies = [
-    'cognito_access_token',
-    'cognito_id_token',
-    'cognito_refresh_token',
-    'cognito_expires_at',
-  ]
-
-  const cookiesList = await cookies();
-
-  const hasSession = protectedCookies.every((name) => cookiesList.has(name))
-
-  if (!hasSession) {
-    redirect('/select-tenant')
-  }
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <DashboardSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardNavbar />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+    <ProtectedRoute>
+      <div className="[--header-height:calc(theme(spacing.14))] min-h-screen overflow-hidden">
+        <SidebarProvider className="flex h-screen flex-col">
+          <SiteHeader />
+          <div className="flex flex-1 min-h-0">
+            <AppSidebar />
+            <SidebarInset className="flex flex-1 flex-col overflow-hidden">
+              <main className="flex-1 overflow-auto p-4">{children}</main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
       </div>
-    </div>
+    </ProtectedRoute>
+
   )
 }
