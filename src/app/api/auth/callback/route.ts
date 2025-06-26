@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         grant_type: "authorization_code",
         client_id: clientId,
         code: code,
-        redirect_uri: "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",  // <- puedes moverlo a env después
+        redirect_uri: "https://layoutshadcn.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",  // <- puedes moverlo a env después
       }),
     })
 
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     //Redirección final
     const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
       ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-      : "https://appui.d1ajb21hsxi2dm.amplifyapp.com/dashboard" 
+      : "https://layoutshadcn.d1ajb21hsxi2dm.amplifyapp.com/dashboard" 
 
     const redirectResponse = NextResponse.redirect(redirectUrl, {
       status: 302,
