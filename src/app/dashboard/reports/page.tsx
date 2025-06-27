@@ -17,7 +17,10 @@ import { Upload, FileText, X, Download, Calendar, User, Building } from "lucide-
 import { ApiResponse } from "../../../types/typeReports";
 import DOMPurify from 'isomorphic-dompurify';
 import { generarGraficaBase64, convertirArchivoABase64, generarGraficaExiBase64 } from "../../../utils/captureChartAsImage";
-
+import {AgregarConclusion} from '@/components/reports/report-conclucion';
+import { requestToRender } from "../../../types/typePdfRender"
+import { divToBase64 } from "@/utils/htmlTobase";
+import { a } from "@aws-amplify/backend"
 
 interface Comment {
   id: string
@@ -145,6 +148,7 @@ export default function ReportsPage() {
 
     const data: ApiResponse = await response.json();
     const sanitizedHtml = DOMPurify.sanitize(data.archivoHtml);
+    localStorage.setItem('report_id', data.report_id);
     console.log(data)
 
     const decodeHtml = (html: string): string => {
@@ -219,10 +223,27 @@ export default function ReportsPage() {
     // SI ES OTRO ENDPOINT DEBE CREAR UNA API NUEVA
   }
 
-  const generateReport = () => {
-    // ACA DEBE IMPLEMENTAR LA LOGICA PARA GENERAR EL REPORTE DESDE EL PREVIEW
-    // SI ES OTRO ENDPOINT DEBE CREAR UNA API NUEVA
-    console.log("Generando reporte con datos:", reportData)
+  const generateReport = async () => {
+    const archivoExtracBase = divToBase64('container_to_generate');
+    const reportId = localStorage.getItem('report_id');
+    try {
+      const response = await fetch('/api/down-pdf', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          archivoHtml : archivoExtracBase,
+          report_id: reportId,
+          fileName: 'fileName',
+          tenant_id: tenant,
+          poolUserId: poolUserId,
+        })
+      })
+      console.log("Se genero el archivo")
+
+    } catch (error) {
+      console.error("Error al procesar la solicitud:", error);
+      return ('error al descargar generar el PDF');
+    }
   }
 
   return (
@@ -323,16 +344,31 @@ export default function ReportsPage() {
                   Enviar
                 </Button>
               </div>
+              <AgregarConclusion />
+
+              <div className="pt-4">
+                <button
+                  onClick={() => generateReport()}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                >
+                  Generar Reporte
+                </button>
+              </div>
             </CardContent>
           </Card>
         </div>
-
+        <div id="container_to_generate">
+          
         {/* Columna derecha: Resultado HTML */}
         {resultadoHtml && (
-          <div className="max-h-[600px] overflow-y-auto border rounded-lg p-4 shadow-inner">
+          <div className="max-h-[800px] overflow-y-auto border rounded-lg p-4 shadow-inner">
             <div dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
           </div>
         )}
+
+        </div>
+
+
       </div>
 
     )
