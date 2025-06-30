@@ -2,7 +2,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthService, UserInfo } from '@/lib/auth-service';
+import { AuthService } from '@/lib/auth-service';
+
+import { UserInfo } from "@/types/user"
 
 interface UserContextType {
   userr: UserInfo | null;

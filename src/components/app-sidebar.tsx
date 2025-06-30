@@ -1,18 +1,6 @@
 "use client"
 
 import * as React from "react"
-import {
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings,
-  NotepadText,
-  ChartArea,
-} from "lucide-react"
-
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
@@ -28,127 +16,37 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/hacker.png",
-  },
-  navMain: [
-    {
-      title: "Generar Reportes",
-      url: "/dashboard/reports",
-      icon: NotepadText,
-      isActive: true,
-      items: [
-        {
-          title: "Listar reportes",
-          url: "#",
-        },
-        {
-          title: "Configuraciones",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Visualizacion Data",
-      url: "/dashboard/alerts",
-      icon: ChartArea,
-      items: [
-        {
-          title: "Snowflake",
-          url: "/dashboard/snowflake",
-        },
-        {
-          title: "Motul - SmartLub",
-          url: "#",
-        },
-        {
-          title: "Innovacion y Desarrollo",
-          url: "/dashboard/alerts",
-        },
-      ],
-    },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: BookOpen,
-    //   items: [
-    //     {
-    //       title: "Introduction",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Get Started",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Tutorials",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Changelog",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    {
-      title: "Settings",
-      url: "/dashboard/admin",
-      icon: Settings,
-      items: [
-        // {
-        //   title: "General",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Team",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Billing",
-        //   url: "#",
-        // },
-        {
-          title: "Limits",
-          url: "/dashboard/admin",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  // projects: [
-  //   {
-  //     name: "Design Engineering",
-  //     url: "#",
-  //     icon: Frame,
-  //   },
-  //   {
-  //     name: "Sales & Marketing",
-  //     url: "#",
-  //     icon: PieChart,
-  //   },
-  //   {
-  //     name: "Travel",
-  //     url: "#",
-  //     icon: Map,
-  //   },
-  // ],
-}
+import { useEffect, useState } from "react"
+import { useUser } from "@/context/UserContext"
+
+import { SIDEBAR_BY_TENANT } from '@/utils/sidebar-config'
+import type { SidebarData, NavUserData } from "@/types"
+
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { userr } = useUser();
+
+  const [sidebarData, setSidebarData] = useState<SidebarData | null>(null)
+
+  useEffect(() => {
+    const tenant = userr?.tenantName?.toLowerCase()
+
+    if (tenant && tenant in SIDEBAR_BY_TENANT) {
+      setSidebarData(SIDEBAR_BY_TENANT[tenant])
+    } else {
+      setSidebarData(null) // o SIDEBAR_BY_TENANT['default']
+    }
+  }, [userr?.tenantName])
+
+
+  const tenantLogo = userr?.tenantName ? `/logos/${userr?.tenantName}.svg` : "/cathaleia.png"
+  const navUserData: NavUserData = {
+    name: userr?.userName?.toString() ?? "Usuario",
+    email: userr?.email ?? "correo@desconocido.com",
+    avatar: "/avatars/default.png" // usa tu ruta preferida
+  }
+
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -159,12 +57,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
+                <div className="flex w-15 h-10 items-center justify-center rounded-md bg-white">
+                  <img
+                    src={tenantLogo}
+                    alt={`${"hola"} logo`}
+                    className="h-full object-contain px-2"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">{userr?.tenantName}</span>
+                  <span className="truncate text-xs">{userr?.tenantTier}</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -172,12 +74,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {sidebarData && <NavMain items={sidebarData.navMain} />}
+        {sidebarData?.projects && <NavProjects projects={sidebarData.projects} />}
+        {userr?.userRole === 'TenantAdmin' && sidebarData?.navSecondary && (
+          <NavSecondary items={sidebarData.navSecondary} className="mt-auto" />
+        )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={navUserData} />
       </SidebarFooter>
     </Sidebar>
   )

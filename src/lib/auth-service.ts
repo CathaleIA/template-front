@@ -1,21 +1,5 @@
-// lib/auth-service.ts
-export interface CognitoTokens {
-  access_token: string;
-  id_token: string;
-  refresh_token: string;
-  expires_at: number;
-}
-
-export interface UserInfo {
-  userId: string;
-  userName: string;
-  email: string;
-  tenantId: string;
-  userRole: string;
-  createdDate: string;
-  modifiedDate: string;
-  isEnabled: boolean;
-}
+import { UserInfo } from "@/types/user"
+import { CognitoTokens} from "@/types/tokens";
 
 export class AuthService {
   private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_REG_API_GATEWAY_URL;
@@ -86,14 +70,14 @@ export class AuthService {
         if (!newTokens) {
           return null;
         }
-        tokens.access_token = newTokens.access_token;
+        tokens.id_token = newTokens.id_token;
       }
 
       // Decodificar el ID token para obtener el username
       const payload = this.decodeJWT(tokens.id_token);
       const username = payload['cognito:username'] || payload.sub;
 
-      return await this.getUserByUsername(username, tokens.access_token);
+      return await this.getUserByUsername(username, tokens.id_token);
     } catch (error) {
       console.error('Error getting current user:', error);
       return null;
@@ -103,16 +87,14 @@ export class AuthService {
   /**
    * Obtiene información de un usuario por username
    */
-  static async getUserByUsername(username: string, accessToken?: string): Promise<UserInfo | null> {
+  static async getUserByUsername(username: string, token?: string): Promise<UserInfo | null> {
     try {
-      let token = accessToken;
-      
       if (!token) {
         const tokens = await this.getTokens();
         if (!tokens) {
-          throw new Error('No access token available');
+          throw new Error('No token available');
         }
-        token = tokens.access_token;
+        token = tokens.id_token;
       }
 
       const response = await fetch(`${this.API_BASE_URL}/user/${username}`, {
@@ -130,8 +112,24 @@ export class AuthService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data;
+      const raw = await response.json();
+      const data = raw.message;
+
+      //Normalizamos los campos snake_case a camelCase
+      const userInfo: UserInfo = {
+        userId: data.user_id ?? data.userId ?? '',  // si viene
+        userName: data.user_name,
+        email: data.email,
+        tenantId: data.tenant_id,
+        userRole: data.user_role,
+        createdDate: data.created ?? '',
+        modifiedDate: data.modified ?? '',
+        isEnabled: data.enabled ?? false,
+        tenantName: data.tenant_name ?? '',
+        tenantTier: data.tenant_tier ?? '',
+      };
+
+      return userInfo;
     } catch (error) {
       console.error('Error fetching user:', error);
       return null;
@@ -163,7 +161,6 @@ export class AuthService {
    */
   static async logout(): Promise<void> {
     try {
-      console.log("llamando a logout pi")
       await fetch('/api/auth/logout', {
         method: 'GET',
         credentials: 'include',
