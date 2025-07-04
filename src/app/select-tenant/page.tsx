@@ -82,26 +82,30 @@ export default function SelectTenantPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center min-h-[calc(100vh-3.5rem)] p-4 pt-10"
+      <div className="flex justify-center min-h-screen p-4 pt-40"
         style={{
           backgroundImage: "url('assets/background-grad.svg')",
           backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat"
         }}
       >
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="relative inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
-              <Building2 className="w-8 h-8 text-primary-foreground" />
-              <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
+          <div className="text-center">
+            <div className="mb-20">
+              <img
+                src="assets/logo-grad.svg"
+                alt="Logo de la empresa"
+                className="w-[150px] h-auto mx-auto"
+              />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Configurando Acceso</h1>
-            <p className="text-muted-foreground">Preparando tu entorno de trabajo</p>
+            <p className="text-muted-foreground pb-2">Preparando tu entorno de trabajo</p>
           </div>
 
-          <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
+          <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg ">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-xl text-center text-card-foreground">Procesando</CardTitle>
-              <CardDescription className="text-center text-muted-foreground">
+              <CardDescription className="text-center text-white">
                 Configurando tu acceso empresarial
               </CardDescription>
             </CardHeader>
@@ -116,32 +120,27 @@ export default function SelectTenantPage() {
               </div>
 
               <div className="space-y-3 text-sm">
-                <div className="flex items-center space-x-3 text-muted-foreground">
+                <div className="flex items-center space-x-3 text-white">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>Empresa identificada</span>
                 </div>
-                <div className="flex items-center space-x-3 text-muted-foreground">
+                <div className="flex items-center space-x-3 text-white">
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
                   <span>Configurando permisos</span>
                 </div>
-                <div className="flex items-center space-x-3 text-muted-foreground/60">
+                <div className="flex items-center space-x-3 text-white">
                   <div className="w-4 h-4 rounded-full border-2 border-border"></div>
                   <span>Iniciando sesión</span>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-border">
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-xs text-center text-foreground">
                   Este proceso puede tomar unos segundos...
                 </p>
               </div>
             </CardContent>
           </Card>
-
-          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
-          </div>
         </div>
       </div>
     )
@@ -149,7 +148,7 @@ export default function SelectTenantPage() {
 
   return (
 
-    <div className="flex justify-center min-h-screen p-4 pt-10"
+    <div className="flex justify-center min-h-screen p-4 pt-40"
       style={{
         backgroundImage: "url('assets/background-grad.svg')",
         backgroundSize: "cover",
@@ -157,23 +156,19 @@ export default function SelectTenantPage() {
         backgroundRepeat: "no-repeat"
       }}
     >
-      <div className="absolute inset-0 z-0 flex items-center justify-center">
-        <div className="w-full h-full bg-white/2 rounded-2xl blur-xs animate-ping" />
-      </div>
-
       <div className="w-full max-w-md">
         <div className="text-center">
           <div className="mb-20">
             <img
               src="assets/logo-grad.svg"
               alt="Logo de la empresa"
-              className="w-auto h-auto mx-auto"
+              className="w-[150px] h-auto mx-auto"
             />
           </div>
-          <p className="text-muted-foreground">Preparando tu entorno de trabajo</p>
+          <p className="text-muted-foreground pb-2">Preparando tu entorno de trabajo</p>
         </div>
 
-        <Card className="shadow-xl border-none bg-white/10 backdrop-blur-lg ">
+        <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg ">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl text-center font-bold uppercase text-white">
               SELECCIONAR EMPRESA
