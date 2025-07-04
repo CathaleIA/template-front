@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Upload, FileText, X, Download, Building, Eye, Loader2, BarChart3 } from "lucide-react"
 import { ImprovedConclusions } from "@/components/reports/improved-conclusions"
-
 // Reports
 import type { ApiResponse } from "../../../types/typeReports"
 import DOMPurify from "isomorphic-dompurify"
@@ -24,7 +23,7 @@ import { downloadBase64File, openBase64Pdf } from "@/utils/file-download-utils"
 import { divToBase64 } from "@/utils/htmlTobase"
 
 export default function ReportsPage() {
-  //Elidev
+  // Estados y lógica del componente
   const [activo, setActivo] = useState("")
   const [tenant, setTenant] = useState("")
   const [poolUserId, setPoolUserId] = useState("")
@@ -35,24 +34,18 @@ export default function ReportsPage() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [pdfBase64, setPdfBase64] = useState<string>("")
   const [isDownloading, setIsDownloading] = useState(false)
-
   const tenantLocalHost = localStorage.getItem("tenant") || tenant
   const { userr } = useUser()
 
+  // Función para procesar el archivo
   const processFile = async () => {
     if (!archivoToFront) {
       alert("Por favor, seleccionar un archivo")
       return
     }
-
-    setIsProcessing(true) // ← AGREGAR ESTA LÍNEA
-
+    setIsProcessing(true)
     try {
-      // aca estamos tomando el dato que viene del formulario para procesarlo al momento de enviarlo
       const archivoToFrontBase64 = await convertirArchivoABase64(archivoToFront)
-
-      // enviamos los datos al backend que es donde esta implementado el apiextorno
-      // aca configuramos un api interno
       const response = await fetch("/api/render-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,21 +56,17 @@ export default function ReportsPage() {
           archivoToFront: archivoToFrontBase64,
         }),
       })
-
       const data: ApiResponse = await response.json()
       const sanitizedHtml = DOMPurify.sanitize(data.archivoHtml)
       localStorage.setItem("report_id", data.report_id)
       console.log(data)
-
       const decodeHtml = (html: string): string => {
         const txt = document.createElement("textarea")
         txt.innerHTML = html
         return txt.value
       }
-
       setResultadoHtml(decodeHtml(sanitizedHtml))
 
-      // Generacion de pdf y graficas
       setTimeout(async () => {
         if (data.graficaCNData) {
           const graficaCNBase64 = await generarGraficaBase64(data.graficaCNData)
@@ -96,7 +85,6 @@ export default function ReportsPage() {
             }
           }
         }
-
         if (data.graficaRCNData) {
           const graficaRCNBase64 = await generarGraficaBase64(data.graficaRCNData)
           const graficaRCNContiner = document.getElementById("graficaRCNChart-container")
@@ -114,7 +102,6 @@ export default function ReportsPage() {
             }
           }
         }
-
         if (data.graficaDataExi) {
           const graficaExitacionBase64 = await generarGraficaExiBase64(data.graficaDataExi)
           const graficaExiContainer = document.getElementById("graficaExiChart-container")
@@ -143,22 +130,20 @@ export default function ReportsPage() {
       console.error("Error al procesar:", error)
       alert("Error al procesar el archivo")
     } finally {
-      setIsProcessing(false) // ← AGREGAR ESTA LÍNEA
+      setIsProcessing(false)
     }
   }
 
+  // Generar reporte PDF
   const generateReport = async () => {
     if (!resultadoHtml || !fileName.trim()) {
       alert("Asegúrate de haber procesado un archivo y especificado un nombre")
       return
     }
-
-    setIsGeneratingPdf(true) // ← AGREGAR ESTA LÍNEA
-
+    setIsGeneratingPdf(true)
     try {
       const archivoExtracBase = divToBase64("container_to_generate")
       const reportId = localStorage.getItem("report_id")
-
       const response = await fetch("/api/down-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,15 +155,11 @@ export default function ReportsPage() {
           poolUserId: userr?.userName,
         }),
       })
-
       if (response.ok) {
         const data = await response.json()
-
-        // Si tu API devuelve el base64 del PDF, guárdalo
         if (data.base64File) {
           setPdfBase64(data.base64File)
         }
-
         console.log("Se generó el archivo")
         alert("PDF generado correctamente")
       } else {
@@ -188,23 +169,19 @@ export default function ReportsPage() {
       console.error("Error al procesar la solicitud:", error)
       alert("Error al generar el PDF")
     } finally {
-      setIsGeneratingPdf(false) // ← AGREGAR ESTA LÍNEA
+      setIsGeneratingPdf(false)
     }
   }
 
-  // Función simple para descargar
+  // Descargar archivo
   const handleDownload = async (e: React.MouseEvent) => {
     e.preventDefault()
-
     if (!fileName.trim()) {
       alert("Especifica un nombre para el archivo")
       return
     }
-
     setIsDownloading(true)
-
     try {
-      // Si ya tienes el base64 del PDF
       if (pdfBase64) {
         const success = downloadBase64File(pdfBase64, `${fileName}.pdf`)
         if (success) {
@@ -213,7 +190,6 @@ export default function ReportsPage() {
           alert("Error al descargar el archivo")
         }
       } else {
-        // Si necesitas obtenerlo de tu API de descarga
         const reportId = localStorage.getItem("report_id")
         const response = await fetch("/api/down-file-pdf", {
           method: "POST",
@@ -221,10 +197,9 @@ export default function ReportsPage() {
           body: JSON.stringify({
             userPoolId: userr?.userName,
             tenantName: tenantLocalHost,
-            key: `${fileName}.pdf`, // Ajusta según tu estructura
+            key: `${fileName}.pdf`,
           }),
         })
-
         if (response.ok) {
           const data = await response.json()
           const success = downloadBase64File(data.base64File, data.fileName || `${fileName}.pdf`)
@@ -245,10 +220,9 @@ export default function ReportsPage() {
     }
   }
 
-  // Función para vista previa
+  // Vista previa
   const handlePreview = async (e: React.MouseEvent) => {
     e.preventDefault()
-
     if (pdfBase64) {
       openBase64Pdf(pdfBase64)
     } else {
@@ -267,9 +241,10 @@ export default function ReportsPage() {
             </div>
             <h1 className="text-4xl font-bold text-foreground">Generador de Reportes</h1>
           </div>
-          <p className="text-muted-foreground text-lg">Configura y genera reportes técnicos de manera eficiente</p>
+          <p className="text-muted-foreground text-lg">
+            Configura y genera reportes técnicos de manera eficiente
+          </p>
         </div>
-
         <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
           {/* Columna izquierda: Formulario - 43% */}
           <div className="xl:col-span-3 space-y-6">
@@ -300,7 +275,6 @@ export default function ReportsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="empresa" className="text-sm font-semibold text-foreground">
                     Empresa
@@ -314,7 +288,6 @@ export default function ReportsPage() {
                     className="h-11"
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="fileName" className="text-sm font-semibold text-foreground">
                     Nombre del Archivo
@@ -328,7 +301,6 @@ export default function ReportsPage() {
                     className="h-11"
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="userPoolId" className="text-sm font-semibold text-foreground">
                     Usuario
@@ -342,7 +314,6 @@ export default function ReportsPage() {
                     className="h-11"
                   />
                 </div>
-
                 {/* Cargar archivo */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-foreground">Archivo de Datos</Label>
@@ -384,9 +355,7 @@ export default function ReportsPage() {
                     )}
                   </div>
                 </div>
-
                 <Separator />
-
                 {/* Botones de acción */}
                 <div className="space-y-3">
                   <Button
@@ -409,9 +378,7 @@ export default function ReportsPage() {
                       </>
                     )}
                   </Button>
-
                   <ImprovedConclusions />
-
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
@@ -432,7 +399,6 @@ export default function ReportsPage() {
                       </>
                     )}
                   </Button>
-
                   {/* Botones simples de descarga */}
                   <div className="flex gap-2">
                     <Button
@@ -461,7 +427,6 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
           </div>
-
           {/* Columna derecha: Vista previa del reporte - 57% */}
           <div className="xl:col-span-4 space-y-6">
             <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm h-full">
@@ -471,7 +436,9 @@ export default function ReportsPage() {
                   Vista Previa del Reporte
                 </CardTitle>
                 <CardDescription className="text-background/80">
-                  {resultadoHtml ? "Reporte generado exitosamente" : "El reporte aparecerá aquí una vez procesado"}
+                  {resultadoHtml
+                    ? "Reporte generado exitosamente"
+                    : "El reporte aparecerá aquí una vez procesado"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
@@ -507,7 +474,7 @@ export default function ReportsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span>Haz clic en "Procesar Archivo"</span>
+                        <span>Haz clic en &quot;Procesar Archivo&quot;</span>
                       </div>
                     </div>
                   </div>
