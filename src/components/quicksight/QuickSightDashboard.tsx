@@ -8,35 +8,35 @@ const QuickSightDashboard = () => {
     const [error, setError] = useState<string | null>(null);
     const dashboardContainerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        // Fetch the embed URL
-        const fetchEmbedUrl = async () => {
-            try {
-                setIsLoading(true);
-                console.log('Fetching embed URL...');
+    // useEffect(() => {
+    //     // Fetch the embed URL
+    //     const fetchEmbedUrl = async () => {
+    //         try {
+    //             setIsLoading(true);
+    //             console.log('Fetching embed URL...');
                 
-                const response = await fetch('/api/quicksight/generateEmbedUrl');
+    //             const response = await fetch('/api/quicksight/generateEmbedUrl');
                 
-                if (!response.ok) {
-                    console.error('API response not OK:', response.status, response.statusText);
-                    const errorText = await response.text();
-                    console.error('Error text:', errorText);
-                    throw new Error(`API responded with status ${response.status}: ${errorText}`);
-                }
+    //             if (!response.ok) {
+    //                 console.error('API response not OK:', response.status, response.statusText);
+    //                 const errorText = await response.text();
+    //                 console.error('Error text:', errorText);
+    //                 throw new Error(`API responded with status ${response.status}: ${errorText}`);
+    //             }
                 
-                const data = await response.json();
-                console.log('Received embed URL data:', data);
-                setEmbedUrl(data.embedUrl);
-            } catch (error) {
-                console.error('Error fetching embed URL:', error);
-                setError(error instanceof Error ? error.message : 'Unknown error occurred');
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    //             const data = await response.json();
+    //             console.log('Received embed URL data:', data);
+    //             setEmbedUrl(data.embedUrl);
+    //         } catch (error) {
+    //             console.error('Error fetching embed URL:', error);
+    //             setError(error instanceof Error ? error.message : 'Unknown error occurred');
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
         
-        fetchEmbedUrl();
-    }, []);
+    //     fetchEmbedUrl();
+    // }, []);
 
     useEffect(() => {
         // Embed the dashboard when URL is available
