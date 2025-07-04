@@ -23,7 +23,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "Copower Dashboard",
+  title: "Cathaleia dashboard",
   description: "App web, managed your analisis data company",
   icons: {
     icon: "/favicon.ico",
