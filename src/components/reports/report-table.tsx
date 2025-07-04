@@ -1,5 +1,4 @@
 "use client"
-
 import * as React from "react"
 import { extractPdfFiles } from "@/lib/pdf-utlis"
 import type { PdfFile } from "@/types/typeListDocs"
@@ -25,7 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronDown, Download, FileText, Loader2, Search, Filter } from "lucide-react"
+import { ChevronDown, Download, Loader2, Search, Filter } from "lucide-react"
+import Image from "next/image" // Importamos el componente Image de next/image
 
 // Función para manejar descarga (puedes personalizar según tu lógica)
 const handleDownload = (file: PdfFile) => {
@@ -40,7 +40,14 @@ const columns: ColumnDef<PdfFile>[] = [
     header: "Archivo",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <FileText className="w-4 h-4 text-primary" />
+        {/* Reemplazamos <FileText /> con <Image /> */}
+        <Image
+          src="/icons/file-text-icon.png" // Ruta a un ícono de archivo (ajusta según tu proyecto)
+          alt="Archivo"
+          width={16}
+          height={16}
+          className="text-primary"
+        />
         <span className="font-medium">{row.getValue("fileName")}</span>
       </div>
     ),
@@ -153,7 +160,13 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
       <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
         <CardHeader className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg">
           <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
+            {/* Reemplazamos <FileText /> con <Image /> */}
+            <Image
+              src="/icons/file-text-icon.png" // Ruta a un ícono de archivo (ajusta según tu proyecto)
+              alt="Archivos PDF"
+              width={20}
+              height={20}
+            />
             Archivos PDF
           </CardTitle>
           <CardDescription className="text-primary-foreground/80">
@@ -181,7 +194,6 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
               )}
             </Button>
           </div>
-
           {/* Mostrar la tabla solo si hay datos */}
           {data.length > 0 && (
             <>
@@ -224,7 +236,6 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-
               {/* Tabla */}
               <div className="rounded-lg border border-border overflow-hidden">
                 <Table>
@@ -256,7 +267,14 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
                       <TableRow>
                         <TableCell colSpan={columns.length} className="text-center py-12 text-muted-foreground">
                           <div className="flex flex-col items-center gap-2">
-                            <FileText className="w-12 h-12 text-muted-foreground/50" />
+                            {/* Reemplazamos <FileText /> con <Image /> */}
+                            <Image
+                              src="/icons/file-text-icon.png" // Ruta a un ícono de archivo (ajusta según tu proyecto)
+                              alt="No hay archivos PDF"
+                              width={48}
+                              height={48}
+                              className="text-muted-foreground/50"
+                            />
                             <p className="text-lg font-medium">No hay archivos PDF</p>
                             <p className="text-sm">Los archivos aparecerán aquí una vez cargados</p>
                           </div>
@@ -266,7 +284,6 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
                   </TableBody>
                 </Table>
               </div>
-
               {/* Paginación */}
               {table.getPageCount() > 1 && (
                 <div className="flex items-center justify-between px-2">
@@ -297,12 +314,18 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
               )}
             </>
           )}
-
           {/* Estado cuando no hay datos y no está cargando */}
           {data.length === 0 && !loading && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
-                <FileText className="w-12 h-12 text-muted-foreground" />
+                {/* Reemplazamos <FileText /> con <Image /> */}
+                <Image
+                  src="/icons/file-text-icon.png" // Ruta a un ícono de archivo (ajusta según tu proyecto)
+                  alt="No hay archivos cargados"
+                  width={48}
+                  height={48}
+                  className="text-muted-foreground"
+                />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">No hay archivos cargados</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
