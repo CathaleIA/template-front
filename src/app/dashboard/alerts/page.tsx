@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, Fuel, TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, Fuel, TrendingUp, TrendingDown, Minus, BarChart3, ZoomIn } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Area, ComposedChart, ReferenceLine } from "recharts";
-
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Area, ComposedChart, ReferenceLine, AreaChart,  PieChart, Pie, Cell } from "recharts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 // Define threshold types and interfaces
 type AlertLevel = "normal" | "warning" | "danger";
 
@@ -70,19 +70,25 @@ interface HistoricalStats {
   trend: 'up' | 'down' | 'stable';
 }
 
+interface Anomaly {
+  timestamp: string;
+  value: number;
+  level: AlertLevel;
+}
+
 // Define thresholds for each metric with operational zones
 const thresholds = {
   temperaturaAgua: { 
     min: 0, 
-    normal: 105, 
-    warning: 120, 
-    danger: 170, 
+    normal: 50, 
+    warning: 100, 
+    danger: 120, 
     max: 200 
   },
   temperaturaAceite: { 
     min: 0, 
-    normal: 90, 
-    warning: 110, 
+    normal: 70, 
+    warning: 100, 
     danger: 130, 
     max: 150 
   },
@@ -95,9 +101,9 @@ const thresholds = {
   },
   rpm: { 
     min: 0, 
-    normal: 6000, 
-    warning: 6500, 
-    danger: 7000, 
+    normal: 2000, 
+    warning: 40000, 
+    danger: 5000, 
     max: 8000 
   },
   voltajeBateria: { 
@@ -165,7 +171,7 @@ const thresholds = {
   },
 };
 
-// Map historical data fields to current data fields
+
 const fieldMapping = {
   rpm: 'revoluciones',
   temperaturaAgua: 'temperatura',
@@ -174,7 +180,23 @@ const fieldMapping = {
   presionAceite: 'presionAceite'
 };
 
-// Function to determine alert level
+
+const metricDescriptions: Record<string, string> = {
+  rpm: "Mide las revoluciones por minuto del motor. Valores altos pueden indicar sobreesfuerzo.",
+  temperaturaAgua: "Muestra la temperatura del agua de enfriamiento. Temperaturas elevadas pueden causar sobrecalentamiento.",
+  temperaturaAceite: "Indica la temperatura del aceite del motor. Niveles altos pueden dañar componentes internos.",
+  presionAceite: "Mide la presión del aceite. Valores bajos pueden indicar problemas de lubricación.",
+  voltajeBateria: "Muestra el voltaje de la batería. Niveles bajos pueden afectar el sistema eléctrico.",
+  consumoCombustibleLh: "Indica el consumo de combustible por hora. Valores altos pueden señalar ineficiencia.",
+  temperaturaEGT: "Mide la temperatura de los gases de escape. Valores altos pueden indicar problemas de combustión.",
+  presionCombustible: "Muestra la presión del sistema de combustible. Niveles bajos pueden afectar el rendimiento.",
+  presionTurbo: "Indica la presión del turbocompresor. Valores fuera de rango pueden dañar el motor.",
+  lambda: "Mide la relación aire-combustible. Valores fuera de rango pueden indicar mezcla ineficiente.",
+  tiempoInyeccionMs: "Tiempo de inyección de combustible. Valores altos pueden indicar problemas en el sistema de combustible.",
+  tiempoEncendidoAvance: "Mide el avance del encendido. Valores fuera de rango pueden afectar la eficiencia."
+};
+
+
 const getAlertLevel = (value: number, metric: keyof typeof thresholds): AlertLevel => {
   const limits = thresholds[metric];
   
@@ -189,7 +211,7 @@ const getAlertLevel = (value: number, metric: keyof typeof thresholds): AlertLev
   }
 };
 
-// Get color class based on alert level
+
 const getColorClass = (alertLevel: AlertLevel): string => {
   switch (alertLevel) {
     case "normal":
@@ -203,7 +225,7 @@ const getColorClass = (alertLevel: AlertLevel): string => {
   }
 };
 
-// Calculate historical statistics
+
 const calculateStats = (historicalData: HistoricalDataPoint[], field: string, currentValue: number): HistoricalStats => {
   const values = historicalData.map(item => item[field as keyof HistoricalDataPoint] as number).filter(val => typeof val === 'number' && !isNaN(val));
   
@@ -215,12 +237,11 @@ const calculateStats = (historicalData: HistoricalDataPoint[], field: string, cu
   const min = Math.min(...values);
   const max = Math.max(...values);
   
-  // Calculate trend based on recent values vs average
-  const recentValues = values.slice(-10); // Last 10 readings
+  const recentValues = values.slice(-10);
   const recentAvg = recentValues.length > 0 ? recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length : avg;
   
   let trend: 'up' | 'down' | 'stable' = 'stable';
-  const trendThreshold = avg * 0.05; // 5% threshold
+  const trendThreshold = avg * 0.05;
   
   if (recentAvg > avg + trendThreshold) trend = 'up';
   else if (recentAvg < avg - trendThreshold) trend = 'down';
@@ -228,14 +249,24 @@ const calculateStats = (historicalData: HistoricalDataPoint[], field: string, cu
   return { avg: Number(avg.toFixed(2)), min, max, current: currentValue, trend };
 };
 
+// Detect anomalies in chart data
+const detectAnomalies = (chartData: any[], metric: keyof typeof thresholds): Anomaly[] => {
+  return chartData
+    .map(data => ({
+      timestamp: data.time,
+      value: data.value,
+      level: getAlertLevel(data.value, metric)
+    }))
+    .filter(anomaly => anomaly.level !== "normal");
+};
+
 // Generate threshold chart data
 const generateThresholdData = (currentValue: number, metric: keyof typeof thresholds, count = 15) => {
   const limits = thresholds[metric];
-  const result = [];
+  const result = []; // Fixed variable name from 'resultgester' to 'result'
   let baseValue = currentValue;
   
   for (let i = 0; i < count; i++) {
-    // Add some variation to simulate real data
     baseValue += (Math.random() - 0.5) * (currentValue * 0.05);
     baseValue = Math.max(limits.min, Math.min(limits.max, baseValue));
     
@@ -251,6 +282,390 @@ const generateThresholdData = (currentValue: number, metric: keyof typeof thresh
   }
   
   return result.reverse();
+};
+
+interface GaugeChartProps {
+  value: number;
+  max: number;
+  unit: string;
+  title: string;
+  alertLevel: AlertLevel;
+}
+
+const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertLevel }) => {
+  // Configuración de zonas
+  const dangerThreshold = max * 0.8; // 80% del máximo
+  const warningThreshold = max * 0.6; // 60% del máximo
+  
+  // Crear datos para el medidor
+  const percentage = (value / max) * 100;
+  const emptyPercentage = 100 - percentage;
+  
+  const data = [
+    { name: 'value', value: percentage, color: getColor() },
+    { name: 'empty', value: emptyPercentage, color: '#374151' }
+  ];
+  
+  function getColor() {
+    if (value >= dangerThreshold) return '#EF4444';
+    if (value >= warningThreshold) return '#F59E0B';
+    return '#22C55E';
+  }
+  
+  // Crear datos para las zonas de fondo
+  const backgroundData = [
+    { name: 'danger', value: 20, color: '#DC2626' },
+    { name: 'warning', value: 20, color: '#D97706' },
+    { name: 'normal', value: 60, color: '#059669' }
+  ];
+  
+  const formatValue = (val: number) => {
+    if (val >= 1000) return `${(val/1000).toFixed(1)}k`;
+    return val.toFixed(val < 10 ? 1 : 0);
+  };
+  
+  return (
+    <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4 rounded-xl shadow-2xl border border-gray-700">
+      <h3 className="text-gray-200 text-sm font-semibold mb-2 text-center">{title}</h3>
+      
+      <div className="relative w-full h-32">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            {/* Fondo con zonas de color */}
+            <Pie
+              data={backgroundData}
+              cx="50%"
+              cy="70%"
+              startAngle={180}
+              endAngle={0}
+              innerRadius="60%"
+              outerRadius="75%"
+              dataKey="value"
+              stroke="none"
+            >
+              {backgroundData.map((entry, index) => (
+                <Cell key={`bg-${index}`} fill={entry.color} opacity={0.3} />
+              ))}
+            </Pie>
+            
+            {/* Medidor principal */}
+            <Pie
+              data={data}
+              cx="50%"
+              cy="70%"
+              startAngle={180}
+              endAngle={0}
+              innerRadius="60%"
+              outerRadius="75%"
+              dataKey="value"
+              stroke="none"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`main-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
+          <div className="text-white text-2xl font-bold">
+            {formatValue(value)}
+          </div>
+          <div className="text-gray-300 text-sm font-medium">
+            {unit}
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            {alertLevel === "normal" ? "NORMAL" : alertLevel === "warning" ? "ADVERTENCIA" : "PELIGRO"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Reusable Threshold Chart Component
+interface ThresholdChartProps {
+  title: string;
+  value: number;
+  unit: string;
+  metric: keyof typeof thresholds;
+  icon: React.ReactNode;
+  chartKey: string;
+  chartData: any[];
+  stats?: HistoricalStats;
+}
+
+const ThresholdChart: React.FC<ThresholdChartProps> = ({
+  title,
+  value,
+  unit,
+  metric,
+  icon,
+  chartKey,
+  chartData,
+  stats
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const alertLevel = getAlertLevel(value, metric);
+  const colorClass = getColorClass(alertLevel);
+  const limits = thresholds[metric];
+  const isLowerBetter = metric === "voltajeBateria" || metric === "presionAceite" || metric === "presionCombustible";
+  const anomalies = detectAnomalies(chartData, metric);
+
+  const renderTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+      case 'up':
+        return <TrendingUp className="h-4 w-4 text-red-500" />;
+      case 'down':
+        return <TrendingDown className="h-4 w-4 text-green-500" />;
+      default:
+        return <Minus className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
+          <p className="text-gray-300 text-sm">{`Tiempo: ${label}`}</p>
+          <p className="text-blue-400 font-semibold">{`Valor: ${data.value}`}</p>
+          <div className="mt-2 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-green-500 rounded"></div>
+              <span className="text-green-400">Normal: ≤ {data.normalZone}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-yellow-500 rounded"></div>
+              <span className="text-yellow-400">Advertencia: ≤ {data.warningZone}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-2 bg-red-500 rounded"></div>
+              <span className="text-red-400">Peligro: ≤ {data.dangerZone}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <>
+      <Card className="overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className={colorClass}>{icon}</div>
+            <button onClick={() => setIsModalOpen(true)} className="text-gray-500 hover:text-gray-300">
+              <ZoomIn className="h-5 w-5" />
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold mb-2">
+            <span className={colorClass}>{value}</span> {unit}
+            {stats && (
+              <div className="ml-2 inline-flex items-center">
+                {renderTrendIcon(stats.trend)}
+              </div>
+            )}
+          </div>
+          
+          {stats && (
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
+              <div>
+                <p className="font-medium">Promedio</p>
+                <p>{stats.avg} {unit}</p>
+              </div>
+              <div>
+                <p className="font-medium">Mínimo</p>
+                <p>{stats.min} {unit}</p>
+              </div>
+              <div>
+                <p className="font-medium">Máximo</p>
+                <p>{stats.max} {unit}</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="mt-4 h-32">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#9ca3af" 
+                  tick={{ fontSize: 10 }}
+                />
+                <YAxis 
+                  stroke="#9ca3af" 
+                  domain={[limits.min, limits.max]}
+                  tick={{ fontSize: 10 }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey={() => limits.max}
+                  fill="rgba(239, 68, 68, 0.2)" 
+                  stroke="none"
+                />
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.danger : limits.danger} 
+                  stroke="#ef4444" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.warning : limits.warning} 
+                  stroke="#f59e0b" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                <ReferenceLine 
+                  y={isLowerBetter ? limits.normal : limits.normal} 
+                  stroke="#10b981" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke={
+                    alertLevel === "normal" ? "#10b981" : 
+                    alertLevel === "warning" ? "#f59e0b" : 
+                    "#ef4444"
+                  } 
+                  strokeWidth={3} 
+                  dot={{ r: 2 }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="mt-4 text-xs">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-green-500 rounded"></div>
+                <span className="text-green-500">Normal</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-yellow-500 rounded"></div>
+                <span className="text-yellow-500">Advertencia</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-2 bg-red-500 rounded"></div>
+                <span className="text-red-500">Peligro</span>
+              </div>
+            </div>
+          </div>
+          
+          <CardDescription className="pt-2">
+            {metricDescriptions[metric]}
+            <br />
+            {alertLevel === "normal" && "Estado: Área operativa normal"}
+            {alertLevel === "warning" && "¡Atención! Área de advertencia"}
+            {alertLevel === "danger" && "¡ALERTA! Área de peligro"}
+          </CardDescription>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{title} - Vista Detallada</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#9ca3af" 
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="#9ca3af" 
+                    domain={[limits.min, limits.max]}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey={() => limits.max}
+                    fill="rgba(239, 68, 68, 0.2)" 
+                    stroke="none"
+                  />
+                  <ReferenceLine 
+                    y={isLowerBetter ? limits.danger : limits.danger} 
+                    stroke="#ef4444" 
+                    strokeDasharray="5 5"
+                    strokeWidth={1}
+                  />
+                  <ReferenceLine 
+                    y={isLowerBetter ? limits.warning : limits.warning} 
+                    stroke="#f59e0b" 
+                    strokeDasharray="5 5"
+                    strokeWidth={1}
+                  />
+                  <ReferenceLine 
+                    y={isLowerBetter ? limits.normal : limits.normal} 
+                    stroke="#10b981" 
+                    strokeDasharray="5 5"
+                    strokeWidth={1}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke={
+                      alertLevel === "normal" ? "#10b981" : 
+                      alertLevel === "warning" ? "#f59e0b" : 
+                      "#ef4444"
+                    } 
+                    strokeWidth={3} 
+                    dot={{ r: 4 }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Resumen de Anomalías</h3>
+              {anomalies.length > 0 ? (
+                <div className="space-y-2">
+                  {anomalies.map((anomaly, index) => (
+                    <Alert key={index} variant={anomaly.level === "danger" ? "destructive" : "default"}>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>{anomaly.level === "danger" ? "Alerta Crítica" : "Advertencia"}</AlertTitle>
+                      <AlertDescription>
+                        Detectada a las {anomaly.timestamp}: Valor {anomaly.value} {unit} ({anomaly.level === "danger" ? "Zona de peligro" : "Zona de advertencia"})
+                      </AlertDescription>
+                    </Alert>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No se detectaron anomalías recientes.</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Descripción</h3>
+              <p className="text-gray-600">{metricDescriptions[metric]}</p>
+              <p className="text-gray-600 mt-2">
+                Rangos operativos:
+                <ul className="list-disc list-inside mt-1">
+                  <li className="text-green-500">Normal: hasta {limits.normal} {unit}</li>
+                  <li className="text-yellow-500">Advertencia: hasta {limits.warning} {unit}</li>
+                  <li className="text-red-500">Peligro: hasta {limits.danger} {unit}</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 };
 
 export default function EnhancedAlertsPage() {
@@ -275,7 +690,6 @@ export default function EnhancedAlertsPage() {
         const jsonData = await response.json();
         setData(jsonData);
         
-        // Generate threshold chart data for various metrics
         const newChartData: Record<string, any[]> = {
           temperaturaAgua: generateThresholdData(jsonData.motor.temperaturaAgua, 'temperaturaAgua'),
           temperaturaAceite: generateThresholdData(jsonData.motor.temperaturaAceite, 'temperaturaAceite'),
@@ -307,7 +721,6 @@ export default function EnhancedAlertsPage() {
 
     fetchData();
     
-    // Set up interval to refresh data every 30 seconds
     const interval = setInterval(fetchData, 300000);
     
     return () => clearInterval(interval);
@@ -325,11 +738,9 @@ export default function EnhancedAlertsPage() {
       const historicalJsonData = await response.json();
       setHistoricalData(historicalJsonData);
       
-      // Calculate statistics for each metric if we have current data
       if (data) {
         const stats: Record<string, HistoricalStats> = {};
         
-        // Calculate stats for mapped fields
         Object.entries(fieldMapping).forEach(([currentField, historicalField]) => {
           const currentValue = data.motor[currentField as keyof typeof data.motor] as number;
           stats[currentField] = calculateStats(historicalJsonData, historicalField, currentValue);
@@ -344,220 +755,6 @@ export default function EnhancedAlertsPage() {
     }
   };
 
-  // Custom Tooltip for threshold charts
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
-          <p className="text-gray-300 text-sm">{`Tiempo: ${label}`}</p>
-          <p className="text-blue-400 font-semibold">{`Valor: ${data.value}`}</p>
-          <div className="mt-2 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-2 bg-green-500 rounded"></div>
-              <span className="text-green-400">Normal: ≤ {data.normalZone}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-2 bg-yellow-500 rounded"></div>
-              <span className="text-yellow-400">Advertencia: ≤ {data.warningZone}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-2 bg-red-500 rounded"></div>
-              <span className="text-red-400">Peligro: ≤ {data.dangerZone}</span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Render loading state
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-        <h2 className="text-xl font-semibold">Cargando datos del motor...</h2>
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    return (
-      <div className="container mx-auto p-4">
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangle className="h-6 w-6" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            No se pudieron cargar los datos: {error}
-          </AlertDescription>
-        </Alert>
-        <button 
-          onClick={() => window.location.reload()}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Reintentar
-        </button>
-      </div>
-    );
-  }
-
-  // Render data
-  if (!data) return null;
-
-  // Function to render trend icon
-  const renderTrendIcon = (trend: 'up' | 'down' | 'stable') => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-4 w-4 text-red-500" />;
-      case 'down':
-        return <TrendingDown className="h-4 w-4 text-green-500" />;
-      default:
-        return <Minus className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  // Function to render threshold chart
-  const renderThresholdChart = (
-    title: string, 
-    value: number, 
-    unit: string, 
-    metric: keyof typeof thresholds,
-    icon: React.ReactNode,
-    chartKey: string
-  ) => {
-    const alertLevel = getAlertLevel(value, metric);
-    const colorClass = getColorClass(alertLevel);
-    const stats = historicalStats[metric];
-    const data = chartData[chartKey] || [];
-    const limits = thresholds[metric];
-    
-    // Determine if it's a "lower is better" metric
-    const isLowerBetter = metric === "voltajeBateria" || metric === "presionAceite" || metric === "presionCombustible";
-    
-    return (
-      <Card className="overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          <div className={colorClass}>{icon}</div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold mb-2">
-            <span className={colorClass}>{value}</span> {unit}
-            {stats && (
-              <div className="ml-2 inline-flex items-center">
-                {renderTrendIcon(stats.trend)}
-              </div>
-            )}
-          </div>
-          
-          {stats && (
-            <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
-              <div>
-                <p className="font-medium">Promedio</p>
-                <p>{stats.avg} {unit}</p>
-              </div>
-              <div>
-                <p className="font-medium">Mínimo</p>
-                <p>{stats.min} {unit}</p>
-              </div>
-              <div>
-                <p className="font-medium">Máximo</p>
-                <p>{stats.max} {unit}</p>
-              </div>
-            </div>
-          )}
-          
-          <div className="mt-4 h-32">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#9ca3af" 
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis 
-                  stroke="#9ca3af" 
-                  domain={[limits.min, limits.max]}
-                  tick={{ fontSize: 10 }}
-                />
-                
-                {/* Área de peligro */}
-                <Area 
-                  type="monotone" 
-                  dataKey={() => limits.max}
-                  fill="rgba(239, 68, 68, 0.2)" 
-                  stroke="none"
-                />
-                
-                {/* Líneas de referencia para zonas operativas */}
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.danger : limits.danger} 
-                  stroke="#ef4444" 
-                  strokeDasharray="5 5"
-                  strokeWidth={1}
-                />
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.warning : limits.warning} 
-                  stroke="#f59e0b" 
-                  strokeDasharray="5 5"
-                  strokeWidth={1}
-                />
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.normal : limits.normal} 
-                  stroke="#10b981" 
-                  strokeDasharray="5 5"
-                  strokeWidth={1}
-                />
-                
-                {/* Línea de datos actual */}
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke={
-                    alertLevel === "normal" ? "#10b981" : 
-                    alertLevel === "warning" ? "#f59e0b" : 
-                    "#ef4444"
-                  } 
-                  strokeWidth={3} 
-                  dot={{ r: 2 }}
-                />
-                
-                <Tooltip content={<CustomTooltip />} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-          
-          <div className="mt-4 text-xs">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-2 bg-green-500 rounded"></div>
-                <span className="text-green-500">Normal</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-2 bg-yellow-500 rounded"></div>
-                <span className="text-yellow-500">Advertencia</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-2 bg-red-500 rounded"></div>
-                <span className="text-red-500">Peligro</span>
-              </div>
-            </div>
-          </div>
-          
-          <CardDescription className="pt-2">
-            {alertLevel === "normal" && "Estado: Área operativa normal"}
-            {alertLevel === "warning" && "¡Atención! Área de advertencia"}
-            {alertLevel === "danger" && "¡ALERTA! Área de peligro"}
-          </CardDescription>
-        </CardContent>
-      </Card>
-    );
-  };
-
-  // Function to render historical comparison chart
   const renderHistoricalComparison = () => {
     if (!historicalData.length) return null;
 
@@ -611,6 +808,37 @@ export default function EnhancedAlertsPage() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+        <h2 className="text-xl font-semibold">Cargando datos del motor...</h2>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-6 w-6" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            No se pudieron cargar los datos: {error}
+          </AlertDescription>
+        </Alert>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col space-y-4">
@@ -640,6 +868,38 @@ export default function EnhancedAlertsPage() {
           </div>
         </div>
 
+        {/* KPI Gauges Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <GaugeChart
+            title="RPM"
+            value={data.motor.rpm}
+            max={thresholds.rpm.max}
+            unit="rpm"
+            alertLevel={getAlertLevel(data.motor.rpm, "rpm")}
+          />
+          <GaugeChart
+            title="Temperatura Agua"
+            value={data.motor.temperaturaAgua}
+            max={thresholds.temperaturaAgua.max}
+            unit="°C"
+            alertLevel={getAlertLevel(data.motor.temperaturaAgua, "temperaturaAgua")}
+          />
+          <GaugeChart
+            title="Voltaje Batería"
+            value={data.motor.voltajeBateria}
+            max={thresholds.voltajeBateria.max}
+            unit="V"
+            alertLevel={getAlertLevel(data.motor.voltajeBateria, "voltajeBateria")}
+          />
+          <GaugeChart
+            title="Presión Aceite"
+            value={data.motor.presionAceite}
+            max={thresholds.presionAceite.max}
+            unit="bar"
+            alertLevel={getAlertLevel(data.motor.presionAceite, "presionAceite")}
+          />
+        </div>
+
         {historicalData.length > 0 && (
           <Alert>
             <BarChart3 className="h-4 w-4" />
@@ -660,12 +920,66 @@ export default function EnhancedAlertsPage() {
           
           <TabsContent value="motor" className="p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {renderThresholdChart("RPM", data.motor.rpm, "rpm", "rpm", <Gauge className="h-5 w-5" />, "rpm")}
-              {renderThresholdChart("Temperatura Agua", data.motor.temperaturaAgua, "°C", "temperaturaAgua", <Thermometer className="h-5 w-5" />, "temperaturaAgua")}
-              {renderThresholdChart("Temperatura Aceite", data.motor.temperaturaAceite, "°C", "temperaturaAceite", <Thermometer className="h-5 w-5" />, "temperaturaAceite")}
-              {renderThresholdChart("Presión Aceite", data.motor.presionAceite, "bar", "presionAceite", <Droplets className="h-5 w-5" />, "presionAceite")}
-              {renderThresholdChart("Voltaje Batería", data.motor.voltajeBateria, "V", "voltajeBateria", <BatteryCharging className="h-5 w-5" />, "voltajeBateria")}
-              {renderThresholdChart("Consumo Combustible", data.motor.consumoCombustibleLh, "L/h", "consumoCombustibleLh", <Fuel className="h-5 w-5" />, "consumoCombustibleLh")}
+              <ThresholdChart
+                title="RPM"
+                value={data.motor.rpm}
+                unit="rpm"
+                metric="rpm"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="rpm"
+                chartData={chartData.rpm}
+                stats={historicalStats.rpm}
+              />
+              <ThresholdChart
+                title="Temperatura Agua"
+                value={data.motor.temperaturaAgua}
+                unit="°C"
+                metric="temperaturaAgua"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="temperaturaAgua"
+                chartData={chartData.temperaturaAgua}
+                stats={historicalStats.temperaturaAgua}
+              />
+              <ThresholdChart
+                title="Temperatura Aceite"
+                value={data.motor.temperaturaAceite}
+                unit="°C"
+                metric="temperaturaAceite"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="temperaturaAceite"
+                chartData={chartData.temperaturaAceite}
+                stats={historicalStats.temperaturaAceite}
+              />
+              <ThresholdChart
+                title="Presión Aceite"
+                value={data.motor.presionAceite}
+                unit="bar"
+                metric="presionAceite"
+                icon={<Droplets className="h-5 w-5" />}
+                chartKey="presionAceite"
+                chartData={chartData.presionAceite}
+                stats={historicalStats.presionAceite}
+              />
+              <ThresholdChart
+                title="Voltaje Batería"
+                value={data.motor.voltajeBateria}
+                unit="V"
+                metric="voltajeBateria"
+                icon={<BatteryCharging className="h-5 w-5" />}
+                chartKey="voltajeBateria"
+                chartData={chartData.voltajeBateria}
+                stats={historicalStats.voltajeBateria}
+              />
+              <ThresholdChart
+                title="Consumo Combustible"
+                value={data.motor.consumoCombustibleLh}
+                unit="L/h"
+                metric="consumoCombustibleLh"
+                icon={<Fuel className="h-5 w-5" />}
+                chartKey="consumoCombustibleLh"
+                chartData={chartData.consumoCombustibleLh}
+                stats={historicalStats.consumoCombustibleLh}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -695,7 +1009,7 @@ export default function EnhancedAlertsPage() {
               
               <Card>
                 <CardHeader>
-                   <CardTitle>Estadísticas Operativas</CardTitle>
+                  <CardTitle>Estadísticas Operativas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64">
@@ -746,23 +1060,119 @@ export default function EnhancedAlertsPage() {
 
           <TabsContent value="bancoA" className="p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {renderThresholdChart("Lambda A1", data.bancos.A1.lambda, "", "lambda", <Thermometer className="h-5 w-5" />, "lambda_A1")}
-              {renderThresholdChart("Tiempo Inyección A1", data.bancos.A1.tiempoInyeccionMs, "ms", "tiempoInyeccionMs", <Gauge className="h-5 w-5" />, "tiempoInyeccionMs_A1")}
-              {renderThresholdChart("Avance Encendido A1", data.bancos.A1.tiempoEncendidoAvance, "°", "tiempoEncendidoAvance", <Gauge className="h-5 w-5" />, "tiempoEncendidoAvance_A1")}
-              {renderThresholdChart("Temperatura EGT A1", data.bancos.A1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />, "temperaturaEGT_A1")}
-              {renderThresholdChart("Presión Combustible A1", data.bancos.A1.presionCombustible, "bar", "presionCombustible", <Droplets className="h-5 w-5" />, "presionCombustible_A1")}
-              {renderThresholdChart("Presión Turbo A1", data.bancos.A1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />, "presionTurbo_A1")}
+              <ThresholdChart
+                title="Lambda A1"
+                value={data.bancos.A1.lambda}
+                unit=""
+                metric="lambda"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="lambda_A1"
+                chartData={chartData.lambda_A1}
+              />
+              <ThresholdChart
+                title="Tiempo Inyección A1"
+                value={data.bancos.A1.tiempoInyeccionMs}
+                unit="ms"
+                metric="tiempoInyeccionMs"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="tiempoInyeccionMs_A1"
+                chartData={chartData.tiempoInyeccionMs_A1}
+              />
+              <ThresholdChart
+                title="Avance Encendido A1"
+                value={data.bancos.A1.tiempoEncendidoAvance}
+                unit="°"
+                metric="tiempoEncendidoAvance"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="tiempoEncendidoAvance_A1"
+                chartData={chartData.tiempoEncendidoAvance_A1}
+              />
+              <ThresholdChart
+                title="Temperatura EGT A1"
+                value={data.bancos.A1.temperaturaEGT}
+                unit="°C"
+                metric="temperaturaEGT"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="temperaturaEGT_A1"
+                chartData={chartData.temperaturaEGT_A1}
+              />
+              <ThresholdChart
+                title="Presión Combustible A1"
+                value={data.bancos.A1.presionCombustible}
+                unit="bar"
+                metric="presionCombustible"
+                icon={<Droplets className="h-5 w-5" />}
+                chartKey="presionCombustible_A1"
+                chartData={chartData.presionCombustible_A1}
+              />
+              <ThresholdChart
+                title="Presión Turbo A1"
+                value={data.bancos.A1.presionTurbo}
+                unit="bar"
+                metric="presionTurbo"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="presionTurbo_A1"
+                chartData={chartData.presionTurbo_A1}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="bancoB" className="p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {renderThresholdChart("Lambda B1", data.bancos.B1.lambda, "", "lambda", <Thermometer className="h-5 w-5" />, "lambda_B1")}
-              {renderThresholdChart("Tiempo Inyección B1", data.bancos.B1.tiempoInyeccionMs, "ms", "tiempoInyeccionMs", <Gauge className="h-5 w-5" />, "tiempoInyeccionMs_B1")}
-              {renderThresholdChart("Avance Encendido B1", data.bancos.B1.tiempoEncendidoAvance, "°", "tiempoEncendidoAvance", <Gauge className="h-5 w-5" />, "tiempoEncendidoAvance_B1")}
-              {renderThresholdChart("Temperatura EGT B1", data.bancos.B1.temperaturaEGT, "°C", "temperaturaEGT", <Thermometer className="h-5 w-5" />, "temperaturaEGT_B1")}
-              {renderThresholdChart("Presión Combustible B1", data.bancos.B1.presionCombustible, "bar", "presionCombustible", <Droplets className="h-5 w-5" />, "presionCombustible_B1")}
-              {renderThresholdChart("Presión Turbo B1", data.bancos.B1.presionTurbo, "bar", "presionTurbo", <Gauge className="h-5 w-5" />, "presionTurbo_B1")}
+              <ThresholdChart
+                title="Lambda B1"
+                value={data.bancos.B1.lambda}
+                unit=""
+                metric="lambda"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="lambda_B1"
+                chartData={chartData.lambda_B1}
+              />
+              <ThresholdChart
+                title="Tiempo Inyección B1"
+                value={data.bancos.B1.tiempoInyeccionMs}
+                unit="ms"
+                metric="tiempoInyeccionMs"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="tiempoInyeccionMs_B1"
+                chartData={chartData.tiempoInyeccionMs_B1}
+              />
+              <ThresholdChart
+                title="Avance Encendido B1"
+                value={data.bancos.B1.tiempoEncendidoAvance}
+                unit="°"
+                metric="tiempoEncendidoAvance"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="tiempoEncendidoAvance_B1"
+                chartData={chartData.tiempoEncendidoAvance_B1}
+              />
+              <ThresholdChart
+                title="Temperatura EGT B1"
+                value={data.bancos.B1.temperaturaEGT}
+                unit="°C"
+                metric="temperaturaEGT"
+                icon={<Thermometer className="h-5 w-5" />}
+                chartKey="temperaturaEGT_B1"
+                chartData={chartData.temperaturaEGT_B1}
+              />
+              <ThresholdChart
+                title="Presión Combustible B1"
+                value={data.bancos.B1.presionCombustible}
+                unit="bar"
+                metric="presionCombustible"
+                icon={<Droplets className="h-5 w-5" />}
+                chartKey="presionCombustible_B1"
+                chartData={chartData.presionCombustible_B1}
+              />
+              <ThresholdChart
+                title="Presión Turbo B1"
+                value={data.bancos.B1.presionTurbo}
+                unit="bar"
+                metric="presionTurbo"
+                icon={<Gauge className="h-5 w-5" />}
+                chartKey="presionTurbo_B1"
+                chartData={chartData.presionTurbo_B1}
+              />
             </div>
           </TabsContent>
 
