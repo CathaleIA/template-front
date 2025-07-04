@@ -1,199 +1,166 @@
 "use client"
-import '@/app/styles/embedStyles.css';
+import "@/app/styles/embedStyles.css"
 import type React from "react"
-
-
-import { useUser } from '@/context/UserContext'
-
+import { useUser } from "@/context/UserContext"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
 import { Separator } from "@/components/ui/separator"
-
-import { Upload, FileText, X, Download, Calendar, User, Building, FileBarChart, Loader2, BarChart3 } from "lucide-react"
+import { Upload, FileText, X, Download, Building, Eye, Loader2, BarChart3 } from "lucide-react"
 import { ImprovedConclusions } from "@/components/reports/improved-conclusions"
-// Reporst
-import { ApiResponse } from "../../../types/typeReports";
-import DOMPurify from 'isomorphic-dompurify';
-import { generarGraficaBase64, convertirArchivoABase64, generarGraficaExiBase64 } from "../../../utils/captureChartAsImage";
 
-import { divToBase64 } from "@/utils/htmlTobase";
-
-
-interface Comment {
-  id: string
-  text: string
-  timestamp: Date
-}
-
-interface UploadedFile {
-  id: string
-  name: string
-  uploadDate: string
-  size: number
-  type: string
-}
-
-interface ReportData {
-  empresa: string
-  activo: string
-  archivo: File | null
-  archivoExistente: UploadedFile | null
-  comentarios: Comment[]
-}
+// Reports
+import type { ApiResponse } from "../../../types/typeReports"
+import DOMPurify from "isomorphic-dompurify"
+import {
+  generarGraficaBase64,
+  convertirArchivoABase64,
+  generarGraficaExiBase64,
+} from "../../../utils/captureChartAsImage"
+import { downloadBase64File, openBase64Pdf } from "@/utils/file-download-utils"
+import { divToBase64 } from "@/utils/htmlTobase"
 
 export default function ReportsPage() {
-  const [reportData, setReportData] = useState<ReportData>({
-    empresa: "",
-    activo: "",
-    archivo: null,
-    archivoExistente: null,
-    comentarios: [],
-  })
-
   //Elidev
-  const [activo, setActivo] = useState("");
-  const [tenant, setTenant] = useState("");
-  const [poolUserId, setPoolUserId] = useState("");
-  const [archivoToFront, setArchivo] = useState<File | null>(null);
-  const [resultadoHtml, setResultadoHtml] = useState<string>('')
-  const [fileName, setFileName] = useState<string>('');
-  const [conclusions, setConclusions] = useState<string[]>([]);
-
-  const [newComment, setNewComment] = useState("")
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
-  const [fileSelectionMode, setFileSelectionMode] = useState<"upload" | "existing">("upload")
-  const [loadingFiles, setLoadingFiles] = useState(false)
+  const [activo, setActivo] = useState("")
+  const [tenant, setTenant] = useState("")
+  const [poolUserId, setPoolUserId] = useState("")
+  const [archivoToFront, setArchivo] = useState<File | null>(null)
+  const [resultadoHtml, setResultadoHtml] = useState<string>("")
+  const [fileName, setFileName] = useState<string>("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-  const tenantLocalHost = localStorage.getItem('tenant') || tenant;
-  const { userr } = useUser();
+  const [pdfBase64, setPdfBase64] = useState<string>("")
+  const [isDownloading, setIsDownloading] = useState(false)
 
-
-
-
+  const tenantLocalHost = localStorage.getItem("tenant") || tenant
+  const { userr } = useUser()
 
   const processFile = async () => {
     if (!archivoToFront) {
-      alert("Por favor, seleccionar un sapo perro archivoToFront")
-      return;
-    };
+      alert("Por favor, seleccionar un archivo")
+      return
+    }
 
-    // aca estamos tomando el dato que viene del formulario para procesarlo  al momento de enviarlo
-    const archivoToFrontBase64 = await convertirArchivoABase64(archivoToFront)
+    setIsProcessing(true) // ← AGREGAR ESTA LÍNEA
 
-    // enviamos los datos al backend que es donde esta implementdo el apiextorno
-    // aca configuramos un api interno
+    try {
+      // aca estamos tomando el dato que viene del formulario para procesarlo al momento de enviarlo
+      const archivoToFrontBase64 = await convertirArchivoABase64(archivoToFront)
 
-    const response = await fetch("/api/render-report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        activo,
-        tenant: tenantLocalHost,
-        poolUserId: userr?.userName,
-        archivoToFront: archivoToFrontBase64,
-      }),
-    });
+      // enviamos los datos al backend que es donde esta implementado el apiextorno
+      // aca configuramos un api interno
+      const response = await fetch("/api/render-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          activo,
+          tenant: tenantLocalHost,
+          poolUserId: userr?.userName,
+          archivoToFront: archivoToFrontBase64,
+        }),
+      })
 
-    const data: ApiResponse = await response.json();
-    const sanitizedHtml = DOMPurify.sanitize(data.archivoHtml);
-    localStorage.setItem('report_id', data.report_id);
-    console.log(data)
+      const data: ApiResponse = await response.json()
+      const sanitizedHtml = DOMPurify.sanitize(data.archivoHtml)
+      localStorage.setItem("report_id", data.report_id)
+      console.log(data)
 
-    const decodeHtml = (html: string): string => {
-      const txt = document.createElement('textarea');
-      txt.innerHTML = html;
-      return txt.value;
-    };
-
-    setResultadoHtml(decodeHtml(sanitizedHtml));
-
-    // Generacion de pdf y graficas
-    setTimeout(async () => {
-      if (data.graficaCNData) {
-        const graficaCNBase64 = await generarGraficaBase64(data.graficaCNData);
-        const graficaCNContainer = document.getElementById('graficaCNChart-container');
-        if (graficaCNContainer) {
-          const canvasCN = graficaCNContainer.querySelector('canvas');
-          if (canvasCN) {
-            const imgCN = document.createElement('img');
-            imgCN.src = graficaCNBase64;
-            imgCN.alt = "Gráfica CN";
-            imgCN.style.width = "500px";
-            imgCN.style.height = "280px";
-            imgCN.style.display = "block";
-            imgCN.style.margin = "0 auto";
-            //imgCN.style.objectFit = "contain"; // Opcional: ajusta el estilo si es necesario
-            canvasCN.replaceWith(imgCN);
-          }
-        }
+      const decodeHtml = (html: string): string => {
+        const txt = document.createElement("textarea")
+        txt.innerHTML = html
+        return txt.value
       }
-      if (data.graficaRCNData) {
-        const graficaRCNBase64 = await generarGraficaBase64(data.graficaRCNData);
-        const graficaRCNContiner = document.getElementById('graficaRCNChart-container');
-        if (graficaRCNContiner) {
-          const canvasCN = graficaRCNContiner.querySelector('canvas');
-          if (canvasCN) {
-            const imgCN = document.createElement('img');
-            imgCN.src = graficaRCNBase64;
-            imgCN.alt = "Gráfica RCN";
-            imgCN.style.width = "500px";
-            imgCN.style.height = "280px";
-            imgCN.style.display = "block";
-            imgCN.style.margin = "0 auto";
-            canvasCN.replaceWith(imgCN);
+
+      setResultadoHtml(decodeHtml(sanitizedHtml))
+
+      // Generacion de pdf y graficas
+      setTimeout(async () => {
+        if (data.graficaCNData) {
+          const graficaCNBase64 = await generarGraficaBase64(data.graficaCNData)
+          const graficaCNContainer = document.getElementById("graficaCNChart-container")
+          if (graficaCNContainer) {
+            const canvasCN = graficaCNContainer.querySelector("canvas")
+            if (canvasCN) {
+              const imgCN = document.createElement("img")
+              imgCN.src = graficaCNBase64
+              imgCN.alt = "Gráfica CN"
+              imgCN.style.width = "500px"
+              imgCN.style.height = "280px"
+              imgCN.style.display = "block"
+              imgCN.style.margin = "0 auto"
+              canvasCN.replaceWith(imgCN)
+            }
           }
         }
 
-      }
-      if (data.graficaDataExi) {
-        const graficaExitacionBase64 = await generarGraficaExiBase64(data.graficaDataExi);
-
-        const graficaExiContainer = document.getElementById('graficaExiChart-container');
-        if (graficaExiContainer) {
-          const canvas = graficaExiContainer.querySelector('canvas');
-          if (canvas) {
-            const img = document.createElement('img');
-            img.src = graficaExitacionBase64;
-            img.alt = "Gráfica Exi";
-            img.style.width = "500px";
-            img.style.height = "280px";
-            img.style.display = "block";
-            img.style.margin = "0 auto";
-            canvas.replaceWith(img);
+        if (data.graficaRCNData) {
+          const graficaRCNBase64 = await generarGraficaBase64(data.graficaRCNData)
+          const graficaRCNContiner = document.getElementById("graficaRCNChart-container")
+          if (graficaRCNContiner) {
+            const canvasCN = graficaRCNContiner.querySelector("canvas")
+            if (canvasCN) {
+              const imgCN = document.createElement("img")
+              imgCN.src = graficaRCNBase64
+              imgCN.alt = "Gráfica RCN"
+              imgCN.style.width = "500px"
+              imgCN.style.height = "280px"
+              imgCN.style.display = "block"
+              imgCN.style.margin = "0 auto"
+              canvasCN.replaceWith(imgCN)
+            }
           }
         }
+
+        if (data.graficaDataExi) {
+          const graficaExitacionBase64 = await generarGraficaExiBase64(data.graficaDataExi)
+          const graficaExiContainer = document.getElementById("graficaExiChart-container")
+          if (graficaExiContainer) {
+            const canvas = graficaExiContainer.querySelector("canvas")
+            if (canvas) {
+              const img = document.createElement("img")
+              img.src = graficaExitacionBase64
+              img.alt = "Gráfica Exi"
+              img.style.width = "500px"
+              img.style.height = "280px"
+              img.style.display = "block"
+              img.style.margin = "0 auto"
+              canvas.replaceWith(img)
+            }
+          }
+        }
+      }, 0)
+
+      if (response.ok) {
+        console.log("Respuesta del Servidor: ", data)
+      } else {
+        console.error("Error", data.error)
       }
-
-
-    }, 0);
-
-    if (response.ok) {
-      console.log("Respuesta del Servidor: ", data);
-
-    } else {
-      console.error("Error", data.error);
+    } catch (error) {
+      console.error("Error al procesar:", error)
+      alert("Error al procesar el archivo")
+    } finally {
+      setIsProcessing(false) // ← AGREGAR ESTA LÍNEA
     }
   }
 
-  const saveReport = () => {
-    console.log("Guardando reporte del preview", reportData)
-    // ACA DEBE IMPLEMENTAR LA LOGICA DE GUARDADO DEL REPORTE DESDE EL PREVIEW
-    // SI ES OTRO ENDPOINT DEBE CREAR UNA API NUEVA
-  }
-
   const generateReport = async () => {
-    const archivoExtracBase = divToBase64('container_to_generate');
-    const reportId = localStorage.getItem('report_id');
+    if (!resultadoHtml || !fileName.trim()) {
+      alert("Asegúrate de haber procesado un archivo y especificado un nombre")
+      return
+    }
+
+    setIsGeneratingPdf(true) // ← AGREGAR ESTA LÍNEA
+
     try {
-      const response = await fetch('/api/down-pdf', {
-        method: 'POST',
+      const archivoExtracBase = divToBase64("container_to_generate")
+      const reportId = localStorage.getItem("report_id")
+
+      const response = await fetch("/api/down-pdf", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           archivoHtml: archivoExtracBase,
@@ -201,20 +168,93 @@ export default function ReportsPage() {
           fileName: fileName,
           tenant_id: tenantLocalHost,
           poolUserId: userr?.userName,
-        })
+        }),
       })
-      console.log("Se genero el archivo")
 
+      if (response.ok) {
+        const data = await response.json()
+
+        // Si tu API devuelve el base64 del PDF, guárdalo
+        if (data.base64File) {
+          setPdfBase64(data.base64File)
+        }
+
+        console.log("Se generó el archivo")
+        alert("PDF generado correctamente")
+      } else {
+        throw new Error("Error al generar el PDF")
+      }
     } catch (error) {
-      console.error("Error al procesar la solicitud:", error);
-      return ('error al descargar generar el PDF');
+      console.error("Error al procesar la solicitud:", error)
+      alert("Error al generar el PDF")
+    } finally {
+      setIsGeneratingPdf(false) // ← AGREGAR ESTA LÍNEA
     }
   }
 
+  // Función simple para descargar
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault()
 
+    if (!fileName.trim()) {
+      alert("Especifica un nombre para el archivo")
+      return
+    }
 
+    setIsDownloading(true)
 
+    try {
+      // Si ya tienes el base64 del PDF
+      if (pdfBase64) {
+        const success = downloadBase64File(pdfBase64, `${fileName}.pdf`)
+        if (success) {
+          alert("Archivo descargado correctamente")
+        } else {
+          alert("Error al descargar el archivo")
+        }
+      } else {
+        // Si necesitas obtenerlo de tu API de descarga
+        const reportId = localStorage.getItem("report_id")
+        const response = await fetch("/api/down-file-pdf", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userPoolId: userr?.userName,
+            tenantName: tenantLocalHost,
+            key: `${fileName}.pdf`, // Ajusta según tu estructura
+          }),
+        })
 
+        if (response.ok) {
+          const data = await response.json()
+          const success = downloadBase64File(data.base64File, data.fileName || `${fileName}.pdf`)
+          if (success) {
+            alert("Archivo descargado correctamente")
+          } else {
+            alert("Error al descargar el archivo")
+          }
+        } else {
+          alert("Error al obtener el archivo")
+        }
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      alert("Error al descargar el archivo")
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
+  // Función para vista previa
+  const handlePreview = async (e: React.MouseEvent) => {
+    e.preventDefault()
+
+    if (pdfBase64) {
+      openBase64Pdf(pdfBase64)
+    } else {
+      alert("Primero genera el reporte PDF")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
@@ -244,7 +284,7 @@ export default function ReportsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 p-6">
-                {/* Activo */}
+                {/* Tu formulario existente */}
                 <div className="space-y-2">
                   <Label htmlFor="activo" className="text-sm font-semibold text-foreground">
                     Tipo de Activo
@@ -261,7 +301,6 @@ export default function ReportsPage() {
                   </Select>
                 </div>
 
-                {/* Empresa */}
                 <div className="space-y-2">
                   <Label htmlFor="empresa" className="text-sm font-semibold text-foreground">
                     Empresa
@@ -276,7 +315,6 @@ export default function ReportsPage() {
                   />
                 </div>
 
-                {/* Nombre del Archivo */}
                 <div className="space-y-2">
                   <Label htmlFor="fileName" className="text-sm font-semibold text-foreground">
                     Nombre del Archivo
@@ -291,7 +329,6 @@ export default function ReportsPage() {
                   />
                 </div>
 
-                {/* Usuario */}
                 <div className="space-y-2">
                   <Label htmlFor="userPoolId" className="text-sm font-semibold text-foreground">
                     Usuario
@@ -328,7 +365,6 @@ export default function ReportsPage() {
                       <Upload className="w-5 h-5 mr-2" />
                       {archivoToFront ? archivoToFront.name : "Seleccionar archivo"}
                     </Button>
-
                     {archivoToFront && (
                       <div className="flex items-center justify-between gap-2 mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                         <div className="flex items-center gap-2">
@@ -396,6 +432,31 @@ export default function ReportsPage() {
                       </>
                     )}
                   </Button>
+
+                  {/* Botones simples de descarga */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleDownload}
+                      disabled={isDownloading || !fileName.trim()}
+                      className="flex-1 h-11 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                    >
+                      {isDownloading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 mr-2" />
+                      )}
+                      Descargar
+                    </Button>
+                    <Button
+                      onClick={handlePreview}
+                      disabled={!pdfBase64}
+                      variant="outline"
+                      className="flex-1 h-11 border-green-600 text-green-600 hover:bg-green-50 bg-transparent"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Vista Previa
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
