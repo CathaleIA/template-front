@@ -17,8 +17,8 @@ export class AuthService {
       if (!response.ok) {
         return null;
       }
-
       return await response.json();
+
     } catch (error) {
       console.error('Error getting tokens:', error);
       return null;
@@ -112,21 +112,20 @@ export class AuthService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const raw = await response.json();
-      const data = raw.message;
+      const data = await response.json();
 
       //Normalizamos los campos snake_case a camelCase
       const userInfo: UserInfo = {
-        userId: data.user_id ?? data.userId ?? '',  // si viene
         userName: data.user_name,
-        email: data.email,
         tenantId: data.tenant_id,
         userRole: data.user_role,
-        createdDate: data.created ?? '',
-        modifiedDate: data.modified ?? '',
-        isEnabled: data.enabled ?? false,
-        tenantName: data.tenant_name ?? '',
-        tenantTier: data.tenant_tier ?? '',
+        email: data.email,
+        statusState: data.status,
+        isEnabled: data.enabled,
+        createdDate: data.created,
+        modifiedDate: data.modified,
+        tenantName: data.tenant_name,
+        tenantTier: data.tenant_tier,
       };
 
       return userInfo;

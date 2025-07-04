@@ -1,16 +1,26 @@
 // types/user.ts
 
 export interface UserInfo {
-  userId: string
   userName: string
-  email: string
   tenantId: string
   userRole: string
+  email: string
+  statusState: string
+  isEnabled: boolean
   createdDate: string
   modifiedDate: string
-  isEnabled: boolean
   tenantName: string
   tenantTier: string
+}
+
+export interface UsersInfo {
+  userName: string
+  userRole: string
+  email: string
+  statusState: string
+  isEnabled: boolean
+  createdDate: string
+  modifiedDate: string
 }
 
 export interface NavUserData {
@@ -18,4 +28,3 @@ export interface NavUserData {
   email: string
   avatar: string
 }
-

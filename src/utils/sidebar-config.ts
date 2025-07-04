@@ -1,4 +1,4 @@
-import { NotepadText, ChartArea, Settings, LifeBuoy, Send, Frame, PieChart } from 'lucide-react'
+import { NotepadText, ChartArea, Settings, LifeBuoy, Send, Frame, UserSearch } from 'lucide-react'
 
 import type { SidebarData } from "@/types"
 
@@ -11,7 +11,16 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
         url: "/dashboard/reports",
         icon: NotepadText,
         items: [
-          { title: "Listar reportes", url: "#" },
+          { title: "Listar reportes", url: "/dasboard/listreports" },
+          { title: "Configuraciones", url: "#" },
+        ],
+      },
+            {
+        title: "Visualizacion I & D",
+        url: "/dashboard/alerts",
+        icon: NotepadText,
+        items: [
+          { title: "LAdmin", url: "/dashboard/admin" },
           { title: "Configuraciones", url: "#" },
         ],
       },
@@ -19,8 +28,8 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
     projects: [
       {
         name: "User Management",
-        url: "#",
-        icon: Frame,
+        url: "/dashboard/users",
+        icon: UserSearch,
       },
     ],
     navSecondary: [

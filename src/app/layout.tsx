@@ -40,7 +40,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <LanguageProvider>
             <UserProvider>
               <div className="min-h-screen bg-background">

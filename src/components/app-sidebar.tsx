@@ -22,7 +22,7 @@ import { useUser } from "@/context/UserContext"
 import { SIDEBAR_BY_TENANT } from '@/utils/sidebar-config'
 import type { SidebarData, NavUserData } from "@/types"
 
-
+import { Separator } from "@/components/ui/separator"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userr } = useUser();
@@ -73,6 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <Separator/>
       <SidebarContent>
         {sidebarData && <NavMain items={sidebarData.navMain} />}
         {sidebarData?.projects && <NavProjects projects={sidebarData.projects} />}
@@ -80,6 +81,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavSecondary items={sidebarData.navSecondary} className="mt-auto" />
         )}
       </SidebarContent>
+      <Separator/>
       <SidebarFooter>
         <NavUser user={navUserData} />
       </SidebarFooter>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="837px" height="500px" viewBox="0 0 836 500" version="1.1">
+<defs>
+<filter id="alpha" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
+  <feColorMatrix type="matrix" in="SourceGraphic" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+</filter>
+<mask id="mask0">
+  <g filter="url(#alpha)">
+<rect x="0" y="0" width="836" height="500" style="fill:rgb(0%,0%,0%);fill-opacity:0.780392;stroke:none;"/>
+  </g>
+</mask>
+<linearGradient id="linear0" gradientUnits="userSpaceOnUse" x1="135.990005" y1="559.169983" x2="800.859985" y2="-105.699997" gradientTransform="matrix(0.963835,0,0,0.964841,0.259348,0)">
+<stop offset="0.09" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.141176;"/>
+<stop offset="0.16" style="stop-color:rgb(95.686275%,95.686275%,95.686275%);stop-opacity:0.180392;"/>
+<stop offset="0.39" style="stop-color:rgb(85.098039%,85.098039%,85.098039%);stop-opacity:0.301961;"/>
+<stop offset="0.69" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.101961;"/>
+<stop offset="0.79" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.109804;"/>
+<stop offset="0.82" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.129412;"/>
+<stop offset="0.85" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.180392;"/>
+<stop offset="0.87" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.25098;"/>
+<stop offset="0.88" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.301961;"/>
+</linearGradient>
+<clipPath id="clip1">
+  <rect x="0" y="0" width="836" height="500"/>
+</clipPath>
+<g id="surface5" clip-path="url(#clip1)">
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#linear0);" d="M 40.394531 5.09375 L 795.617188 5.09375 C 816.976562 5.09375 834.292969 22.429688 834.292969 43.8125 L 834.292969 461.28125 C 834.292969 482.664062 816.976562 500 795.617188 500 L 40.394531 500 C 19.03125 500 1.714844 482.664062 1.714844 461.28125 L 1.714844 43.8125 C 1.714844 22.429688 19.03125 5.09375 40.394531 5.09375 Z M 40.394531 5.09375 "/>
+</g>
+<linearGradient id="linear1" gradientUnits="userSpaceOnUse" x1="32.849998" y1="591.47998" x2="699.849976" y2="-75.519997" gradientTransform="matrix(1,-0,0,-1,67.059998,515.960022)">
+<stop offset="0.09" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.501961;"/>
+<stop offset="0.16" style="stop-color:rgb(95.686275%,95.686275%,95.686275%);stop-opacity:0.388235;"/>
+<stop offset="0.31" style="stop-color:rgb(87.843137%,87.843137%,87.843137%);stop-opacity:0.180392;"/>
+<stop offset="0.39" style="stop-color:rgb(85.098039%,85.098039%,85.098039%);stop-opacity:0.101961;"/>
+<stop offset="0.69" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.2;"/>
+<stop offset="0.77" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.211765;"/>
+<stop offset="0.79" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.231373;"/>
+<stop offset="0.82" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.278431;"/>
+<stop offset="0.83" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.34902;"/>
+<stop offset="0.85" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.431373;"/>
+<stop offset="0.86" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.541176;"/>
+<stop offset="0.87" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.658824;"/>
+<stop offset="0.88" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.8;"/>
+</linearGradient>
+</defs>
+<g id="surface1">
+<use xlink:href="#surface5" mask="url(#mask0)"/>
+<path style="fill:none;stroke-width:3.02;stroke-linecap:butt;stroke-linejoin:miter;stroke:url(#linear1);stroke-miterlimit:10;" d="M 41.641125 1.509292 L 825.20105 1.509292 C 847.361866 1.509292 865.328014 19.47695 865.328014 41.638951 L 865.328014 474.320238 C 865.328014 496.482239 847.361866 514.449897 825.20105 514.449897 L 41.641125 514.449897 C 19.476257 514.449897 1.510109 496.482239 1.510109 474.320238 L 1.510109 41.638951 C 1.510109 19.47695 19.476257 1.509292 41.641125 1.509292 Z M 41.641125 1.509292 " transform="matrix(-0.963835,0.000000000000000118,-0.000000000000000118,-0.964841,835.740652,497.819508)"/>
+</g>
+</svg>

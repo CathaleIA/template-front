@@ -7,6 +7,8 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
+import { Toaster } from "@/components/ui/sonner"
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -47,16 +49,19 @@ export default async function DashboardLayout({
 
 
   return (
-      <div className="[--header-height:calc(theme(spacing.14))] min-h-screen overflow-hidden">
-        <SidebarProvider className="flex h-screen flex-col">
-          <SiteHeader />
-          <div className="flex flex-1 min-h-0">
-            <AppSidebar/>
-            <SidebarInset className="flex flex-1 flex-col overflow-hidden">
-              <main className="flex-1 overflow-auto p-4">{children}</main>
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
-      </div>
+    <div className="[--header-height:calc(theme(spacing.14))] min-h-screen overflow-hidden">
+      <SidebarProvider className="flex h-screen flex-col">
+        <SiteHeader />
+        <div className="flex flex-1 min-h-0">
+          <AppSidebar />
+          <SidebarInset className="flex flex-1 flex-col overflow-hidden">
+            <main className="flex-1 overflow-auto p-4">
+              <Toaster position="top-right" />
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </div>
   )
 }
