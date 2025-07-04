@@ -1,7 +1,6 @@
-import { NotepadText, ChartArea, Settings, LifeBuoy, Send, Frame, UserSearch } from 'lucide-react'
-
-import type { SidebarData } from "@/types"
-
+// sidebar-config.ts - Configuración actualizada
+import { NotepadText, ChartArea, Settings, LifeBuoy, Send, Frame, UserSearch, Folder, Cpu } from 'lucide-react'
+import type { SidebarData } from "@/types/sidebar"
 
 export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
   copower: {
@@ -11,18 +10,31 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
         url: "/dashboard/reports",
         icon: NotepadText,
         items: [
-          { title: "Listar reportes", url: "/dasboard/listreports" },
-          //{ title: "Configuraciones", url: "#" },
-        ],
-      },
-            {
-        title: "Visualizacion I & D",
-        url: "/dashboard/alerts",
-        icon: NotepadText,
-        items: [
-          { title: "LAdmin", url: "/dashboard/admin" },
+          { title: "Listar reportes", url: "/dashboard/listreports" },
           { title: "Configuraciones", url: "#" },
         ],
+      },
+      {
+        title: "Visualización I & D",
+        icon: NotepadText,
+        items: [
+          {
+            title: "COSTAYACO",
+            icon: Folder,
+            items: [
+              {
+                title: "Motor",
+                url: "/dashboard/alerts",
+                icon: Cpu
+              },
+              {
+                title: "Administrar",
+                url: "/dashboard/admin",
+                icon: Settings
+              }
+            ]
+          }
+        ]
       },
     ],
     projects: [
