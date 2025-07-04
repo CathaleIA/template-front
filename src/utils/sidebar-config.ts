@@ -12,7 +12,7 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
         icon: NotepadText,
         items: [
           { title: "Listar reportes", url: "/dasboard/listreports" },
-          { title: "Configuraciones", url: "#" },
+          //{ title: "Configuraciones", url: "#" },
         ],
       },
             {
