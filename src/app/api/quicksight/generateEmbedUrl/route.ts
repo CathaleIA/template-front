@@ -4,8 +4,8 @@ import AWS from 'aws-sdk';
 export async function GET(req: NextRequest) {
     // Configure AWS SDK with your credentials and region
     AWS.config.update({
-        accessKeyId: 'AKIATP6YY7AVNZSNDN42'       ,
-        secretAccessKey: '67faEdDHPEKGBP+K3q6ulG0X4cwSfGg8f7E4fCft',
+        accessKeyId: 'AKIATP6YY7AVDOG67INN'       ,
+        secretAccessKey: 'MM/ILohuMlRfWOaQiCcSz0SJv11AXar1V1y82nGg+K3q6ulG0X4cwSfGg8f7E4fCft',
         region: 'us-east-1',
     });
 
@@ -13,11 +13,11 @@ export async function GET(req: NextRequest) {
     
     const params = {
         AwsAccountId: process.env.AWS_ACCOUNT_ID || '',
-        UserArn: process.env.AWS_QUICKSIGHT_USER_ARN || '',
+        UserArn:'arn:aws:quicksight:us-east-1:240435918890:user/default/fernando-dev',
         SessionLifetimeInMinutes: 600,
         ExperienceConfiguration: {
             Dashboard: {
-                InitialDashboardId: '34c6f29e-da26-4c46-93e9-afe512a5af78',
+                InitialDashboardId: '57aab648-7a18-4f91-9c8a-0d89ffb98823',
             },
         },
         // Add allowed domains

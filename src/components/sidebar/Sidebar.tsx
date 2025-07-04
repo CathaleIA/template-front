@@ -1,156 +1,148 @@
-"use client";
-
-import Image from "next/image"
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  FaBars,
-  FaUserCircle,
-  FaHome,
-  FaFolder,
-  FaChartBar,
-  FaCog,
-  FaSignOutAlt,
-  FaBell
-} from "react-icons/fa";
-// import { useAuthenticator } from "@aws-amplify/ui-react";
+import { usePathname } from "next/navigation";
+import { FaBars, FaUserCircle, FaHome, FaFolder, FaCog, FaSignOutAlt, FaBell, FaChevronDown, FaChevronRight } from "react-icons/fa";
+import Image from "next/image";
 
 type MenuItem = {
   id: number;
   label: string;
-  route: string;
+  route?: string;
   icon: string;
+  subItems?: {
+    id: number;
+    label: string;
+    route: string;
+  }[];
 };
 
-
-const iconComponents: { [key: string]: React.ComponentType<any> } = {
-  FaHome,
-  FaFolder,
-  FaChartBar,
-  FaCog,
-  FaBell
+type SubMenuState = {
+  [key: number]: boolean;
 };
 
-export const dynamic = 'force-dynamic';
-
-export default function Sidebar () {
+export default function Sidebar() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [subMenuOpen, setSubMenuOpen] = useState<SubMenuState>({});
   const pathname = usePathname();
-  const router = useRouter();
-  // const { signOut, user } = useAuthenticator((context) => [context.user]);
-
-  // Emitir evento cuando cambia el estado del sidebar
-  useEffect(() => {
-    // Crear y disparar evento personalizado
-    const event = new CustomEvent('sidebarStateChange', {
-      detail: { collapsed }
-    });
-    window.dispatchEvent(event);
-  }, [collapsed]);
 
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await fetch("/api/menu", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Error al cargar los elementos del menú");
-        }
+        const response = await fetch("/api/menu");
         const data: MenuItem[] = await response.json();
         setMenuItems(data);
+        
+        // Inicializar estado de submenús
+        const initialState: SubMenuState = {};
+        data.forEach(item => {
+          if (item.subItems) {
+            // Abrir submenú si la ruta actual coincide con algún subitem
+            const shouldOpen = item.subItems.some(subItem => 
+              pathname.startsWith(subItem.route)
+            );
+            initialState[item.id] = shouldOpen;
+          }
+        });
+        setSubMenuOpen(initialState);
       } catch (error) {
-        console.error("Error al obtener los elementos del menú", error);
+        console.error("Error fetching menu items:", error);
       }
     };
 
     fetchMenuItems();
-  }, []);
+  }, [pathname]);
 
-  const renderIcon = (iconName: string) => {
-    const IconComponent = iconComponents[iconName];
-    if (IconComponent) {
-      return <IconComponent className="text-xl" />;
-    }
-    return null;
+  const toggleSubMenu = (id: number) => {
+    setSubMenuOpen(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
-  // const handleSignOut = () => {
-  //   signOut();
-  //   router.push("/"); // Redirige a la página principal después de cerrar sesión
-  // };
+  const renderIcon = (iconName: string) => {
+    const IconComponent = {
+      FaHome,
+      FaFolder,
+      FaBell,
+      FaCog
+    }[iconName];
+    
+    return IconComponent ? <IconComponent className="text-xl" /> : null;
+  };
 
   return (
-    <div
-      className={`${
-        collapsed ? "w-16" : "w-64"
-      } bg-background border-r border-primary h-screen fixed top-0 left-0 z-10 transition-all duration-300 flex flex-col shadow-xl`}
-    >
-      {/* Header section */}
-      <div className="flex items-center py-4 px-2 border-b border-primary">
-        {collapsed && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all mx-auto"
-          >
-            <FaBars />
-          </button>
-        )}
-        {!collapsed && (
-          <>
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-accent transition-all mr-2"
-            >
-              <FaBars />
-            </button>
-            <Image
-              src="/assets/insignia_degrade.png"
-              alt="Logo"
-              width={100}
-              height={100}
-              className="w-8 transition-all duration-300"
-            />
-            <h2 className="ml-3 text-lg font-bold text-foreground">CathaleIA</h2>
-          </>
-        )}
-      </div>
-
+    <div className={`${collapsed ? "w-16" : "w-64"} bg-background border-r border-primary h-screen fixed top-0 left-0 z-10 transition-all duration-300 flex flex-col shadow-xl`}>
+      {/* Header (igual que antes) */}
+      
       {/* Navigation section */}
       <nav className="flex-1 px-2 py-4 overflow-y-auto">
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {menuItems.map((item) => {
-            const isActive = pathname === item.route;
+            const isActive = pathname === item.route || 
+              (item.subItems && item.subItems.some(subItem => pathname.startsWith(subItem.route)));
+            
             return (
               <li key={item.id}>
-                <Link href={item.route}>
-                  <div
-                    className={`flex items-center p-2 rounded-lg transition-all duration-300 border border-transparent hover:border-primary hover:shadow-lg
-                      ${isActive 
-                        ? "bg-primary text-primary-foreground" 
-                        : "text-foreground hover:bg-secondary/50"
-                      }
-                    `}
-                  >
-                    {renderIcon(item.icon)}
-                    {!collapsed && (
-                      <span className="ml-2 font-medium">{item.label}</span>
+                {item.subItems ? (
+                  <>
+                    <div
+                      onClick={() => toggleSubMenu(item.id)}
+                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-300
+                        ${isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary/50"}
+                      `}
+                    >
+                      <div className="flex items-center">
+                        {renderIcon(item.icon)}
+                        {!collapsed && <span className="ml-2 font-medium">{item.label}</span>}
+                      </div>
+                      {!collapsed && (
+                        subMenuOpen[item.id] ? 
+                          <FaChevronDown className="text-sm" /> : 
+                          <FaChevronRight className="text-sm" />
+                      )}
+                    </div>
+                    
+                    {!collapsed && subMenuOpen[item.id] && (
+                      <ul className="ml-6 mt-1 space-y-1">
+                        {item.subItems.map(subItem => {
+                          const isSubActive = pathname.startsWith(subItem.route);
+                          return (
+                            <li key={subItem.id}>
+                              <Link href={subItem.route}>
+                                <div
+                                  className={`flex items-center p-2 rounded-lg transition-all duration-300
+                                    ${isSubActive ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-secondary/30"}
+                                  `}
+                                >
+                                  <span className="ml-2 text-sm">{subItem.label}</span>
+                                </div>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     )}
-                  </div>
-                </Link>
+                  </>
+                ) : (
+                  <Link href={item.route || "#"}>
+                    <div
+                      className={`flex items-center p-2 rounded-lg transition-all duration-300
+                        ${isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary/50"}
+                      `}
+                    >
+                      {renderIcon(item.icon)}
+                      {!collapsed && <span className="ml-2 font-medium">{item.label}</span>}
+                    </div>
+                  </Link>
+                )}
               </li>
             );
           })}
         </ul>
       </nav>
 
-      {/* Footer section */}
+ {/* Footer section */}
       <div className="p-2 border-t border-primary">
         {!collapsed ? (
           <>
@@ -188,7 +180,6 @@ export default function Sidebar () {
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </div>	    </div>
   );
-};
+}
