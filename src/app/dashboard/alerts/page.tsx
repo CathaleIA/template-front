@@ -635,7 +635,8 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
               <h3 className="text-lg font-semibold mb-2">Resumen de Anomalías</h3>
               {anomalies.length > 0 ? (
                 <div className="space-y-2">
-                  {anomalies.map((anomaly, index) => (
+                  {/* Mostrar solo la última anomalía */}
+                  {anomalies.slice(-1).map((anomaly, index) => (
                     <Alert key={index} variant={anomaly.level === "danger" ? "destructive" : "default"}>
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>{anomaly.level === "danger" ? "Alerta Crítica" : "Advertencia"}</AlertTitle>
