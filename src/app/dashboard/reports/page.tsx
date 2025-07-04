@@ -47,7 +47,7 @@ interface ReportData {
   comentarios: Comment[]
 }
 
-export default function ReportsPage() {
+export default  function ReportsPage() {
   const [reportData, setReportData] = useState<ReportData>({
     empresa: "",
     activo: "",
