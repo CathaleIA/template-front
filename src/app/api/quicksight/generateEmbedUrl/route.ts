@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
                 InitialDashboardId: '57aab648-7a18-4f91-9c8a-0d89ffb98823',
             },
         },
-        // Add allowed domains
+        /// Add allowed domains
         AllowedDomains: [process.env.AMPLIFY_APP_ORIGIN || 'http://localhost:3000'],
     };
 
