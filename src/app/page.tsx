@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+
 async function getAuthStatus() {
   try {
     const response = await fetch(`/api/tenantget`, {

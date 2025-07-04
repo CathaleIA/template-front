@@ -1,6 +1,8 @@
 "use client"
-
+import '@/app/styles/embedStyles.css';
 import type React from "react"
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -17,7 +19,7 @@ import { Upload, FileText, X, Download, Calendar, User, Building } from "lucide-
 import { ApiResponse } from "../../../types/typeReports";
 import DOMPurify from 'isomorphic-dompurify';
 import { generarGraficaBase64, convertirArchivoABase64, generarGraficaExiBase64 } from "../../../utils/captureChartAsImage";
-import {AgregarConclusion} from '@/components/reports/report-conclucion';
+import { AgregarConclusion } from '@/components/reports/report-conclucion';
 import { requestToRender } from "../../../types/typePdfRender"
 import { divToBase64 } from "@/utils/htmlTobase";
 import { a } from "@aws-amplify/backend"
@@ -59,6 +61,7 @@ export default function ReportsPage() {
   const [poolUserId, setPoolUserId] = useState("");
   const [archivoToFront, setArchivo] = useState<File | null>(null);
   const [resultadoHtml, setResultadoHtml] = useState<string>('')
+  const [fileName , setFileName] = useState<string>('');
   const [conclusions, setConclusions] = useState<string[]>([]);
 
   const [newComment, setNewComment] = useState("")
@@ -170,7 +173,11 @@ export default function ReportsPage() {
             const imgCN = document.createElement('img');
             imgCN.src = graficaCNBase64;
             imgCN.alt = "Gráfica CN";
-            imgCN.style.width = "100%"; // Opcional: ajusta el estilo si es necesario
+            imgCN.style.width = "500px";
+            imgCN.style.height = "280px";
+            imgCN.style.display = "block";
+            imgCN.style.margin = "0 auto";
+            //imgCN.style.objectFit = "contain"; // Opcional: ajusta el estilo si es necesario
             canvasCN.replaceWith(imgCN);
           }
         }
@@ -184,7 +191,10 @@ export default function ReportsPage() {
             const imgCN = document.createElement('img');
             imgCN.src = graficaRCNBase64;
             imgCN.alt = "Gráfica RCN";
-            imgCN.style.width = "100%"; // Opcional: ajusta el estilo si es necesario
+            imgCN.style.width = "500px";
+            imgCN.style.height = "280px";
+            imgCN.style.display = "block";
+            imgCN.style.margin = "0 auto";
             canvasCN.replaceWith(imgCN);
           }
         }
@@ -200,7 +210,10 @@ export default function ReportsPage() {
             const img = document.createElement('img');
             img.src = graficaExitacionBase64;
             img.alt = "Gráfica Exi";
-            img.style.width = "100%";
+            img.style.width = "500px";
+            img.style.height = "280px";
+            img.style.display = "block";
+            img.style.margin = "0 auto";
             canvas.replaceWith(img);
           }
         }
@@ -231,9 +244,9 @@ export default function ReportsPage() {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          archivoHtml : archivoExtracBase,
+          archivoHtml: archivoExtracBase,
           report_id: reportId,
-          fileName: 'fileName',
+          fileName: fileName,
           tenant_id: tenant,
           poolUserId: poolUserId,
         })
@@ -245,6 +258,10 @@ export default function ReportsPage() {
       return ('error al descargar generar el PDF');
     }
   }
+
+
+
+
 
   return (
     (
@@ -282,6 +299,19 @@ export default function ReportsPage() {
                   placeholder="Nombre de la empresa"
                   value={tenant}
                   onChange={(e) => setTenant(e.target.value)}
+                />
+              </div>
+
+              
+              {/* Empresa */}
+              <div className="space-y-2">
+                <Label htmlFor="fileName">Nombre del Archivo</Label>
+                <Input
+                  id="fileName"
+                  type="text"
+                  placeholder="fileName"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value)}
                 />
               </div>
 
@@ -354,22 +384,24 @@ export default function ReportsPage() {
                   Generar Reporte
                 </button>
               </div>
+
             </CardContent>
           </Card>
         </div>
-        <div id="container_to_generate">
-          
+
         {/* Columna derecha: Resultado HTML */}
         {resultadoHtml && (
           <div className="max-h-[800px] overflow-y-auto border rounded-lg p-4 shadow-inner">
-            <div dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
+            <div id="container_to_generate" dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
+
+
           </div>
         )}
 
-        </div>
-
-
       </div>
+
+
+
 
     )
   )

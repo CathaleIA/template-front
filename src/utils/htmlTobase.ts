@@ -7,7 +7,8 @@ export function divToBase64(divId: string): string | null {
 
   // Obtiene el HTML interno del div
   const htmlContent = div.innerHTML;
-
+  console.log("=============================== HTML TOMADO POR FRONT DIV ===============================")
+  console.log(htmlContent)
   // Convierte a base64
   const base64 = btoa(unescape(encodeURIComponent(htmlContent)));
 

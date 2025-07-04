@@ -4,7 +4,7 @@ import { Chart, ChartConfiguration, ChartOptions, registerables } from 'chart.js
 import { GraficaDataExi } from "../types/typeReports"
 Chart.register(...registerables);
 
-export const generarGraficaBase64 = async (chartData: any, width: number = 600, height: number = 400): Promise<string> => {
+export const generarGraficaBase64 = async (chartData: any, width: number = 500, height: number = 280): Promise<string> => {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -86,8 +86,8 @@ export const convertirArchivoABase64 = (file: File): Promise<string> => {
 
 export const generarGraficaExiBase64 = async (
     chartData: GraficaDataExi,
-    width: number = 600,
-    height: number = 400
+    width: number = 500,
+    height: number = 280,
 ): Promise<string> => {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');

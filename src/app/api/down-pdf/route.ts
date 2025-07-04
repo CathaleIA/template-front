@@ -8,6 +8,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
         }
         const lambdaResponse = await renderPDF(body);
+        console.log("Body recibido en /api/down-pdf:", body);
         return NextResponse.json(lambdaResponse)
     } catch (error: any) {
         console.error("Error al procesar la solicitud:", error.message);
