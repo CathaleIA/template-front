@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Building2, Loader2, CheckCircle, ArrowRight } from "lucide-react"
+import { Building2, Loader2, CheckCircle, ArrowRight, Factory } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
 
 export default function SelectTenantPage() {
   const router = useRouter()
@@ -57,6 +58,7 @@ export default function SelectTenantPage() {
       const region = userPoolId.split("_")[0] || "us-east-1"
       // const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
       const redirectUri = "http://localhost:3000/api/auth/callback"
+
       const scope = "email+openid+profile"
 
       const state = encodeURIComponent(
@@ -80,7 +82,12 @@ export default function SelectTenantPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 pt-10">
+      <div className="flex justify-center min-h-[calc(100vh-3.5rem)] p-4 pt-10"
+        style={{
+          backgroundImage: "url('assets/background-grad.svg')",
+          backgroundSize: "cover",
+        }}
+      >
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="relative inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
@@ -141,20 +148,37 @@ export default function SelectTenantPage() {
   }
 
   return (
-    <div className="flex justify-center min-h-[calc(100vh-3.5rem)] bg-background p-4 pt-10">
+
+    <div className="flex justify-center min-h-screen p-4 pt-10"
+      style={{
+        backgroundImage: "url('assets/background-grad.svg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
+      <div className="absolute inset-0 z-0 flex items-center justify-center">
+        <div className="w-full h-full bg-white/2 rounded-2xl blur-xs animate-ping" />
+      </div>
+
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="relative inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-lg mb-4">
-            <Building2 className="w-8 h-8 text-primary-foreground" />
-            <div className="absolute -inset-2 bg-primary/20 rounded-2xl animate-pulse"></div>
+        <div className="text-center">
+          <div className="mb-20">
+            <img
+              src="assets/logo-grad.svg"
+              alt="Logo de la empresa"
+              className="w-auto h-auto mx-auto"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Configurando Acceso</h1>
           <p className="text-muted-foreground">Preparando tu entorno de trabajo</p>
         </div>
 
-        <Card className="shadow-xl border border-border bg-card/95 backdrop-blur-sm">
+        <Card className="shadow-xl border-none bg-white/10 backdrop-blur-lg ">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center text-card-foreground">Selecciona tu Empresa</CardTitle>
+            <CardTitle className="text-xl text-center font-bold uppercase text-white">
+              SELECCIONAR EMPRESA
+            </CardTitle>
+
             <CardDescription className="text-center text-muted-foreground">
               Ingresa el nombre de tu organización para continuar
             </CardDescription>
@@ -166,7 +190,8 @@ export default function SelectTenantPage() {
                   Nombre de la Empresa
                 </Label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Factory className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white" />
+                  <Separator orientation="vertical" className="absolute left-9 h-4 w-[2px]" />
                   <Input
                     id="tenant"
                     type="text"
@@ -179,7 +204,7 @@ export default function SelectTenantPage() {
                       setTenant(inputValue);
                     }}
                     placeholder="Ej: Copower"
-                    className="pl-10 h-11 bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
+                    className="pl-10 h-11 border-border text-card-white bg-white/20 backdrop-blur-xs placeholder:text-white/30 focus:border-ring focus:ring-ring"
                     autoFocus
                   />
                 </div>
@@ -194,7 +219,12 @@ export default function SelectTenantPage() {
               <Button
                 type="submit"
                 disabled={loading || !tenant.trim()}
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-11 rounded-3xl font-semibold text-primary-foreground shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
+                style={{
+                  backgroundImage: "url('assets/button-grad.svg')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
                 {loading ? (
                   <div className="flex items-center space-x-2">
@@ -203,25 +233,22 @@ export default function SelectTenantPage() {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <span>Continuar</span>
+                    <span className="font-bold uppercase text-white">Continuar</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
+
                 )}
               </Button>
             </form>
 
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-center text-muted-foreground">
-                ¿Necesitas ayuda? Contacta a tu administrador de sistema
+                <span className="text-xs text-center font-bold " style={{ color: "#72bfaf" }}>¿Necesitas ayuda?</span> Contacta a tu administrador de sistema
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
-        </div>
       </div>
     </div>
   )
