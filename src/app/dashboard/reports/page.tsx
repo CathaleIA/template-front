@@ -4,6 +4,7 @@ import type React from "react"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+import { DataTable } from "@/components/reports/report-table";
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -384,7 +385,9 @@ export default function ReportsPage() {
                   Generar Reporte
                 </button>
               </div>
-
+                <div className="pt-4">
+                    <DataTable tenantName={tenant} userPoolid={poolUserId} />
+                </div>
             </CardContent>
           </Card>
         </div>
@@ -393,7 +396,7 @@ export default function ReportsPage() {
         {resultadoHtml && (
           <div className="max-h-[800px] overflow-y-auto border rounded-lg p-4 shadow-inner">
             <div id="container_to_generate" dangerouslySetInnerHTML={{ __html: resultadoHtml }} />
-
+              
 
           </div>
         )}
