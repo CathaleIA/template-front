@@ -337,7 +337,7 @@ export default function ReportsPage() {
                     id="poolUserId"
                     type="text"
                     placeholder="Nombre del usuario"
-                    value={userr?.userName}
+                    value={userr?.userName || ""}
                     onChange={(e) => setPoolUserId(e.target.value)}
                     className="h-11"
                   />

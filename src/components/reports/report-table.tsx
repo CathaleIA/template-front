@@ -306,7 +306,7 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">No hay archivos cargados</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                Haz clic en "Cargar Archivos PDF" para ver tus documentos disponibles.
+                Haz clic en Cargar Archivos PDF para ver tus documentos disponibles.
               </p>
             </div>
           )}
