@@ -7,6 +7,8 @@ const QuickSightDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const dashboardContainerRef = useRef<HTMLDivElement>(null);
+    const dashboardRef = useRef<any>(null); // Referencia al dashboard embebido
+    const embeddingContextRef = useRef<any>(null); // Referencia al contexto de embedding
 
     useEffect(() => {
         // Fetch the embed URL
@@ -38,17 +40,49 @@ const QuickSightDashboard = () => {
         fetchEmbedUrl();
     }, []);
 
+    // Función para limpiar el dashboard anterior
+    const cleanupDashboard = async () => {
+        if (dashboardRef.current) {
+            try {
+                console.log('Cleaning up previous dashboard...');
+                await dashboardRef.current.close();
+                dashboardRef.current = null;
+            } catch (error) {
+                console.warn('Error cleaning up dashboard:', error);
+            }
+        }
+        
+        if (embeddingContextRef.current) {
+            try {
+                await embeddingContextRef.current.destroy();
+                embeddingContextRef.current = null;
+            } catch (error) {
+                console.warn('Error destroying embedding context:', error);
+            }
+        }
+
+        // Limpiar el contenedor DOM
+        if (dashboardContainerRef.current) {
+            dashboardContainerRef.current.innerHTML = '';
+        }
+    };
+
     useEffect(() => {
         // Embed the dashboard when URL is available
         if (embedUrl && dashboardContainerRef.current) {
             const loadDashboard = async () => {
                 try {
+                    // Limpiar dashboard anterior antes de cargar uno nuevo
+                    await cleanupDashboard();
+                    
                     console.log('Embedding dashboard with URL:', embedUrl);
+                    
                     // Create embedding context
                     const { createEmbeddingContext } = QuickSightEmbedding;
                     const embeddingContext = await createEmbeddingContext();
+                    embeddingContextRef.current = embeddingContext;
                     
-                    // Set up frame options
+                    // Verificar que el contenedor esté disponible
                     if (!dashboardContainerRef.current) {
                         throw new Error('Dashboard container is not available');
                     }
@@ -61,7 +95,6 @@ const QuickSightDashboard = () => {
                         resizeHeightOnSizeChangedEvent: true
                     };
                     
-                    // Set up content options
                     const contentOptions = {
                         toolbarOptions: {
                             export: true,
@@ -79,11 +112,9 @@ const QuickSightDashboard = () => {
                     
                     // Embed the dashboard
                     const dashboard = await embeddingContext.embedDashboard(frameOptions, contentOptions);
+                    dashboardRef.current = dashboard;
                     
                     console.log('Dashboard loaded successfully');
-                    
-                    // Optional: Add event listeners
-                    console.warn('Error handling for the dashboard is not supported directly. Ensure proper error handling at the embedding context level.');
                     
                 } catch (err) {
                     console.error('Error embedding dashboard:', err);
@@ -93,7 +124,19 @@ const QuickSightDashboard = () => {
             
             loadDashboard();
         }
+
+        // Cleanup function para cuando el componente se desmonte o cambie embedUrl
+        return () => {
+            cleanupDashboard();
+        };
     }, [embedUrl]);
+
+    // Cleanup cuando el componente se desmonta
+    useEffect(() => {
+        return () => {
+            cleanupDashboard();
+        };
+    }, []);
 
     if (isLoading) {
         return (

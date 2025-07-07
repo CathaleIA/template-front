@@ -19,7 +19,8 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
         icon: NotepadText,
         items: [
           {
-            title: "COSTAYACO",
+            title: "CAMPO 1",
+            url: "/dashboard/historico",
             icon: Folder,
             items: [
               {

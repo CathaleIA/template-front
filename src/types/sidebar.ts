@@ -32,9 +32,3 @@ export interface SidebarData {
     icon: LucideIcon
   }>
 }
-
-export interface NavUserData {
-  name: string
-  email: string
-  avatar: string
-}
