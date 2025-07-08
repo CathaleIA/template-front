@@ -7,9 +7,10 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
     navMain: [
       {
         title: "Generar Reportes",
-        url: "/dashboard/reports",
+        url: "/dashboard",
         icon: NotepadText,
         items: [
+          { title: "Crear Protocolos", url: "/dashboard/reports" },
           { title: "Listar reportes", url: "/dashboard/listreports" },
           { title: "Configuraciones", url: "#" },
         ],

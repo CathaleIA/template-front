@@ -56,8 +56,8 @@ export default function SelectTenantPage() {
       }
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
-      // const redirectUri = "http://localhost:3000/api/auth/callback"
+      //const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
+      const redirectUri = "http://localhost:3000/api/auth/callback"
 
       const scope = "email+openid+profile"
 
