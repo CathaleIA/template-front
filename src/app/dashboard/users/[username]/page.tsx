@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import type { UserInfo } from "@/types/user"
-import { Trash2, Edit, Save, X } from "lucide-react"
 
 export default function UserPage() {
   const params = useParams()
@@ -158,12 +157,12 @@ export default function UserPage() {
             {!isEditing ? (
               <>
                 <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
+                  Edit user
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      Delete user
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -183,10 +182,10 @@ export default function UserPage() {
             ) : (
               <>
                 <Button variant="outline" onClick={() => setIsEditing(false)}>
-                  <X className="mr-2 h-4 w-4" /> Cancel
+                   Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
-                  <Save className="mr-2 h-4 w-4" /> {saving ? "Saving..." : "Save"}
+                   {saving ? "Saving..." : "Save"}
                 </Button>
               </>
             )}

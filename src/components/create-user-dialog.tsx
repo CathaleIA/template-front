@@ -225,17 +225,14 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
             <Button type="button" variant="outline" onClick={handleCancel} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button type="submit" variant="default"  disabled={loading} className="gap-2">
               {loading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   Creating...
                 </>
               ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Create User
-                </>
+                  <p>Create User</p>
               )}
             </Button>
           </DialogFooter>

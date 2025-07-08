@@ -56,7 +56,6 @@ export function ImprovedConclusions() {
     <Card className="border-border">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <FileText className="w-5 h-5 text-primary" />
           Conclusiones
           {conclusiones.length > 0 && (
             <Badge variant="secondary" className="ml-2">
