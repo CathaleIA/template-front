@@ -14,15 +14,6 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
           { title: "Configuraciones", url: "#" },
         ],
       },
-            {
-        title: "testando tabla",
-        url: "/dashboard/test",
-        icon: NotepadText,
-        items: [
-          { title: "Listar usuarios", url: "/dashboard/test" },
-          { title: "Configuraciones", url: "#" },
-        ],
-      },
       {
         title: "Visualización I & D",
         icon: NotepadText,
