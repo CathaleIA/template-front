@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { setTenantConfig } from "@/utils/save-tenant"
@@ -10,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Building2, Loader2, CheckCircle, ArrowRight, Factory } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import Image from "next/image" // ✅ Importamos el componente Image
 
 export default function SelectTenantPage() {
   const router = useRouter()
@@ -56,17 +55,14 @@ export default function SelectTenantPage() {
       }
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      // const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
       const redirectUri = "http://localhost:3000/api/auth/callback"
-
       const scope = "email+openid+profile"
-
       const state = encodeURIComponent(
         JSON.stringify({
           userPoolId,
           appClientId: clientId,
           userPoolDomain,
-        }),
+        })
       )
 
       const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`
@@ -84,7 +80,7 @@ export default function SelectTenantPage() {
     return (
       <div className="flex justify-center min-h-screen p-4 pt-40"
         style={{
-          backgroundImage: "url('assets/background-grad.svg')",
+          backgroundImage: "url('/assets/background-grad.svg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat"
@@ -93,16 +89,18 @@ export default function SelectTenantPage() {
         <div className="w-full max-w-md">
           <div className="text-center">
             <div className="mb-20">
-              <img
-                src="assets/logo-grad.svg"
+              {/* ✅ Reemplazado <img> por <Image> */}
+              <Image
+                src="/assets/logo-grad.svg"
                 alt="Logo de la empresa"
+                width={150}
+                height={50}
                 className="w-[150px] h-auto mx-auto"
               />
             </div>
             <p className="text-muted-foreground pb-2">Preparando tu entorno de trabajo</p>
           </div>
-
-          <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg ">
+          <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-xl text-center text-card-foreground">Procesando</CardTitle>
               <CardDescription className="text-center text-white">
@@ -114,11 +112,9 @@ export default function SelectTenantPage() {
                 <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 <span className="text-sm font-medium text-card-foreground">{loadingStage}</span>
               </div>
-
               <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                 <div className="h-full bg-primary rounded-full animate-pulse"></div>
               </div>
-
               <div className="space-y-3 text-sm">
                 <div className="flex items-center space-x-3 text-white">
                   <CheckCircle className="w-4 h-4 text-green-500" />
@@ -133,7 +129,6 @@ export default function SelectTenantPage() {
                   <span>Iniciando sesión</span>
                 </div>
               </div>
-
               <div className="pt-4 border-t border-border">
                 <p className="text-xs text-center text-foreground">
                   Este proceso puede tomar unos segundos...
@@ -147,10 +142,9 @@ export default function SelectTenantPage() {
   }
 
   return (
-
     <div className="flex justify-center min-h-screen p-4 pt-40"
       style={{
-        backgroundImage: "url('assets/background-grad.svg')",
+        backgroundImage: "url('/assets/background-grad.svg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"
@@ -159,21 +153,22 @@ export default function SelectTenantPage() {
       <div className="w-full max-w-md">
         <div className="text-center">
           <div className="mb-20">
-            <img
-              src="assets/logo-grad.svg"
+            {/* ✅ Reemplazado <img> por <Image> */}
+            <Image
+              src="/assets/logo-grad.svg"
               alt="Logo de la empresa"
+              width={150}
+              height={50}
               className="w-[150px] h-auto mx-auto"
             />
           </div>
           <p className="text-muted-foreground pb-2">Preparando tu entorno de trabajo</p>
         </div>
-
-        <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg ">
+        <Card className="shadow-xl border-1 bg-white/10 backdrop-blur-lg">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl text-center font-bold uppercase text-white">
               SELECCIONAR EMPRESA
             </CardTitle>
-
             <CardDescription className="text-center text-muted-foreground">
               Ingresa el nombre de tu organización para continuar
             </CardDescription>
@@ -193,10 +188,10 @@ export default function SelectTenantPage() {
                     value={tenant}
                     onChange={(e) => {
                       const inputValue = e.target.value
-                        .toLowerCase() // convertir a minúsculas
-                        .trim()        // quitar espacios al inicio y final
-                        .replace(/\s+/g, ''); // eliminar todos los espacios internos (opcional)
-                      setTenant(inputValue);
+                        .toLowerCase()
+                        .trim()
+                        .replace(/\s+/g, "")
+                      setTenant(inputValue)
                     }}
                     placeholder="Ej: Copower"
                     className="pl-10 h-11 border-border text-card-white bg-white/20 backdrop-blur-xs placeholder:text-white/30 focus:border-ring focus:ring-ring"
@@ -204,19 +199,17 @@ export default function SelectTenantPage() {
                   />
                 </div>
               </div>
-
               {error && (
                 <Alert variant="destructive" className="border-destructive/20 bg-destructive/10">
                   <AlertDescription className="text-sm text-destructive">{error}</AlertDescription>
                 </Alert>
               )}
-
               <Button
                 type="submit"
                 disabled={loading || !tenant.trim()}
                 className="w-full h-11 rounded-3xl font-semibold text-primary-foreground shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
                 style={{
-                  backgroundImage: "url('assets/button-grad.svg')",
+                  backgroundImage: "url('/assets/button-grad.svg')",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -231,19 +224,19 @@ export default function SelectTenantPage() {
                     <span className="font-bold uppercase text-white">Continuar</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
-
                 )}
               </Button>
             </form>
-
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-center text-muted-foreground">
-                <span className="text-xs text-center font-bold " style={{ color: "#72bfaf" }}>¿Necesitas ayuda?</span> Contacta a tu administrador de sistema
+                <span className="text-xs text-center font-bold" style={{ color: "#72bfaf" }}>
+                  ¿Necesitas ayuda?
+                </span>{" "}
+                Contacta a tu administrador de sistema
               </p>
             </div>
           </CardContent>
         </Card>
-
       </div>
     </div>
   )
