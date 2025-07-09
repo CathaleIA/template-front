@@ -16,8 +16,8 @@ const DashboardPage = () => {
           <p><strong>App Origin:</strong> {process.env.AMPLIFY_APP_ORIGIN}</p>
           <p><strong>AWS Account:</strong> {process.env.AWS_ACCOUNT_ID}</p>
           <p><strong>Región:</strong> {process.env.REGION}</p>
-          <p><strong>KEY ID:</strong> {process.env.ACCESS_KEY_ID}</p>
-          <p><strong>SECRET ACCESS</strong> {process.env.SECRET_ACCESS_KEY}</p>
+          <p><strong>KEY ID:</strong> {process.env.NEXT_PUBLIC_ACCESS_KEY_ID}</p>
+          <p><strong>SECRET ACCESS</strong> {process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY}</p>
         </div>
 
         {/* Incrustar el dashboard de QuickSight */}

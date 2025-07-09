@@ -4,8 +4,8 @@ import AWS from 'aws-sdk';
 export async function GET(req: NextRequest) {
     // Configure AWS SDK with your credentials and region
     AWS.config.update({
-        accessKeyId: process.env.ACCESS_KEY_ID || '',  // Reemplaza con el nombre de tu variable de entorno
-        secretAccessKey: process.env.SECRET_ACCESS_KEY || '',  // Reemplaza con el nombre de tu variable de entorno
+        accessKeyId: process.env.NEXT_PUBLIC_ACCESS_KEY_ID || '',  // Reemplaza con el nombre de tu variable de entorno
+        secretAccessKey: process.env.NEXT_PUBLIC_ACCESS_KEY_ID || '',  // Reemplaza con el nombre de tu variable de entorno
         region: process.env.REGION || 'us-east-1',  // Si no tienes variable de entorno, usa el valor por defecto
     });
     const quicksight = new AWS.QuickSight();
