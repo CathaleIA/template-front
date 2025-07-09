@@ -325,8 +325,8 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
   };
   
   return (
-    <div className="bg-white p-4 rounded-xl shadow-2xl border border-gray-200">
-      <h3 className="text-gray-800 text-sm font-semibold mb-2 text-center">{title}</h3>
+<div className="bg-card p-4 rounded-xl shadow-2xl border border-border">
+      <h3 className="text-foreground text-sm font-semibold mb-2 text-center">{title}</h3>
       
       <div className="relative w-full h-32">
         <ResponsiveContainer width="100%" height="100%">
@@ -368,13 +368,13 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
         </ResponsiveContainer>
         
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
-          <div className="text-gray-900 text-2xl font-bold">
+          <div className="text-foreground text-2xl font-bold">
             {formatValue(value)}
           </div>
-          <div className="text-gray-700 text-sm font-medium">
+          <div className="text-card-foreground text-sm font-medium">
             {unit}
           </div>
-          <div className="text-xs text-gray-600 mt-1">
+          <div className="text-xs text-muted-foreground mt-1">
             {alertLevel === "normal" ? "NORMAL" : alertLevel === "warning" ? "ADVERTENCIA" : "PELIGRO"}
           </div>
         </div>
@@ -870,7 +870,7 @@ export default function EnhancedAlertsPage() {
         </div>
 
         {/* KPI Gauges Section */}
-        <div className="grid bg-white grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <GaugeChart
             title="RPM"
             value={data.motor.rpm}

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   // La URL a donde quieres redirigir tras el logout
   const logoutUri = encodeURIComponent("https://appui.d1ajb21hsxi2dm.amplifyapp.com/select-tenant");
-  //const logoutUri = encodeURIComponent("http://localhost:3000/select-tenant"); 
+  // const logoutUri = encodeURIComponent("http://localhost:3000/select-tenant"); 
 
   // Construcción de la URL de Cognito Logout
   const cognitoLogoutUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/logout?client_id=${encodeURIComponent(

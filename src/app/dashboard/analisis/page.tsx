@@ -177,34 +177,34 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background p-6">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Brain className="h-8 w-8 text-blue-600" />
+              <Brain className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Motor Analysis AI</h1>
-                <p className="text-sm text-gray-500">Neural Network Predictive Analytics</p>
+                <h1 className="text-3xl font-bold">Motor Analysis AI</h1>
+                <p className="text-muted-foreground">Neural Network Predictive Analytics</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 {neuralProcessing ? (
                   <>
-                    <div className="animate-pulse h-3 w-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm text-gray-600">Procesando...</span>
+                    <div className="animate-pulse h-3 w-3 bg-primary rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Procesando...</span>
                   </>
                 ) : analysisComplete ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-gray-600">Análisis completado</span>
+                    <span className="text-sm text-muted-foreground">Análisis completado</span>
                   </>
                 ) : (
                   <>
-                    <Zap className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">Esperando análisis</span>
+                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Esperando análisis</span>
                   </>
                 )}
               </div>
@@ -216,42 +216,42 @@ const Dashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Registros</p>
-                <p className="text-2xl font-bold text-gray-900">{data.length}</p>
+                <p className="text-sm text-muted-foreground">Total Registros</p>
+                <p className="text-2xl font-bold text-foreground">{data.length}</p>
               </div>
-              <Activity className="h-8 w-8 text-blue-500" />
+              <Activity className="h-8 w-8 text-primary" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Anomalías Detectadas</p>
-                <p className="text-2xl font-bold text-red-600">{anomalies.length}</p>
+                <p className="text-sm text-muted-foreground">Anomalías Detectadas</p>
+                <p className="text-2xl font-bold text-destructive">{anomalies.length}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Estado Crítico</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-muted-foreground">Estado Crítico</p>
+                <p className="text-2xl font-bold text-destructive">
                   {data.filter(d => d.estadoGeneral === 'Crítico').length}
                 </p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Confianza IA</p>
+                <p className="text-sm text-muted-foreground">Confianza IA</p>
                 <p className="text-2xl font-bold text-green-600">
                   {analysisComplete ? '94.2%' : '--'}
                 </p>
@@ -263,13 +263,13 @@ const Dashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chart Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Análisis de Tendencias</h2>
+              <h2 className="text-lg font-semibold text-foreground">Análisis de Tendencias</h2>
               <select
                 value={selectedParameter}
                 onChange={(e) => setSelectedParameter(e.target.value)}
-                className="text-sm text-gray-800 border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-sm text-foreground border border-input rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring bg-background"
               >
                 <option value="temperatura">Temperatura</option>
                 <option value="torque">Torque</option>
@@ -297,25 +297,25 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Trend Analysis */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Análisis Neural - Tendencias</h2>
+          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Análisis Neural - Tendencias</h2>
             <div className="space-y-4">
               {trends.map((trend, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center space-x-3">
                     {getTrendIcon(trend.trend)}
                     <div>
-                      <p className="font-medium text-gray-800 capitalize">{trend.parameter}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-foreground capitalize">{trend.parameter}</p>
+                      <p className="text-sm text-muted-foreground">
                         Confianza: {(trend.confidence * 100).toFixed(1)}%
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium text-foreground">
                       Predicción: {trend.prediction.toFixed(2)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {trend.anomalies} anomalías
                     </p>
                   </div>
@@ -326,29 +326,29 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Anomaly Detection */}
-        <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Detección de Anomalías</h2>
+        <div className="mt-6 bg-card rounded-lg shadow-sm p-6 border border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Detección de Anomalías</h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parámetro</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severidad</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Probabilidad</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Parámetro</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Valor</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Severidad</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Probabilidad</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {anomalies.map((anomaly, index) => (
                   <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(anomaly.timestamp).toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{anomaly.parameter}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{anomaly.value.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{new Date(anomaly.timestamp).toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground capitalize">{anomaly.parameter}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{anomaly.value.toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeverityColor(anomaly.severity)}`}>{anomaly.severity}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(anomaly.probability * 100).toFixed(1)}%</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{(anomaly.probability * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>
