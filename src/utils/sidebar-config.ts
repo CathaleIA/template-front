@@ -64,24 +64,19 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
       },
     ],
   },
-  innovalub: {
+  dautom: {
     navMain: [
       {
-        title: "Visualización de Data",
-        url: "/dashboard/alerts",
-        icon: ChartArea,
+        title: "Generar Reportes",
+        url: "/dashboard",
+        icon: NotepadText,
         items: [
-          { title: "Análisis de sensores", url: "/dashboard/sensors" },
-          { title: "Alertas operativas", url: "/dashboard/alerts" },
+          { title: "Generar reportes", url: "/dashboard/reports" },
+          { title: "Listar reportes", url: "/dashboard/listreports" },
         ],
       },
     ],
     projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
     ],
     navSecondary: [
       {
