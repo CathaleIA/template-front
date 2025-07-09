@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useState } from "react"
 import type { MainNavItem, NavItem } from "@/types/sidebar"
+import Link from "next/link"
 
 interface NavMainProps {
   items: MainNavItem[]
@@ -70,10 +71,10 @@ function NavItemRenderer({ item, level = 0 }: { item: NavItem; level?: number })
       asChild
       className={level > 0 ? "pl-6" : ""}
     >
-      <a href={item.url || "#"}>
+      <Link href={item.url || "#"}>
         {item.icon && <item.icon />}
         <span>{item.title}</span>
-      </a>
+      </Link>
     </SidebarMenuSubButton>
   )
 }

@@ -231,7 +231,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -248,13 +248,13 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
           {/* Columna izquierda: Formulario - 43% */}
           <div className="xl:col-span-3 space-y-6">
-            <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg">
+            <Card className="shadow-lg border-none">
+              <CardHeader className="bg-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
                   <Building className="w-5 h-5" />
                   Configuración del Reporte
                 </CardTitle>
-                <CardDescription className="text-primary-foreground/80">
+                <CardDescription className="text-muted-foreground">
                   Completa los datos necesarios para generar el reporte
                 </CardDescription>
               </CardHeader>
@@ -282,6 +282,7 @@ export default function ReportsPage() {
                   <Input
                     id="empresa"
                     type="text"
+                    disabled
                     placeholder="Nombre de la empresa"
                     value={tenantLocalHost}
                     onChange={(e) => setTenant(e.target.value)}
@@ -290,7 +291,7 @@ export default function ReportsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="fileName" className="text-sm font-semibold text-foreground">
-                    Nombre del Archivo
+                    Nombre del archivo
                   </Label>
                   <Input
                     id="fileName"
@@ -307,6 +308,7 @@ export default function ReportsPage() {
                   </Label>
                   <Input
                     id="poolUserId"
+                    disabled
                     type="text"
                     placeholder="Nombre del usuario"
                     value={userr?.userName || ""}
@@ -372,10 +374,7 @@ export default function ReportsPage() {
                         Procesando...
                       </>
                     ) : (
-                      <>
-                        <Upload className="w-5 h-5 mr-2" />
-                        Procesar Archivo
-                      </>
+                      <p>Procesar Archivo</p>
                     )}
                   </Button>
                   <ImprovedConclusions />
@@ -385,18 +384,12 @@ export default function ReportsPage() {
                       generateReport()
                     }}
                     disabled={!resultadoHtml || isGeneratingPdf}
-                    className="w-full h-12 bg-chart-2 hover:bg-chart-2/90 text-primary-foreground font-semibold"
+                    className="w-full h-12 "
                   >
                     {isGeneratingPdf ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Generando PDF...
-                      </>
+                      <p>Generando PDF...</p>
                     ) : (
-                      <>
-                        <Download className="w-5 h-5 mr-2" />
-                        Generar Reporte PDF
-                      </>
+                      <p>Generar Reporte PDF</p>
                     )}
                   </Button>
                   {/* Botones simples de descarga */}
@@ -404,7 +397,7 @@ export default function ReportsPage() {
                     <Button
                       onClick={handleDownload}
                       disabled={isDownloading || !fileName.trim()}
-                      className="flex-1 h-11 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                      className="flex-1 h-11"
                     >
                       {isDownloading ? (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -417,7 +410,7 @@ export default function ReportsPage() {
                       onClick={handlePreview}
                       disabled={!pdfBase64}
                       variant="outline"
-                      className="flex-1 h-11 border-green-600 text-green-600 hover:bg-green-50 bg-transparent"
+                      className="flex-1 h-11"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Vista Previa
@@ -429,13 +422,13 @@ export default function ReportsPage() {
           </div>
           {/* Columna derecha: Vista previa del reporte - 57% */}
           <div className="xl:col-span-4 space-y-6">
-            <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm h-full">
-              <CardHeader className="bg-gradient-to-r from-muted-foreground to-muted-foreground/90 text-background rounded-t-lg">
+            <Card className="shadow-lg border-none h-full">
+              <CardHeader className="bg-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Vista Previa del Reporte
                 </CardTitle>
-                <CardDescription className="text-background/80">
+                <CardDescription className="text-muted-foreground">
                   {resultadoHtml
                     ? "Reporte generado exitosamente"
                     : "El reporte aparecerá aquí una vez procesado"}
