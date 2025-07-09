@@ -11,9 +11,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
 import { useEffect, useState } from "react"
@@ -35,16 +32,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (tenant && tenant in SIDEBAR_BY_TENANT) {
       setSidebarData(SIDEBAR_BY_TENANT[tenant])
     } else {
-      setSidebarData(null) // o SIDEBAR_BY_TENANT['default']
+      setSidebarData(null)
     }
   }, [userr?.tenantName])
 
 
-  const tenantLogo = userr?.tenantName ? `/logos/${userr?.tenantName}.svg` : "/cathaleia.png"
+  const tenantLogo = userr?.tenantName ? `/logos/${userr?.tenantName}.svg` : "/logos/cathaleia.png"
   const navUserData: NavUserData = {
     name: userr?.userName?.toString() ?? "Usuario",
     email: userr?.email ?? "correo@desconocido.com",
-    avatar: "/avatars/default.png" // usa tu ruta preferida
+    avatar: "/avatars/default.png"
   }
 
   return (
@@ -52,28 +49,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
       {...props}
     >
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex w-15 h-10 items-center justify-center rounded-md bg-white">
-                  <img
-                    src={tenantLogo}
-                    alt={`${"hola"} logo`}
-                    className="h-full object-contain px-2"
-                  />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{userr?.tenantName}</span>
-                  <span className="truncate text-xs">{userr?.tenantTier}</span>
-                </div>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="gap-0 px-0 justify-center">
+        {/* Logo a ancho completo */}
+        <div className="flex h-18 w-full items-center justify-center bg-sidebar">
+            <img
+              src={tenantLogo}
+              alt="Company Logo"
+              className="h-full w-full object-contain"
+            />
+        </div>
+
+        {/* Nombre y Tier en línea horizontal */}
+        <div className="flex items-center justify-center px-3 py-2">
+          <span className="truncate text-xs italic uppercase text-sidebar-foreground/60">
+            {userr?.tenantName}
+          </span>
+          <Separator orientation="vertical" className="mx-3" />
+          <span className="text-xs italic text-sidebar-foreground/40">
+            {userr?.tenantTier}
+          </span>
+        </div>
       </SidebarHeader>
-      <Separator/>
+      <Separator />
       <SidebarContent>
         {sidebarData && <NavMain items={sidebarData.navMain} />}
         {sidebarData?.projects && <NavProjects projects={sidebarData.projects} />}
@@ -81,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavSecondary items={sidebarData.navSecondary} className="mt-auto" />
         )}
       </SidebarContent>
-      <Separator/>
+      <Separator />
       <SidebarFooter>
         <NavUser user={navUserData} />
       </SidebarFooter>

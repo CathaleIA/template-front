@@ -303,7 +303,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
   
   const data = [
     { name: 'value', value: percentage, color: getColor() },
-    { name: 'empty', value: emptyPercentage, color: '#374151' }
+    { name: 'empty', value: emptyPercentage, color: '#E5E7EB' }
   ];
   
   function getColor() {
@@ -325,8 +325,8 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
   };
   
   return (
-    <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4 rounded-xl shadow-2xl border border-gray-700">
-      <h3 className="text-gray-200 text-sm font-semibold mb-2 text-center">{title}</h3>
+    <div className="bg-white p-4 rounded-xl shadow-2xl border border-gray-200">
+      <h3 className="text-gray-800 text-sm font-semibold mb-2 text-center">{title}</h3>
       
       <div className="relative w-full h-32">
         <ResponsiveContainer width="100%" height="100%">
@@ -368,13 +368,13 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
         </ResponsiveContainer>
         
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
-          <div className="text-white text-2xl font-bold">
+          <div className="text-gray-900 text-2xl font-bold">
             {formatValue(value)}
           </div>
-          <div className="text-gray-300 text-sm font-medium">
+          <div className="text-gray-700 text-sm font-medium">
             {unit}
           </div>
-          <div className="text-xs text-gray-400 mt-1">
+          <div className="text-xs text-gray-600 mt-1">
             {alertLevel === "normal" ? "NORMAL" : alertLevel === "warning" ? "ADVERTENCIA" : "PELIGRO"}
           </div>
         </div>
@@ -870,7 +870,7 @@ export default function EnhancedAlertsPage() {
         </div>
 
         {/* KPI Gauges Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid bg-white grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <GaugeChart
             title="RPM"
             value={data.motor.rpm}
@@ -994,7 +994,7 @@ export default function EnhancedAlertsPage() {
                     <p className="text-lg font-bold">{data.motor.cargaMotor}%</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Velocidad Vehículo</p>
+                    <p className="text-sm font-medium text-gray-500">Velocidad Promedio</p>
                     <p className="text-lg font-bold">{data.motor.velocidadVehiculo} km/h</p>
                   </div>
                   <div>
