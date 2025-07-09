@@ -228,7 +228,7 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
   })
 
   return (
-    <div className="w-full space-y-6">
+    <div className="space-y-6">
       <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
         <CardHeader className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg">
           <CardTitle className="flex items-center gap-2">
@@ -404,5 +404,6 @@ export function DataTable({ tenantName, userPoolid }: DataTableProps) {
         </CardContent>
       </Card>
     </div>
+
   )
 }

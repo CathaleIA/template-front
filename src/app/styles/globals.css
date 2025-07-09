@@ -166,38 +166,6 @@
   }
 }
 
-/* Enlaces */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Soporte de dark mode */
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
-
-/*SIDEBAR*/
-/* Asegurar que el contenido principal se ajuste correctamente */
-.sidebar-inset {
-  transition: var(--sidebar-transition);
-}
-
-/* Mejorar las transiciones globales */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow,
-    transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-body[data-scroll-locked] {
-  margin-right: 0 !important;
-  padding-right: 0 !important;
-  overflow: visible !important;
-}
 
 /* A4 Page layout */
 .a4-page {

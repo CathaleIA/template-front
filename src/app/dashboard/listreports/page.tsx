@@ -10,7 +10,7 @@ export default function ListTable() {
     const tenantLocalHost = localStorage.getItem("tenant") || tenant
     const { userr } = useUser()
     return (
-        <div>
+        <div className="min-h-screen bg-background p-6">
             <DataTable tenantName={tenantLocalHost} userPoolid={userr?.userName || ""} />
         </div>
     )
