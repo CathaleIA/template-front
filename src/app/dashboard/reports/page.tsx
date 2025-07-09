@@ -1,5 +1,5 @@
 "use client"
-import "@/app/styles/embedStyles.css"
+
 import type React from "react"
 import { useUser } from "@/context/UserContext"
 import { useState } from "react"

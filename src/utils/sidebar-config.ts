@@ -10,9 +10,8 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
         url: "/dashboard",
         icon: NotepadText,
         items: [
-          { title: "Crear Protocolos", url: "/dashboard/reports" },
+          { title: "Generar reportes", url: "/dashboard/reports" },
           { title: "Listar reportes", url: "/dashboard/listreports" },
-          { title: "Configuraciones", url: "#" },
         ],
       },
       {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import {serviceRender} from "../../service-report/apiServerRender";
+import {serviceRender} from "../../../components/service-report/apiServerRender";
 import { RequestBody } from "../../../types/typeReports";
 
 export async function POST(req:Request) {
