@@ -1,5 +1,5 @@
 "use client"
-// import "@/app/styles/embedStyles.css"
+import "@/app/styles/embedStyles.css"
 import type React from "react"
 import { useUser } from "@/context/UserContext"
 import { useState } from "react"
@@ -234,9 +234,16 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="mb-6">
-            <h1 className="text-3xl font-bold">Generador de Reportes</h1>
-            <p className="text-muted-foreground">Configura y genera reportes técnicos de manera eficiente</p>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-primary rounded-lg">
+              <BarChart3 className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-4xl font-bold text-foreground">Generador de Reportes</h1>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            Configura y genera reportes técnicos de manera eficiente
+          </p>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
           {/* Columna izquierda: Formulario - 43% */}
