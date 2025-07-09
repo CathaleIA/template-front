@@ -1,243 +1,96 @@
 "use client"
 
-import * as React from "react"
-import { Plus, User, Mail, Shield } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+  Breadcrumb,
+  BreadcrumbItem as UIBreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Home } from "lucide-react"
 
-interface CreateUserData {
-  userName: string
-  userEmail: string
-  userRole: "TenantAdmin" | "TenantUser" | ""
+// Configuración para nombres más amigables
+const routeNames: Record<string, string> = {
+  users: "Usuarios",
+  settings: "Configuración",
+  profile: "Perfil",
+  products: "Productos",
+  orders: "Pedidos",
+  analytics: "Analíticas",
+  reports: "Reportes",
+  admin: "Administración",
+  billing: "Facturación",
+  team: "Equipo",
+  projects: "Proyectos",
+  tasks: "Tareas",
+  calendar: "Calendario",
+  messages: "Mensajes",
+  notifications: "Notificaciones",
 }
 
-interface CreateUserDialogProps {
-  onUserCreated?: (user: CreateUserData) => void
+interface BreadcrumbItem {
+  label: string
+  href: string
+  isCurrentPage: boolean
 }
 
-export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
-  const [open, setOpen] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
-  const [formData, setFormData] = React.useState<CreateUserData>({
-    userName: "",
-    userEmail: "",
-    userRole: "",
-  })
+export function DynamicBreadcrumb() {
+  const pathname = usePathname()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const generateBreadcrumbs = (): BreadcrumbItem[] => {
+    const segments = pathname.split("/").filter((segment) => segment !== "")
+    const breadcrumbs: BreadcrumbItem[] = []
 
-    // Validación básica
-    if (!formData.userName || !formData.userEmail || !formData.userRole) {
-      toast(
-        "Error",
-        {description: "Please fill in all fields",
 
+    // Generar breadcrumbs para cada segmento
+    segments.forEach((segment, index) => {
+      const href = "/" + segments.slice(0, index + 1).join("/")
+      const isCurrentPage = index === segments.length - 1
+
+      // Usar nombre amigable si existe, sino capitalizar el segmento
+      const label = routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
+
+      breadcrumbs.push({
+        label,
+        href,
+        isCurrentPage,
       })
-      return
-    }
+    })
 
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.userEmail)) {
-      toast(
-        "Error",
-        {description: "Please enter a valid email address",
-
-      })
-      return
-    }
-
-    setLoading(true)
-    try {
-      // Aquí harías la llamada a tu API
-      const response = await fetch("/api/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userName: formData.userName,
-          userEmail: formData.userEmail,
-          userRole: formData.userRole,
-        }),
-      })
-
-      if (response.ok) {
-        toast(
-          "Success",
-          {description: "User created successfully",
-        })
-
-        // Callback para notificar al componente padre
-        onUserCreated?.(formData)
-
-        // Resetear formulario y cerrar dialog
-        setFormData({ userName: "", userEmail: "", userRole: "" })
-        setOpen(false)
-      } else {
-        throw new Error("Failed to create user")
-      }
-    } catch (error) {
-      console.error("Error creating user:", error)
-      toast(
-        "Error",
-        {description: "Failed to create user. Please try again.",
-      })
-    } finally {
-      setLoading(false)
-    }
+    return breadcrumbs
   }
 
-  const handleCancel = () => {
-    setFormData({ userName: "", userEmail: "", userRole: "" })
-    setOpen(false)
-  }
+  const breadcrumbs = generateBreadcrumbs()
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case "TenantAdmin":
-        return "default"
-      case "TenantUser":
-        return "secondary"
-      default:
-        return "outline"
-    }
+  // No mostrar breadcrumb si solo hay "Inicio"
+  if (breadcrumbs.length <= 1) {
+    return null
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create User
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            Create New User
-          </DialogTitle>
-          <DialogDescription className="text-base">
-            Add a new user to the system. Fill in the required information below.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-6">
-            {/* Username Field */}
-            <div className="space-y-2">
-              <Label htmlFor="userName" className="text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                Username
-              </Label>
-              <Input
-                id="userName"
-                placeholder="Enter username"
-                value={formData.userName}
-                onChange={(e) => setFormData((prev) => ({ ...prev, userName: e.target.value }))}
-                className="h-11"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label htmlFor="userEmail" className="text-sm font-medium flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                Email Address
-              </Label>
-              <Input
-                id="userEmail"
-                type="email"
-                placeholder="Enter email address"
-                value={formData.userEmail}
-                onChange={(e) => setFormData((prev) => ({ ...prev, userEmail: e.target.value }))}
-                className="h-11"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Role Field */}
-            <div className="space-y-2">
-              <Label htmlFor="userRole" className="text-sm font-medium flex items-center gap-2">
-                <Shield className="h-4 w-4 text-muted-foreground" />
-                User Role
-              </Label>
-              <Select
-                value={formData.userRole}
-                onValueChange={(value: "TenantAdmin" | "TenantUser") =>
-                  setFormData((prev) => ({ ...prev, userRole: value }))
-                }
-                disabled={loading}
-              >
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select user role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TenantAdmin">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="default" className="text-xs">
-                        Admin
-                      </Badge>
-                      <span>Tenant Administrator</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="TenantUser">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        User
-                      </Badge>
-                      <span>Tenant User</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {formData.userRole && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-sm text-muted-foreground">Selected:</span>
-                  <Badge variant={getRoleBadgeVariant(formData.userRole)} className="text-xs">
-                    {formData.userRole}
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="default"  disabled={loading} className="gap-2">
-              {loading ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating...
-                </>
+    <Breadcrumb className="hidden sm:block">
+      <BreadcrumbList>
+        {breadcrumbs.map((breadcrumb, index) => (
+          <div key={breadcrumb.href} className="flex items-center">
+            <UIBreadcrumbItem>
+              {breadcrumb.isCurrentPage ? (
+                <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
               ) : (
-                  <p>Create User</p>
+                <BreadcrumbLink asChild>
+                  <Link href={breadcrumb.href} className="flex items-center">
+                    {index === 0 && <Home className="h-4 w-4 mr-1" />}
+                    {breadcrumb.label}
+                  </Link>
+                </BreadcrumbLink>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            </UIBreadcrumbItem>
+            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+          </div>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }
