@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { downloadFile } from "../../service-report/apiServerDownDocs";
+import { downloadFile } from "../../../components/service-report/apiServerDownDocs";
 import { requestDown } from "@/types/typeDownFile";
 export async function POST(req: Request) {
     try {

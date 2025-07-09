@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { renderPDF } from "../../service-report/apiServerRenderPDF";
+import { renderPDF } from "../../../components/service-report/apiServerRenderPDF";
 import { requestToRender } from "@/types/typePdfRender";
 export async function POST(req: Request) {
     try {

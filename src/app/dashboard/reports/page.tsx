@@ -1,5 +1,5 @@
 "use client"
-import "@/app/styles/embedStyles.css"
+
 import type React from "react"
 import { useUser } from "@/context/UserContext"
 import { useState } from "react"
@@ -190,7 +190,6 @@ export default function ReportsPage() {
           alert("Error al descargar el archivo")
         }
       } else {
-        const reportId = localStorage.getItem("report_id")
         const response = await fetch("/api/down-file-pdf", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

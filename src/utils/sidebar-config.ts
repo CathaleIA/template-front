@@ -7,32 +7,38 @@ export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
     navMain: [
       {
         title: "Generar Reportes",
-        url: "/dashboard/reports",
+        url: "/dashboard",
         icon: NotepadText,
         items: [
+          { title: "Generar reportes", url: "/dashboard/reports" },
           { title: "Listar reportes", url: "/dashboard/listreports" },
-          { title: "Configuraciones", url: "#" },
         ],
       },
       {
-        title: "Visualización I & D",
+        title: "Data Analysis",
         icon: NotepadText,
         items: [
           {
-            title: "CAMPO 1",
+            title: "Campo  CTY",
             url: "/dashboard/historico",
             icon: Folder,
             items: [
               {
-                title: "Motor",
+                title: "Alertas",
                 url: "/dashboard/alerts",
                 icon: Cpu
+              },
+              {
+                title: "Analisis",
+                url: "/dashboard/analisis",
+                icon: Settings
               },
               {
                 title: "Administrar",
                 url: "/dashboard/admin",
                 icon: Settings
               }
+
             ]
           }
         ]
