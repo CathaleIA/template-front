@@ -3,6 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, AlertTriangle, CheckCircle, Activity, Brain, Zap } from 'lucide-react';
 
+import { PageHeader } from "@/components/page-header"
+import { useNotifications } from "@/context/notification-context"
+import { columns } from "./columns"
+import { DataTable } from '@/components/ui/data-table';
+import { AppPageLoading } from '@/components/skeleton/app-page-loading';
+
 interface MotorData {
   id: string;
   timestamp: string;
@@ -50,6 +56,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const Dashboard: React.FC = () => {
+  const { addNotification } = useNotifications()
+  const filters = [
+    { column: "parameter", placeholder: "Filter by parameter..." },
+    { column: "severity", placeholder: "Filter by severity..." }
+  ]
   const [data, setData] = useState<MotorData[]>([]);
   const [loading, setLoading] = useState(true);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -167,51 +178,37 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando datos históricos...</p>
-        </div>
-      </div>
+      <AppPageLoading/>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Brain className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-3xl font-bold">Motor Analysis AI</h1>
-                <p className="text-muted-foreground">Neural Network Predictive Analytics</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                {neuralProcessing ? (
-                  <>
-                    <div className="animate-pulse h-3 w-3 bg-primary rounded-full"></div>
-                    <span className="text-sm text-muted-foreground">Procesando...</span>
-                  </>
-                ) : analysisComplete ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-muted-foreground">Análisis completado</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Esperando análisis</span>
-                  </>
-                )}
-              </div>
-            </div>
+      <PageHeader
+        title="Motor Analysis AI"
+        description="Neural Network Predictive Analytics."
+        actions={
+          <div className="flex items-center space-x-2">
+            {neuralProcessing ? (
+              <>
+                <div className="animate-pulse h-3 w-3 bg-primary rounded-full"></div>
+                <span className="text-sm text-muted-foreground">Procesando...</span>
+              </>
+            ) : analysisComplete ? (
+              <>
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-muted-foreground">Análisis completado</span>
+              </>
+            ) : (
+              <>
+                <Zap className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Esperando análisis</span>
+              </>
+            )}
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats Overview */}
@@ -324,36 +321,9 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Anomaly Detection */}
         <div className="mt-6 bg-card rounded-lg shadow-sm p-6 border border-border">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Detección de Anomalías</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Parámetro</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Valor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Severidad</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Probabilidad</th>
-                </tr>
-              </thead>
-              <tbody className="bg-card divide-y divide-border">
-                {anomalies.map((anomaly, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{new Date(anomaly.timestamp).toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground capitalize">{anomaly.parameter}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{anomaly.value.toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeverityColor(anomaly.severity)}`}>{anomaly.severity}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{(anomaly.probability * 100).toFixed(1)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h2 className="text-lg font-semibold text-foreground mb-6">Registro de Animalias</h2>
+          <DataTable columns={columns} data={anomalies} filters={filters} />
         </div>
       </div>
     </div>

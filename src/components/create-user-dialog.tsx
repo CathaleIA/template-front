@@ -18,12 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-
-interface CreateUserData {
-  userName: string
-  userEmail: string
-  userRole: "TenantAdmin" | "TenantUser" | ""
-}
+import {CreateUserData} from "@/types"
 
 interface CreateUserDialogProps {
   onUserCreated?: (user: CreateUserData) => void
@@ -122,7 +117,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button className="ml-auto hidden h-8 lg:flex">
           <Plus className="h-4 w-4" />
           Create User
         </Button>

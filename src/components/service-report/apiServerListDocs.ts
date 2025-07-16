@@ -1,4 +1,4 @@
-import { responseListDocs} from "../../types/typeListDocs";
+import { responseListDocs} from "@/types";
 
 export async function serviceListDosc(data: any) {
     try {

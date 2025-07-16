@@ -2,22 +2,15 @@
 
 import { SidebarIcon } from "lucide-react"
 
-import { SearchForm } from "@/components/search-form"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { SearchForm } from "@/components/navegation/search-form"
+
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
 
 import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/utils/theme-toggle"
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar()

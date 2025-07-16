@@ -1,4 +1,3 @@
-// hooks/useAuth.ts
 import { useUser } from '@/context/UserContext';
 
 export function useAuth() {

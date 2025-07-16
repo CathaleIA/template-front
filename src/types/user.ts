@@ -28,3 +28,9 @@ export interface NavUserData {
   email: string
   avatar: string
 }
+
+export interface CreateUserData {
+  userName: string
+  userEmail: string
+  userRole: "TenantAdmin" | "TenantUser" | ""
+}

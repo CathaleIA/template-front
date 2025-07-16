@@ -3,11 +3,13 @@ import type React from "react"
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
+import { AppSidebar } from "@/components/navegation/app-sidebar"
+import { SiteHeader } from "@/components/navegation/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import { Toaster } from "@/components/ui/sonner"
+import { NotificationProvider } from "@/context/notification-context"
+import { Separator } from "@/components/ui/separator"
 
 export default async function DashboardLayout({
   children,
@@ -46,22 +48,34 @@ export default async function DashboardLayout({
     redirect('/select-tenant')
   }
 
-
-
   return (
     <div className="[--header-height:calc(theme(spacing.14))] min-h-screen overflow-hidden">
-      <SidebarProvider className="flex h-screen flex-col">
-        <SiteHeader />
-        <div className="flex flex-1 min-h-0">
-          <AppSidebar />
-          <SidebarInset className="flex flex-1 flex-col overflow-hidden">
-            <main className="flex-1 overflow-auto">
-              <Toaster position="top-right" />
-              {children}
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <NotificationProvider>
+        <SidebarProvider className="flex h-screen flex-col">
+          <SiteHeader />
+          <div className="flex flex-1 min-h-0">
+            <AppSidebar />
+            <SidebarInset className="flex flex-1 flex-col overflow-hidden mx-5">
+              <main className="flex-1 overflow-auto scroll-container">
+                <Toaster position="top-right" />
+                <div className="min-h-full flex flex-col">
+                  <div className="flex-1 pb-25"> {/* Margen aplicado */}
+                    {children}
+                  </div>
+                  <footer className="mt-auto">
+                    <Separator/>
+                    <div className="flex items-center justify-center py-3">
+                      <p className="text-sm text-muted-foreground">
+                        © 2025 Hecho con ❤️ por los tres mosqueteros | Todos los derechos reservados.
+                      </p>
+                    </div>
+                  </footer>
+                </div>
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </NotificationProvider>
     </div>
   )
 }

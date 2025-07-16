@@ -32,3 +32,21 @@ export interface SidebarData {
     icon: LucideIcon
   }>
 }
+
+export interface ProjectData {
+  admin: Array<{
+    file: string
+    state: string
+    url:string
+  }>
+  tree: TreeNode[]
+}
+
+// Tipo de item individual con título y URL
+export interface TreeItem {
+  title: string
+  url: string
+}
+
+// Tipo que permite arrays mixtos con TreeItems y otros arrays
+export type TreeNode = TreeItem | Array<TreeItem | TreeNode>

@@ -25,6 +25,7 @@ import {
   X
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as Papa from "papaparse";
@@ -35,6 +36,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import { cn } from "@/lib/utils";
 import { useUser } from "@/context/UserContext"
+
+import { PageHeader } from "@/components/page-header"
+import { useNotifications } from "@/context/notification-context"
 
 // Tipos TypeScript
 interface ThresholdLevels {
@@ -215,6 +219,7 @@ const metricsConfig: MetricsConfig = {
 };
 
 export default function AdminDashboard() {
+  const { addNotification } = useNotifications()
   const { userr } = useUser();
   const [thresholds, setThresholds] = useState<Thresholds>(defaultThresholds);
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({
@@ -235,6 +240,7 @@ export default function AdminDashboard() {
   const [currentValues, setCurrentValues] = useState<SensorData>({});
   const [dataInfo, setDataInfo] = useState<LoadedDataInfo | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRefresquin, setIsRefresquin] = useState(false);
 
   // Simular carga de configuración guardada
   useEffect(() => {
@@ -258,7 +264,14 @@ export default function AdminDashboard() {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      addNotification({
+        type: "error",
+        title: "Error de carga.",
+        message: "No se ha cargado o encontrado ningun archivo valido.",
+      })
+      return;
+    }
 
     setIsUploading(true);
 
@@ -282,7 +295,12 @@ export default function AdminDashboard() {
       toast.success("Success", { description: "File Loaded success." })
 
     } catch (error) {
-      toast.error("Error", { description: "Error loading file" })
+      //toast.error("Error", { description: "Error loading file" })
+      addNotification({
+        type: "error",
+        title: "Error de carga.",
+        message: `Error, Descripcion:${error}`,
+      })
 
     } finally {
       setIsUploading(false);
@@ -317,7 +335,12 @@ export default function AdminDashboard() {
 
           resolve();
         } catch (error) {
-          reject(new Error('Error al parsear JSON: ' + (error instanceof Error ? error.message : 'Formato inválido')));
+          // reject(new Error('Error al parsear JSON: ' + (error instanceof Error ? error.message : 'Formato inválido')));
+          addNotification({
+            type: "error",
+            title: "Error al procesar archivo.",
+            message: `Error al parsear JSON: ${error}`,
+          })
         }
       };
       reader.onerror = () => reject(new Error('Error al leer el archivo'));
@@ -348,11 +371,19 @@ export default function AdminDashboard() {
 
             resolve();
           } catch (error) {
-            reject(error);
+            addNotification({
+              type: "error",
+              title: "Error al procesar archivo.",
+              message: `Error al parsear JSON: ${error}`,
+            })
           }
         },
         error: (error) => {
-          reject(new Error('Error al parsear CSV: ' + error.message));
+          addNotification({
+            type: "error",
+            title: "Error al procesar archivo.",
+            message: `Error al parsear JSON: ${error}`,
+          })
         }
       });
     });
@@ -380,8 +411,10 @@ export default function AdminDashboard() {
   };
 
   const handleResetToDefaults = () => {
+    setIsRefresquin(true)
     setThresholds(defaultThresholds);
     toast.info("Info", { description: "Configuración restablecida a valores predeterminados" })
+    setIsRefresquin(false)
   };
 
   const handleAddEmail = () => {
@@ -528,23 +561,32 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto">
       <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-700">Panel de Administración</h1>
-            <p className="text-gray-500">Configuración de alertas y notificaciones del sistema</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              onClick={handleResetToDefaults}
-              className="flex items-center"
-              variant="ghost"
-            >
-              <RefreshCw className="h-4 w-4" />
-              <span>Restablecer</span>
-            </Button>
-            <Button
+        <PageHeader
+          title="Panel de Administración"
+          description="Configuración de alertas y notificaciones del sistema."
+          actions={
+            [<AlertDialog key="reset">
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost">
+                  <RefreshCw className="h-4 w-4" /> Restablecer
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetToDefaults} disabled={isRefresquin}>
+                    {isRefresquin ? "Restableciendo..." : "Restablecer"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>, <Button
+              key="save"
               onClick={handleSaveConfiguration}
               type="submit"
               variant="default"
@@ -553,9 +595,9 @@ export default function AdminDashboard() {
             >
               <Save className="h-4 w-4" />
               <span>Guardar</span>
-            </Button>
-          </div>
-        </div>
+            </Button>]
+          }
+        />
 
         <Tabs defaultValue="data" className="w-full">
           <TabsList className="grid w-full grid-cols-5">

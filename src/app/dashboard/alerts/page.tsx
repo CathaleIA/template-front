@@ -5,8 +5,13 @@ import { Loader2, AlertTriangle, Thermometer, Gauge, Droplets, BatteryCharging, 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Area, ComposedChart, ReferenceLine, AreaChart,  PieChart, Pie, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Area, ComposedChart, ReferenceLine, AreaChart, PieChart, Pie, Cell } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/page-header"
+import { useNotifications } from "@/context/notification-context"
+import { Button } from "@/components/ui/button";
+import { AppPageLoading } from "@/components/skeleton/app-page-loading";
+
 // Define threshold types and interfaces
 type AlertLevel = "normal" | "warning" | "danger";
 
@@ -78,96 +83,96 @@ interface Anomaly {
 
 // Define thresholds for each metric with operational zones
 const thresholds = {
-  temperaturaAgua: { 
-    min: 0, 
-    normal: 50, 
-    warning: 100, 
-    danger: 120, 
-    max: 200 
+  temperaturaAgua: {
+    min: 0,
+    normal: 50,
+    warning: 100,
+    danger: 120,
+    max: 200
   },
-  temperaturaAceite: { 
-    min: 0, 
-    normal: 70, 
-    warning: 100, 
-    danger: 130, 
-    max: 150 
+  temperaturaAceite: {
+    min: 0,
+    normal: 70,
+    warning: 100,
+    danger: 130,
+    max: 150
   },
-  presionAceite: { 
-    min: 0, 
-    normal: 2, 
-    warning: 1.5, 
-    danger: 1, 
-    max: 5 
+  presionAceite: {
+    min: 0,
+    normal: 2,
+    warning: 1.5,
+    danger: 1,
+    max: 5
   },
-  rpm: { 
-    min: 0, 
-    normal: 2000, 
-    warning: 40000, 
-    danger: 5000, 
-    max: 8000 
+  rpm: {
+    min: 0,
+    normal: 2000,
+    warning: 40000,
+    danger: 5000,
+    max: 8000
   },
-  voltajeBateria: { 
-    min: 10, 
-    normal: 12, 
-    warning: 11.5, 
-    danger: 11, 
-    max: 15 
+  voltajeBateria: {
+    min: 10,
+    normal: 12,
+    warning: 11.5,
+    danger: 11,
+    max: 15
   },
-  consumoCombustibleLh: { 
-    min: 0, 
-    normal: 10, 
-    warning: 15, 
-    danger: 20, 
-    max: 25 
+  consumoCombustibleLh: {
+    min: 0,
+    normal: 10,
+    warning: 15,
+    danger: 20,
+    max: 25
   },
-  cargaMotor: { 
-    min: 0, 
-    normal: 80, 
-    warning: 90, 
-    danger: 95, 
-    max: 100 
+  cargaMotor: {
+    min: 0,
+    normal: 80,
+    warning: 90,
+    danger: 95,
+    max: 100
   },
-  temperaturaEGT: { 
-    min: 0, 
-    normal: 450, 
-    warning: 550, 
-    danger: 650, 
-    max: 800 
+  temperaturaEGT: {
+    min: 0,
+    normal: 450,
+    warning: 550,
+    danger: 650,
+    max: 800
   },
-  presionCombustible: { 
-    min: 0, 
-    normal: 3, 
-    warning: 2.5, 
-    danger: 2, 
-    max: 5 
+  presionCombustible: {
+    min: 0,
+    normal: 3,
+    warning: 2.5,
+    danger: 2,
+    max: 5
   },
-  presionTurbo: { 
-    min: 0, 
-    normal: 1.8, 
-    warning: 2.2, 
-    danger: 2.5, 
-    max: 3 
+  presionTurbo: {
+    min: 0,
+    normal: 1.8,
+    warning: 2.2,
+    danger: 2.5,
+    max: 3
   },
-  lambda: { 
-    min: 0.5, 
-    normal: 1, 
-    warning: 1.2, 
-    danger: 1.5, 
-    max: 2 
+  lambda: {
+    min: 0.5,
+    normal: 1,
+    warning: 1.2,
+    danger: 1.5,
+    max: 2
   },
-  tiempoInyeccionMs: { 
-    min: 0, 
-    normal: 5, 
-    warning: 8, 
-    danger: 10, 
-    max: 15 
+  tiempoInyeccionMs: {
+    min: 0,
+    normal: 5,
+    warning: 8,
+    danger: 10,
+    max: 15
   },
-  tiempoEncendidoAvance: { 
-    min: 0, 
-    normal: 20, 
-    warning: 30, 
-    danger: 40, 
-    max: 50 
+  tiempoEncendidoAvance: {
+    min: 0,
+    normal: 20,
+    warning: 30,
+    danger: 40,
+    max: 50
   },
 };
 
@@ -199,7 +204,7 @@ const metricDescriptions: Record<string, string> = {
 
 const getAlertLevel = (value: number, metric: keyof typeof thresholds): AlertLevel => {
   const limits = thresholds[metric];
-  
+
   if (metric === "voltajeBateria" || metric === "presionAceite" || metric === "presionCombustible") {
     if (value < limits.danger) return "danger";
     if (value < limits.warning) return "warning";
@@ -228,7 +233,7 @@ const getColorClass = (alertLevel: AlertLevel): string => {
 
 const calculateStats = (historicalData: HistoricalDataPoint[], field: string, currentValue: number): HistoricalStats => {
   const values = historicalData.map(item => item[field as keyof HistoricalDataPoint] as number).filter(val => typeof val === 'number' && !isNaN(val));
-  
+
   if (values.length === 0) {
     return { avg: currentValue, min: currentValue, max: currentValue, current: currentValue, trend: 'stable' };
   }
@@ -236,16 +241,16 @@ const calculateStats = (historicalData: HistoricalDataPoint[], field: string, cu
   const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
   const min = Math.min(...values);
   const max = Math.max(...values);
-  
+
   const recentValues = values.slice(-10);
   const recentAvg = recentValues.length > 0 ? recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length : avg;
-  
+
   let trend: 'up' | 'down' | 'stable' = 'stable';
   const trendThreshold = avg * 0.05;
-  
+
   if (recentAvg > avg + trendThreshold) trend = 'up';
   else if (recentAvg < avg - trendThreshold) trend = 'down';
-  
+
   return { avg: Number(avg.toFixed(2)), min, max, current: currentValue, trend };
 };
 
@@ -265,11 +270,11 @@ const generateThresholdData = (currentValue: number, metric: keyof typeof thresh
   const limits = thresholds[metric];
   const result = []; // Fixed variable name from 'resultgester' to 'result'
   let baseValue = currentValue;
-  
+
   for (let i = 0; i < count; i++) {
     baseValue += (Math.random() - 0.5) * (currentValue * 0.05);
     baseValue = Math.max(limits.min, Math.min(limits.max, baseValue));
-    
+
     result.push({
       time: `${14 - i}m`,
       value: parseFloat(baseValue.toFixed(2)),
@@ -280,7 +285,7 @@ const generateThresholdData = (currentValue: number, metric: keyof typeof thresh
       minZone: limits.min
     });
   }
-  
+
   return result.reverse();
 };
 
@@ -296,38 +301,38 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
   // Configuración de zonas
   const dangerThreshold = max * 0.8; // 80% del máximo
   const warningThreshold = max * 0.6; // 60% del máximo
-  
+
   // Crear datos para el medidor
   const percentage = (value / max) * 100;
   const emptyPercentage = 100 - percentage;
-  
+
   const data = [
     { name: 'value', value: percentage, color: getColor() },
     { name: 'empty', value: emptyPercentage, color: '#E5E7EB' }
   ];
-  
+
   function getColor() {
     if (value >= dangerThreshold) return '#EF4444';
     if (value >= warningThreshold) return '#F59E0B';
     return '#22C55E';
   }
-  
+
   // Crear datos para las zonas de fondo
   const backgroundData = [
     { name: 'danger', value: 20, color: '#DC2626' },
     { name: 'warning', value: 20, color: '#D97706' },
     { name: 'normal', value: 60, color: '#059669' }
   ];
-  
+
   const formatValue = (val: number) => {
-    if (val >= 1000) return `${(val/1000).toFixed(1)}k`;
+    if (val >= 1000) return `${(val / 1000).toFixed(1)}k`;
     return val.toFixed(val < 10 ? 1 : 0);
   };
-  
+
   return (
-<div className="bg-card p-4 rounded-xl shadow-2xl border border-border">
+    <div className="bg-card p-4 rounded-xl shadow-2xl border border-border">
       <h3 className="text-foreground text-sm font-semibold mb-2 text-center">{title}</h3>
-      
+
       <div className="relative w-full h-32">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -347,7 +352,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
                 <Cell key={`bg-${index}`} fill={entry.color} opacity={0.3} />
               ))}
             </Pie>
-            
+
             {/* Medidor principal */}
             <Pie
               data={data}
@@ -366,7 +371,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ value, max, unit, title, alertL
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-        
+
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
           <div className="text-foreground text-2xl font-bold">
             {formatValue(value)}
@@ -423,7 +428,7 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
     }
   };
 
-  
+
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -473,7 +478,7 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
               </div>
             )}
           </div>
-          
+
           {stats && (
             <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
               <div>
@@ -490,61 +495,61 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
               </div>
             </div>
           )}
-          
+
           <div className="mt-4 h-32">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#9ca3af" 
+                <XAxis
+                  dataKey="time"
+                  stroke="#9ca3af"
                   tick={{ fontSize: 10 }}
                 />
-                <YAxis 
-                  stroke="#9ca3af" 
+                <YAxis
+                  stroke="#9ca3af"
                   domain={[limits.min, limits.max]}
                   tick={{ fontSize: 10 }}
                 />
-                <Area 
-                  type="monotone" 
+                <Area
+                  type="monotone"
                   dataKey={() => limits.max}
-                  fill="rgba(239, 68, 68, 0.2)" 
+                  fill="rgba(239, 68, 68, 0.2)"
                   stroke="none"
                 />
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.danger : limits.danger} 
-                  stroke="#ef4444" 
+                <ReferenceLine
+                  y={isLowerBetter ? limits.danger : limits.danger}
+                  stroke="#ef4444"
                   strokeDasharray="5 5"
                   strokeWidth={1}
                 />
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.warning : limits.warning} 
-                  stroke="#f59e0b" 
+                <ReferenceLine
+                  y={isLowerBetter ? limits.warning : limits.warning}
+                  stroke="#f59e0b"
                   strokeDasharray="5 5"
                   strokeWidth={1}
                 />
-                <ReferenceLine 
-                  y={isLowerBetter ? limits.normal : limits.normal} 
-                  stroke="#10b981" 
+                <ReferenceLine
+                  y={isLowerBetter ? limits.normal : limits.normal}
+                  stroke="#10b981"
                   strokeDasharray="5 5"
                   strokeWidth={1}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
+                <Line
+                  type="monotone"
+                  dataKey="value"
                   stroke={
-                    alertLevel === "normal" ? "#10b981" : 
-                    alertLevel === "warning" ? "#f59e0b" : 
-                    "#ef4444"
-                  } 
-                  strokeWidth={3} 
+                    alertLevel === "normal" ? "#10b981" :
+                      alertLevel === "warning" ? "#f59e0b" :
+                        "#ef4444"
+                  }
+                  strokeWidth={3}
                   dot={{ r: 2 }}
                 />
                 <Tooltip content={<CustomTooltip />} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          
+
           <div className="mt-4 text-xs">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
@@ -561,7 +566,7 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
               </div>
             </div>
           </div>
-          
+
           <CardDescription className="pt-2">
             {metricDescriptions[metric]}
             <br />
@@ -582,49 +587,49 @@ const ThresholdChart: React.FC<ThresholdChartProps> = ({
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="time" 
-                    stroke="#9ca3af" 
+                  <XAxis
+                    dataKey="time"
+                    stroke="#9ca3af"
                     tick={{ fontSize: 12 }}
                   />
-                  <YAxis 
-                    stroke="#9ca3af" 
+                  <YAxis
+                    stroke="#9ca3af"
                     domain={[limits.min, limits.max]}
                     tick={{ fontSize: 12 }}
                   />
-                  <Area 
-                    type="monotone" 
+                  <Area
+                    type="monotone"
                     dataKey={() => limits.max}
-                    fill="rgba(239, 68, 68, 0.2)" 
+                    fill="rgba(239, 68, 68, 0.2)"
                     stroke="none"
                   />
-                  <ReferenceLine 
-                    y={isLowerBetter ? limits.danger : limits.danger} 
-                    stroke="#ef4444" 
+                  <ReferenceLine
+                    y={isLowerBetter ? limits.danger : limits.danger}
+                    stroke="#ef4444"
                     strokeDasharray="5 5"
                     strokeWidth={1}
                   />
-                  <ReferenceLine 
-                    y={isLowerBetter ? limits.warning : limits.warning} 
-                    stroke="#f59e0b" 
+                  <ReferenceLine
+                    y={isLowerBetter ? limits.warning : limits.warning}
+                    stroke="#f59e0b"
                     strokeDasharray="5 5"
                     strokeWidth={1}
                   />
-                  <ReferenceLine 
-                    y={isLowerBetter ? limits.normal : limits.normal} 
-                    stroke="#10b981" 
+                  <ReferenceLine
+                    y={isLowerBetter ? limits.normal : limits.normal}
+                    stroke="#10b981"
                     strokeDasharray="5 5"
                     strokeWidth={1}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="value" 
+                  <Line
+                    type="monotone"
+                    dataKey="value"
                     stroke={
-                      alertLevel === "normal" ? "#10b981" : 
-                      alertLevel === "warning" ? "#f59e0b" : 
-                      "#ef4444"
-                    } 
-                    strokeWidth={3} 
+                      alertLevel === "normal" ? "#10b981" :
+                        alertLevel === "warning" ? "#f59e0b" :
+                          "#ef4444"
+                    }
+                    strokeWidth={3}
                     dot={{ r: 4 }}
                   />
                   <Tooltip content={<CustomTooltip />} />
@@ -683,14 +688,14 @@ export default function EnhancedAlertsPage() {
       try {
         setLoading(true);
         const response = await fetch("https://apibackend-esjz.onrender.com/api/motor");
-        
+
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
-        
+
         const jsonData = await response.json();
         setData(jsonData);
-        
+
         const newChartData: Record<string, any[]> = {
           temperaturaAgua: generateThresholdData(jsonData.motor.temperaturaAgua, 'temperaturaAgua'),
           temperaturaAceite: generateThresholdData(jsonData.motor.temperaturaAceite, 'temperaturaAceite'),
@@ -711,7 +716,7 @@ export default function EnhancedAlertsPage() {
           tiempoInyeccionMs_B1: generateThresholdData(jsonData.bancos.B1.tiempoInyeccionMs, 'tiempoInyeccionMs'),
           tiempoEncendidoAvance_B1: generateThresholdData(jsonData.bancos.B1.tiempoEncendidoAvance, 'tiempoEncendidoAvance'),
         };
-        
+
         setChartData(newChartData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido al obtener datos");
@@ -721,9 +726,9 @@ export default function EnhancedAlertsPage() {
     };
 
     fetchData();
-    
+
     const interval = setInterval(fetchData, 300000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -731,22 +736,22 @@ export default function EnhancedAlertsPage() {
     try {
       setLoadingHistorical(true);
       const response = await fetch("https://46ou4qrae1.execute-api.us-east-1.amazonaws.com/prod/history?hours=500000");
-      
+
       if (!response.ok) {
         throw new Error(`Error al obtener datos históricos: ${response.status}`);
       }
-      
+
       const historicalJsonData = await response.json();
       setHistoricalData(historicalJsonData);
-      
+
       if (data) {
         const stats: Record<string, HistoricalStats> = {};
-        
+
         Object.entries(fieldMapping).forEach(([currentField, historicalField]) => {
           const currentValue = data.motor[currentField as keyof typeof data.motor] as number;
           stats[currentField] = calculateStats(historicalJsonData, historicalField, currentValue);
         });
-        
+
         setHistoricalStats(stats);
       }
     } catch (err) {
@@ -784,8 +789,8 @@ export default function EnhancedAlertsPage() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={comparisonData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="metric" 
+              <XAxis
+                dataKey="metric"
                 stroke="#9ca3af"
                 tick={{ fontSize: 12 }}
                 angle={-45}
@@ -793,7 +798,7 @@ export default function EnhancedAlertsPage() {
                 height={60}
               />
               <YAxis stroke="#9ca3af" />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
                 labelStyle={{ color: "#9ca3af" }}
                 itemStyle={{ color: "#f3f4f6" }}
@@ -811,10 +816,7 @@ export default function EnhancedAlertsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-        <h2 className="text-xl font-semibold">Cargando datos del motor...</h2>
-      </div>
+      <AppPageLoading />
     );
   }
 
@@ -828,7 +830,7 @@ export default function EnhancedAlertsPage() {
             No se pudieron cargar los datos: {error}
           </AlertDescription>
         </Alert>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -841,14 +843,15 @@ export default function EnhancedAlertsPage() {
   if (!data) return null;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto">
       <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-500">Áreas Operativas del Motor</h1>
-          <button
+        <PageHeader
+          title="Áreas Operativas del Motor"
+          description="Historico del comportamiento de los activos."
+          actions={<Button
             onClick={fetchHistoricalData}
             disabled={loadingHistorical}
-            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+            className=""
           >
             {loadingHistorical ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -856,9 +859,8 @@ export default function EnhancedAlertsPage() {
               <BarChart3 className="h-4 w-4" />
             )}
             <span>{loadingHistorical ? "Cargando..." : "Cargar Históricos"}</span>
-          </button>
-        </div>
-        
+          </Button>}
+        />
         <div className="flex items-center justify-between">
           <p className="text-gray-500">
             Última actualización: {new Date(data.timestamp).toLocaleString()}
@@ -918,7 +920,7 @@ export default function EnhancedAlertsPage() {
             <TabsTrigger value="bancoB">Banco B1</TabsTrigger>
             <TabsTrigger value="comparison">Comparación</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="motor" className="p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <ThresholdChart
@@ -982,7 +984,7 @@ export default function EnhancedAlertsPage() {
                 stats={historicalStats.consumoCombustibleLh}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Card>
                 <CardHeader>
@@ -1007,7 +1009,7 @@ export default function EnhancedAlertsPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Estadísticas Operativas</CardTitle>
@@ -1021,8 +1023,8 @@ export default function EnhancedAlertsPage() {
                         average: stats.avg
                       }))}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis 
-                          dataKey="metric" 
+                        <XAxis
+                          dataKey="metric"
                           stroke="#9ca3af"
                           tick={{ fontSize: 10 }}
                           angle={-45}
@@ -1030,25 +1032,25 @@ export default function EnhancedAlertsPage() {
                           height={40}
                         />
                         <YAxis stroke="#9ca3af" />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
                           labelStyle={{ color: "#9ca3af" }}
                           itemStyle={{ color: "#f3f4f6" }}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="current" 
-                          name="Actual" 
-                          stroke="#3b82f6" 
-                          strokeWidth={2} 
+                        <Line
+                          type="monotone"
+                          dataKey="current"
+                          name="Actual"
+                          stroke="#3b82f6"
+                          strokeWidth={2}
                           dot={{ r: 4 }}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="average" 
-                          name="Promedio" 
-                          stroke="#10b981" 
-                          strokeWidth={2} 
+                        <Line
+                          type="monotone"
+                          dataKey="average"
+                          name="Promedio"
+                          stroke="#10b981"
+                          strokeWidth={2}
                           dot={{ r: 4 }}
                         />
                       </LineChart>
@@ -1179,7 +1181,7 @@ export default function EnhancedAlertsPage() {
 
           <TabsContent value="comparison" className="p-1">
             {renderHistoricalComparison()}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Card>
                 <CardHeader>
@@ -1199,25 +1201,25 @@ export default function EnhancedAlertsPage() {
                       temperaturaEGT_A1: "EGT Banco A1",
                       temperaturaEGT_B1: "EGT Banco B1"
                     }).map(([metric, name]) => {
-                      const value = metric.includes('_') 
-                        ? metric.split('_')[0] === 'lambda' 
-                          ? data.bancos[metric.split('_')[1] as 'A1'|'B1'].lambda
-                          : data.bancos[metric.split('_')[1] as 'A1'|'B1'][metric.split('_')[0] as keyof typeof data.bancos.A1]
+                      const value = metric.includes('_')
+                        ? metric.split('_')[0] === 'lambda'
+                          ? data.bancos[metric.split('_')[1] as 'A1' | 'B1'].lambda
+                          : data.bancos[metric.split('_')[1] as 'A1' | 'B1'][metric.split('_')[0] as keyof typeof data.bancos.A1]
                         : data.motor[metric as keyof typeof data.motor];
-                      
+
                       const alertLevel = getAlertLevel(value as number, metric.split('_')[0] as keyof typeof thresholds);
                       const colorClass = getColorClass(alertLevel);
-                      
+
                       return (
                         <div key={metric} className="flex items-center justify-between">
                           <span>{name}</span>
                           <div className="flex items-center gap-2">
                             <span className={`font-medium ${colorClass}`}>
-                              {value} {metric === 'rpm' ? 'rpm' : 
-                                metric.includes('temperatura') ? '°C' : 
-                                metric.includes('presion') ? 'bar' : 
-                                metric === 'voltajeBateria' ? 'V' : 
-                                metric === 'consumoCombustibleLh' ? 'L/h' : ''}
+                              {value} {metric === 'rpm' ? 'rpm' :
+                                metric.includes('temperatura') ? '°C' :
+                                  metric.includes('presion') ? 'bar' :
+                                    metric === 'voltajeBateria' ? 'V' :
+                                      metric === 'consumoCombustibleLh' ? 'L/h' : ''}
                             </span>
                             <div className={`w-3 h-3 rounded-full ${colorClass.replace('text', 'bg')}`}></div>
                           </div>
@@ -1227,7 +1229,7 @@ export default function EnhancedAlertsPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Tendencias Históricas</CardTitle>
@@ -1243,8 +1245,8 @@ export default function EnhancedAlertsPage() {
                         max: stats.max
                       }))}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis 
-                          dataKey="metric" 
+                        <XAxis
+                          dataKey="metric"
                           stroke="#9ca3af"
                           tick={{ fontSize: 10 }}
                           angle={-45}
@@ -1252,7 +1254,7 @@ export default function EnhancedAlertsPage() {
                           height={40}
                         />
                         <YAxis stroke="#9ca3af" />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ background: "#1f2937", borderColor: "#374151" }}
                           labelStyle={{ color: "#9ca3af" }}
                           itemStyle={{ color: "#f3f4f6" }}

@@ -1,4 +1,4 @@
-import { reponseDown} from "../../types/typeDownFile";
+import { reponseDown} from "@/types";
 
 export async function downloadFile(data: any) {
     try {

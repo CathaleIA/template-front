@@ -1,4 +1,4 @@
-import { PdfFile , S3FileInfo } from "@/types/typeListDocs";
+import { PdfFile , S3FileInfo } from "@/types";
 
 export function extractPdfFiles(data: { mapObjetos: Record<string, S3FileInfo[]> }): PdfFile[] {
   const pdfFiles: PdfFile[] = []

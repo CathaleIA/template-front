@@ -1,3 +1,51 @@
+export interface reponseDown {
+    fileName : string;
+    base64File: string;
+}
+
+export interface requestDown{
+    userPoolId : string;
+    tenantName : string;
+    key: string;
+
+}
+
+export interface S3FileInfo{
+    key : string;
+    size : number;
+    lastModified : string;
+}
+
+export interface requestListDocs{
+    userPoolid : string;
+    tenantName : string;
+}
+
+export interface responseListDocs{
+    mapObjetos : Record<string, S3FileInfo[]>
+}
+
+// filtrado de json para PDF
+
+export type PdfFile = {
+  key: string
+  fileName: string
+  size: number
+  lastModified: string
+}
+
+export interface requestToRender{
+    archivoHtml : string;
+    report_id : string;
+    tenant_id : string;
+    poolUserId : string;
+    fileName : string;
+}
+
+export interface responseFromRender{
+    message : string;
+}
+
 // definicion de tipos esto conrespecto a request y response
 
 export interface RequestBody {
@@ -34,7 +82,3 @@ export interface ApiResponse {
     message?: string;
     error?: string;
 }
-
-// types/chart.ts
-// types/typeReports.ts
-

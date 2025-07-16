@@ -54,12 +54,11 @@ export function ImprovedConclusions() {
 
   return (
     <Card className="border-border">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <FileText className="w-5 h-5 text-primary" />
+      <CardHeader>
+        <CardTitle className="flex items-center gap-1">
           Conclusiones
           {conclusiones.length > 0 && (
-            <Badge variant="secondary" className="ml-2">
+            <Badge variant="secondary">
               {conclusiones.length}
             </Badge>
           )}
@@ -72,10 +71,10 @@ export function ImprovedConclusions() {
             {conclusiones.map((con, index) => (
               <div
                 key={index}
-                className="flex items-start gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/15 transition-colors"
+                className="flex items-center gap-2 p-1 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/15 transition-colors"
               >
-                <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-foreground flex-1 leading-relaxed">{con}</p>
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <p className="text-sm text-foreground flex-1">{con}</p>
                 <Button
                   type="button"
                   variant="ghost"
@@ -93,7 +92,7 @@ export function ImprovedConclusions() {
         {/* Formulario para agregar nueva conclusión */}
         {isAdding ? (
           <form onSubmit={handleAgregar} className="space-y-3 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <Label htmlFor="new-conclusion" className="text-sm font-medium text-primary">
+            <Label htmlFor="new-conclusion">
               Nueva Conclusión
             </Label>
             <Textarea
@@ -109,9 +108,9 @@ export function ImprovedConclusions() {
                 }
               }}
             />
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <Button type="submit" disabled={!conclusion.trim()} size="sm" className="bg-primary hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4"/>
                 Agregar
               </Button>
               <Button
@@ -119,7 +118,7 @@ export function ImprovedConclusions() {
                 onClick={handleCancel}
                 variant="outline"
                 size="sm"
-                className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent"
+                className="border-primary/30 hover:bg-primary/5"
               >
                 Cancelar
               </Button>
@@ -133,9 +132,9 @@ export function ImprovedConclusions() {
               setIsAdding(true)
             }}
             variant="outline"
-            className="w-full h-10 border-dashed border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50"
+            className="w-full border-dashed border-primary/30 hover:bg-primary/5 hover:border-primary/50"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             Agregar Conclusión
           </Button>
         )}
@@ -148,15 +147,15 @@ export function ImprovedConclusions() {
               e.preventDefault()
               handleCargarEnHTML()
             }}
-            className="w-full h-12 bg-chart-2 hover:bg-chart-2/90 text-primary-foreground font-semibold"
+            className="w-full"
           >
-            <Upload className="w-5 h-5 mr-2" />
+            <Upload className="w-4 h-4" />
             Cargar conclusiones al HTML ({conclusiones.length})
           </Button>
         )}
 
         {conclusiones.length === 0 && !isAdding && (
-          <p className="text-sm text-muted-foreground text-center py-4">No hay conclusiones agregadas aún</p>
+          <p className="text-sm text-muted-foreground text-center">No hay conclusiones agregadas aún</p>
         )}
       </CardContent>
     </Card>

@@ -1,4 +1,4 @@
-import { responseFromRender } from "../../types/typePdfRender";
+import { responseFromRender } from "@/types";
 
 export async function renderPDF(data: any) {
     try {

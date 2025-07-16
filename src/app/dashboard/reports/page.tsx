@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Upload, FileText, X, Download, Building, Eye, Loader2, BarChart3 } from "lucide-react"
+import { Upload, FileText, X, Download, Eye, Loader2, BarChart3, Settings, View } from "lucide-react"
 import { ImprovedConclusions } from "@/components/reports/improved-conclusions"
 // Reports
-import type { ApiResponse } from "../../../types/typeReports"
+import type { ApiResponse } from "@/types"
 import DOMPurify from "isomorphic-dompurify"
 import {
   generarGraficaBase64,
@@ -22,7 +22,14 @@ import {
 import { downloadBase64File, openBase64Pdf } from "@/utils/file-download-utils"
 import { divToBase64 } from "@/utils/htmlTobase"
 
+import { useNotifications } from "@/context/notification-context"
+
+import { PageHeader } from "@/components/page-header"
+import { toast } from "sonner"
+
 export default function ReportsPage() {
+  const { addNotification } = useNotifications()
+
   // Estados y lógica del componente
   const [activo, setActivo] = useState("")
   const [tenant, setTenant] = useState("")
@@ -122,12 +129,27 @@ export default function ReportsPage() {
       }, 0)
 
       if (response.ok) {
-        console.log("Respuesta del Servidor: ", data)
+        //console.log("Respuesta del Servidor: ", data)
+        addNotification({
+          type: "success",
+          title: "Archivo procesado correctamente.",
+          message: "El archivo ha sido formateado correctamente, agrega los ultimos detalles!",
+        })
       } else {
-        console.error("Error", data.error)
+        addNotification({
+          type: "error",
+          title: "Error al procesar el archivo",
+          message: `Error, ${data.error}`,
+        })
+        //console.error("Error", data.error)
       }
     } catch (error) {
-      console.error("Error al procesar:", error)
+      addNotification({
+        type: "error",
+        title: "Error al procesar el archivo",
+        message: `Error, ${error}`,
+      })
+      //console.error("Error al procesar:", error)
       alert("Error al procesar el archivo")
     } finally {
       setIsProcessing(false)
@@ -138,6 +160,11 @@ export default function ReportsPage() {
   const generateReport = async () => {
     if (!resultadoHtml || !fileName.trim()) {
       alert("Asegúrate de haber procesado un archivo y especificado un nombre")
+      addNotification({
+        type: "error",
+        title: "Error al generar.",
+        message: "Asegurese de haber procesado un archivo y especificado un nombre.",
+      })
       return
     }
     setIsGeneratingPdf(true)
@@ -160,14 +187,29 @@ export default function ReportsPage() {
         if (data.base64File) {
           setPdfBase64(data.base64File)
         }
-        console.log("Se generó el archivo")
-        alert("PDF generado correctamente")
+        //console.log("Se generó el archivo")
+        addNotification({
+          type: "success",
+          title: "Creacion exitosa!",
+          message: "El PDF se genero y cargo a la nube exitosamente, ya puedes descargarlo.",
+        })
+        //alert("PDF generado correctamente")
       } else {
-        throw new Error("Error al generar el PDF")
+        //throw new Error("Error al generar el PDF")
+        addNotification({
+          type: "error",
+          title: "Error al crear PDF",
+          message: `No se pudo crear el pdf. Detalles: ${response}`,
+        })
       }
     } catch (error) {
-      console.error("Error al procesar la solicitud:", error)
-      alert("Error al generar el PDF")
+      //console.error("Error al procesar la solicitud:", error)
+      //alert("Error al generar el PDF")
+      addNotification({
+        type: "error",
+        title: "Error al crear PDF",
+        message: `No se pudo crear el pdf. Detalles: ${error}`,
+      })
     } finally {
       setIsGeneratingPdf(false)
     }
@@ -177,7 +219,12 @@ export default function ReportsPage() {
   const handleDownload = async (e: React.MouseEvent) => {
     e.preventDefault()
     if (!fileName.trim()) {
-      alert("Especifica un nombre para el archivo")
+      //alert("Especifica un nombre para el archivo")
+      addNotification({
+        type: "error",
+        title: "Error al descargar.",
+        message: "Especifica un nombre para el archivo",
+      })
       return
     }
     setIsDownloading(true)
@@ -185,9 +232,11 @@ export default function ReportsPage() {
       if (pdfBase64) {
         const success = downloadBase64File(pdfBase64, `${fileName}.pdf`)
         if (success) {
-          alert("Archivo descargado correctamente")
+          //alert("Archivo descargado correctamente")
+          toast("Success", { description: "Archivo descargado correctamente", })
         } else {
-          alert("Error al descargar el archivo")
+          //alert("Error al descargar el archivo")
+          toast("Error", { description: "Error al descargar el archivo", })
         }
       } else {
         const response = await fetch("/api/down-file-pdf", {
@@ -203,17 +252,25 @@ export default function ReportsPage() {
           const data = await response.json()
           const success = downloadBase64File(data.base64File, data.fileName || `${fileName}.pdf`)
           if (success) {
-            alert("Archivo descargado correctamente")
+            //alert("Archivo descargado correctamente")
+            toast("Success", { description: "Archivo descargado correctamente", })
           } else {
-            alert("Error al descargar el archivo")
+            //alert("Error al descargar el archivo")
+            toast("Error", { description: "Error al descargar el archivo", })
           }
         } else {
-          alert("Error al obtener el archivo")
+          //alert("Error al obtener el archivo")
+          toast("Error", { description: "Error al obtener el archivo", })
         }
       }
     } catch (error) {
-      console.error("Error:", error)
-      alert("Error al descargar el archivo")
+      //console.error("Error:", error)
+      //alert("Error al descargar el archivo")
+      addNotification({
+        type: "error",
+        title: "Error al descargar el archivo.",
+        message: `No se pudo descargar el archivo. Detalles: ${error}`,
+      })
     } finally {
       setIsDownloading(false)
     }
@@ -225,27 +282,25 @@ export default function ReportsPage() {
     if (pdfBase64) {
       openBase64Pdf(pdfBase64)
     } else {
-      alert("Primero genera el reporte PDF")
+      //alert("Primero genera el reporte PDF")
+      toast("Error", { description: "Primero genera el reporte PDF", })
     }
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="container mx-auto">
       <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Generador de Reportes</h1>
-            <p className="text-muted-foreground">Configura y genera reportes técnicos de manera eficiente</p>
-          </div>
-        </div>
+        <PageHeader
+          title="Generador de Reportes"
+          description="Configura y genera reportes técnicos de manera eficiente."
+        />
         <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
           {/* Columna izquierda: Formulario - 43% */}
           <div className="xl:col-span-3 space-y-6">
             <Card className="shadow-lg border-none">
               <CardHeader className="bg-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
-                  <Building className="w-5 h-5" />
+                  <Settings className="w-5 h-5" />
                   Configuración del Reporte
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -254,123 +309,136 @@ export default function ReportsPage() {
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 {/* Tu formulario existente */}
-                <div className="space-y-2">
-                  <Label htmlFor="activo" className="text-sm font-semibold text-foreground">
-                    Tipo de Activo
-                  </Label>
-                  <Select value={activo} onValueChange={(value) => setActivo(value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Selecciona un activo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CT">CTs (Transformadores de Corriente)</SelectItem>
-                      <SelectItem value="PT">PTs (Transformadores de Potencial)</SelectItem>
-                      <SelectItem value="TRANS">Transformadores</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="empresa" className="text-sm font-semibold text-foreground">
-                    Empresa
-                  </Label>
-                  <Input
-                    id="empresa"
-                    type="text"
-                    disabled
-                    placeholder="Nombre de la empresa"
-                    value={tenantLocalHost}
-                    onChange={(e) => setTenant(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fileName" className="text-sm font-semibold text-foreground">
-                    Nombre del archivo
-                  </Label>
-                  <Input
-                    id="fileName"
-                    type="text"
-                    placeholder="Ingresa el nombre del archivo"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="userPoolId" className="text-sm font-semibold text-foreground">
-                    Usuario
-                  </Label>
-                  <Input
-                    id="poolUserId"
-                    disabled
-                    type="text"
-                    placeholder="Nombre del usuario"
-                    value={userr?.userName || ""}
-                    onChange={(e) => setPoolUserId(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
-                {/* Cargar archivo */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-foreground">Archivo de Datos</Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
-                    <Input
-                      id="archivo"
-                      type="file"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null
-                        setArchivo(file)
-                      }}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById("archivo")?.click()}
-                      className="w-full h-12 border-2 hover:bg-primary/5 hover:border-primary/50"
-                    >
-                      <Upload className="w-5 h-5 mr-2" />
-                      {archivoToFront ? archivoToFront.name : "Seleccionar archivo"}
-                    </Button>
-                    {archivoToFront && (
-                      <div className="flex items-center justify-between gap-2 mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-primary" />
-                          <span className="text-sm text-primary font-medium">{archivoToFront.name}</span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setArchivo(null)}
-                          className="text-primary hover:text-primary/80 hover:bg-primary/10"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    )}
+                <div className="space-y-4">
+                  {/* Fila 1: Select de Tipo de Activo */}
+                  <div className="space-y-2">
+                    <Label htmlFor="activo" className="text-sm font-medium">
+                      Tipo de Activo
+                    </Label>
+                    <Select value={activo} onValueChange={(value) => setActivo(value)}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecciona un activo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CT">CTs (Transformadores de Corriente)</SelectItem>
+                        <SelectItem value="PT">PTs (Transformadores de Potencial)</SelectItem>
+                        <SelectItem value="TRANS">Transformadores</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-                <Separator />
-                {/* Botones de acción */}
-                <div className="space-y-3">
+
+                  {/* Fila 2: Usuario y Empresa (con overflow hidden) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-hidden">
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="userPoolId" className="text-sm font-medium">
+                        Usuario
+                      </Label>
+                      <Input
+                        id="poolUserId"
+                        disabled
+                        type="text"
+                        placeholder="Nombre del usuario"
+                        value={userr?.userName || ""}
+                        onChange={(e) => setPoolUserId(e.target.value)}
+                        className="truncate"
+                      />
+                    </div>
+
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="empresa" className="text-sm font-medium">
+                        Empresa
+                      </Label>
+                      <Input
+                        id="empresa"
+                        type="text"
+                        disabled
+                        placeholder="Nombre de la empresa"
+                        value={tenantLocalHost}
+                        onChange={(e) => setTenant(e.target.value)}
+                        className="truncate"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Fila 3: Nombre del archivo */}
+                  <div className="space-y-2">
+                    <Label htmlFor="fileName" className="text-sm font-medium">
+                      Nombre del archivo
+                    </Label>
+                    <Input
+                      id="fileName"
+                      type="text"
+                      placeholder="Ingresa el nombre del archivo"
+                      value={fileName}
+                      onChange={(e) => setFileName(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Cargar archivo - ancho completo */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Archivo de Datos</Label>
+                    <div className="border-2 border-dashed border-border rounded-lg p-2 hover:border-primary/50 transition-colors">
+                      <Input
+                        id="archivo"
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          setArchivo(file)
+                        }}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("archivo")?.click()}
+                        className="w-full border-2 hover:bg-primary/5 hover:border-primary/50"
+                      >
+                        <Upload className="w-5 h-5 mr-2" />
+                        {archivoToFront ? archivoToFront.name : "Seleccionar archivo"}
+                      </Button>
+                      {archivoToFront && (
+                        <div className="flex items-center justify-between gap-2 mt-3 p-1 bg-primary/10 rounded-lg border border-primary/20">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-primary" />
+                            <span className="text-sm text-primary font-medium">{archivoToFront.name}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setArchivo(null)}
+                            className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botón de procesamiento - ancho completo */}
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
                       processFile()
                     }}
                     disabled={!activo || !archivoToFront || isProcessing}
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Procesando...
                       </>
                     ) : (
                       <p>Procesar Archivo</p>
                     )}
                   </Button>
+
+                  <Separator />
+                </div>
+                {/* Botones de acción */}
+                <div className="space-y-3">
                   <ImprovedConclusions />
                   <Button
                     onClick={(e) => {
@@ -378,7 +446,7 @@ export default function ReportsPage() {
                       generateReport()
                     }}
                     disabled={!resultadoHtml || isGeneratingPdf}
-                    className="w-full h-12 "
+                    className="w-full"
                   >
                     {isGeneratingPdf ? (
                       <p>Generando PDF...</p>
@@ -391,12 +459,12 @@ export default function ReportsPage() {
                     <Button
                       onClick={handleDownload}
                       disabled={isDownloading || !fileName.trim()}
-                      className="flex-1 h-11"
+                      className="flex-1"
                     >
                       {isDownloading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <Download className="w-4 h-4 mr-2" />
+                        <Download className="w-4 h-4" />
                       )}
                       Descargar
                     </Button>
@@ -404,9 +472,9 @@ export default function ReportsPage() {
                       onClick={handlePreview}
                       disabled={!pdfBase64}
                       variant="outline"
-                      className="flex-1 h-11"
+                      className="flex-1"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
+                      <Eye className="w-4 h-4" />
                       Vista Previa
                     </Button>
                   </div>
@@ -419,7 +487,7 @@ export default function ReportsPage() {
             <Card className="shadow-lg border-none h-full">
               <CardHeader className="bg-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
+                  <View className="w-5 h-5" />
                   Vista Previa del Reporte
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">

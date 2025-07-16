@@ -1,7 +1,11 @@
+//dashboard/page.tsx
+
 'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+
+import { Toaster } from "@/components/ui/sonner"
 
 export default function DashboardPage() {
   const router = useRouter()

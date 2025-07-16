@@ -103,6 +103,7 @@ export class AuthService {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        cache: 'force-cache'
       });
 
       if (!response.ok) {

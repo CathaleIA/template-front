@@ -1,4 +1,4 @@
-import { ApiResponse } from "../../types/typeReports";
+import { ApiResponse } from "@/types";
 
 export async function serviceRender(data: any): Promise<ApiResponse>{
     try {

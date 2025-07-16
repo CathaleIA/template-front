@@ -1,94 +1,80 @@
-// sidebar-config.ts - Configuración actualizada
-import { NotepadText, ChartArea, Settings, LifeBuoy, Send, Frame, UserSearch, Folder, Cpu } from 'lucide-react'
-import type { SidebarData } from "@/types/sidebar"
+import type { ProjectData } from "@/types/sidebar" // Asumiendo que pusiste el tipo en este archivo
 
-export const SIDEBAR_BY_TENANT: Record<string, SidebarData> = {
+export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
   copower: {
-    navMain: [
+    admin: [
       {
-        title: "Generar Reportes",
-        url: "/dashboard",
-        icon: NotepadText,
-        items: [
-          { title: "Generar reportes", url: "/dashboard/reports" },
-          { title: "Listar reportes", url: "/dashboard/listreports" },
-        ],
-      },
-      {
-        title: "Data Analysis",
-        icon: NotepadText,
-        items: [
-          {
-            title: "Campo  CTY",
-            url: "/dashboard/historico",
-            icon: Folder,
-            items: [
-              {
-                title: "Alertas",
-                url: "/dashboard/alerts",
-                icon: Cpu
-              },
-              {
-                title: "Analisis",
-                url: "/dashboard/analisis",
-                icon: Settings
-              },
-              {
-                title: "Administrar",
-                url: "/dashboard/admin",
-                icon: Settings
-              }
-
-            ]
-          }
-        ]
-      },
-    ],
-    projects: [
-      {
-        name: "User Management",
+        file: "User management",
+        state: "OK",
         url: "/dashboard/users",
-        icon: UserSearch,
       },
+      // {
+      //   file: "api/hello/route.ts",
+      //   state: "U",
+      // },
+      // {
+      //   file: "app/layout.tsx",
+      //   state: "M",
+      // },
     ],
-    navSecondary: [
-      {
-        title: "Support",
-        url: "#",
-        icon: LifeBuoy,
-      },
-      {
-        title: "Feedback",
-        url: "#",
-        icon: Send,
-      },
+    tree: [
+      // [
+      //   "app",
+      //   [
+      //     "api",
+      //     ["hello", ["route.ts"]],
+      //     "page.tsx",
+      //     "layout.tsx",
+      //     ["blog", ["page.tsx"]],
+      //   ],
+      // ],
+      [
+        { "title": "Reports", "url": "#" },
+        { "title": "Create", "url": "/dashboard/reports" },
+        { "title": "List", "url": "/dashboard/listreports" },
+        { "title": "Config", "url": "#" },
+      ],
+      [{ "title": "Analysis", "url": "#" },
+      // ["Site CTY", "Alerts", "Analytics", "Administration"],
+      [{ "title": "Site CTY", "url": "#" },
+      { "title": "Alerts", "url": "/dashboard/alerts" },
+      { "title": "Analytics", "url": "/dashboard/analisis" },
+      { "title": "Administration", "url": "/dashboard/admin" },
+      ],
+
+      // { "title": "Reports", "url": "/dashboard/reports" },
+      ],
+      // "util.ts",
+      // "data.ts",
+      // "visualization.tsx",
     ],
+    // ["public", "favicon.ico", "vercel.svg"],
+    // ".eslintrc.json",
+    // ".gitignore",
+    // "next.config.js",
+    // "tailwind.config.js",
+    // "package.json",
+    // "README.md",
   },
   dautom: {
-    navMain: [
+    admin: [
       {
-        title: "Generar Reportes",
-        url: "/dashboard",
-        icon: NotepadText,
-        items: [
-          { title: "Generar reportes", url: "/dashboard/reports" },
-          { title: "Listar reportes", url: "/dashboard/listreports" },
-        ],
+        file: "User management",
+        state: "OK",
+        url: "/dashboard/users",
       },
     ],
-    projects: [
-    ],
-    navSecondary: [
-      {
-        title: "Support",
-        url: "#",
-        icon: LifeBuoy,
-      },
-      {
-        title: "Feedback",
-        url: "#",
-        icon: Send,
-      },
+    tree: [
+      [
+        { "title": "Reports", "url": "#" },
+        { "title": "Create", "url": "/dashboard/reports" },
+        { "title": "List", "url": "/dashboard/listreports" },
+        { "title": "Config", "url": "#" },
+
+      ],
+      // ["Analysis",
+      //   ["Site CTY", "Alerts", "Analytics", "Administration"],
+      // ],
     ],
   },
 }

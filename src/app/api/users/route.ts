@@ -18,6 +18,7 @@ export async function GET(request: Request) {
       headers: {
         Authorization: `Bearer ${TOKEN_ID}`,
       },
+      cache: 'force-cache'
     });
 
     if (!response.ok) {
