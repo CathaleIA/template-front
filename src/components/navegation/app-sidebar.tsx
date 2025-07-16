@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from 'next/image'
 
 import { NavUser } from "@/components/navegation/nav-user"
 import {
@@ -74,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="gap-0 px-0 justify-center">
         {/* Logo a ancho completo */}
         <div className="flex h-18 w-full items-center justify-center bg-sidebar">
-          <img
+          <Image
             src={tenantLogo}
             alt="Company Logo"
             className="h-full w-full object-contain"

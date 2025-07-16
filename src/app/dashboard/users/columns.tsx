@@ -4,8 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { UsersInfo } from "@/types"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Eye, ArrowUpDown } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { MoreHorizontal, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -123,7 +122,6 @@ export const columns: ColumnDef<UsersInfo>[] = [
     {
         id: "actions",
         cell: ({ row }) => {
-            const router = useRouter();
             const userSelect = row.original
 
             return (
@@ -142,11 +140,12 @@ export const columns: ColumnDef<UsersInfo>[] = [
                         >
                             Copy user name
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/dashboard/users/${userSelect.userName}`)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View details
-                        </DropdownMenuItem>
-                        {/* <DropdownMenuItem>View payment details</DropdownMenuItem> */}
+                        <Link href={`/dashboard/users/${userSelect.userName}`} passHref legacyBehavior>
+                            <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View details
+                            </DropdownMenuItem>
+                        </Link>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

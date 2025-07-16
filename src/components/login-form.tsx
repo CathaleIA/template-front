@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, Factory, ArrowRight } from "lucide-react"
 import { setTenantConfig } from "@/utils/save-tenant"
+import Image from 'next/image'
 
 
 export function EnhancedLoginForm({
@@ -161,7 +162,7 @@ export function EnhancedLoginForm({
               </div>
             </div>
             <div className="bg-muted relative hidden md:block">
-              <img
+              <Image
                 src="/placeholder.svg"
                 alt="Image"
                 className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
@@ -240,7 +241,7 @@ export function EnhancedLoginForm({
             )}
           </div>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="/placeholder.svg"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
