@@ -77,6 +77,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex h-18 w-full items-center justify-center bg-sidebar">
           <Image
             src={tenantLogo}
+            width={500}
+            height={400}
+            
             alt="Company Logo"
             className="h-full w-full object-contain"
           />

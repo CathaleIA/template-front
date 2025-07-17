@@ -56,14 +56,11 @@ export default function DemoPage() {
 
     // Callback para cuando se crea un nuevo usuario
     const handleUserCreated = (user: CreateUserData) => {
-        // Simular creación de usuario
-        setTimeout(() => {
-            addNotification({
-                type: "success",
-                title: "Usuario creado exitosamente",
-                message: `El nuevo usuario ${user.userName} ha sido agregado al sistema.`,
-            })
-        }, 2000)
+        addNotification({
+            type: "success",
+            title: "Usuario creado exitosamente",
+            message: `El nuevo usuario ${user.userName} ha sido agregado al sistema.`,
+        })
         //window.location.reload() // O mejor aún, hacer fetch de nuevo
     }
 

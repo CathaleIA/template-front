@@ -66,8 +66,8 @@ export function EnhancedLoginForm({
       setProgress(90)
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
-      // const redirectUri = "http://localhost:3000/api/auth/callback"
+      // const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
+      const redirectUri = "http://localhost:3000/api/auth/callback"
 
       const scope = "email+openid+profile"
 
@@ -161,13 +161,6 @@ export function EnhancedLoginForm({
                 </div>
               </div>
             </div>
-            <div className="bg-muted relative hidden md:block">
-              <Image
-                src="/placeholder.svg"
-                alt="Image"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-              />
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -239,13 +232,6 @@ export function EnhancedLoginForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-          </div>
-          <div className="bg-muted relative hidden md:block">
-            <Image
-              src="/placeholder.svg"
-              alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            />
           </div>
         </CardContent>
       </Card>
