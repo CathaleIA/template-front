@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { renderPDF } from "../../../components/service-report/apiServerRenderPDF";
-import { requestToRender } from "@/types/typePdfRender";
+import { requestToRender } from "@/types";
 export async function POST(req: Request) {
     try {
         const body: requestToRender = await req.json();

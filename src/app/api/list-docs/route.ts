@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { serviceListDosc } from "../../../components/service-report/apiServerListDocs";
-import { requestListDocs } from "@/types/typeListDocs";
+import { requestListDocs } from "@/types";
 
 export async function POST(req: Request) {
     try {

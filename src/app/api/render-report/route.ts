@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import {serviceRender} from "../../../components/service-report/apiServerRender";
-import { RequestBody } from "../../../types/typeReports";
+import {serviceRender} from "@/components/service-report/apiServerRender";
+import { RequestBody } from "@/types";
 
 export async function POST(req:Request) {
     try {
