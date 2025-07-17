@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { downloadFile } from "../../../components/service-report/apiServerDownDocs";
-import { requestDown } from "@/types/typeDownFile";
+import { requestDown } from "@/types";
 export async function POST(req: Request) {
     try {
         const body: requestDown = await req.json();
