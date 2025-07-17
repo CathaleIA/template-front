@@ -19,7 +19,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar"
 
-import  AppSidebarSkeleton  from "@/components/skeleton/app-sidebar-skeleton"
+import AppSidebarSkeleton from "@/components/skeleton/app-sidebar-skeleton"
 
 import {
   Collapsible,
@@ -73,12 +73,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {...props}
     >
       <SidebarHeader className="gap-0 px-0 justify-center">
-        {/* Logo a ancho completo */}
-        <div className="flex h-18 w-full items-center justify-center bg-sidebar">
+        {/* <div className="flex h-18 w-full items-center justify-center bg-sidebar">
           <Image
             src={tenantLogo}
+            width={500}
+            height={400}
             alt="Company Logo"
             className="h-full w-full object-contain"
+          />
+        </div> */}
+        <div className="relative flex h-18 w-full items-center justify-center">
+          <Image
+            src={tenantLogo}
+            // width={500}
+            // height={400}
+            fill
+            alt="Company Logo"
+            className="object-contain"
+            priority
           />
         </div>
 

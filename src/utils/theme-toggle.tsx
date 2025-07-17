@@ -28,7 +28,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-0.5">
       <div className="flex items-center space-x-1">
         <Sun className={`h-4 w-4 ${isDark ? "text-muted-foreground" : "text-foreground"}`} />
       </div>

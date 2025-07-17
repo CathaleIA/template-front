@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
   const [selectedParameter, setSelectedParameter] = useState('temperatura');
   const [neuralProcessing, setNeuralProcessing] = useState(false);
 
-
+useEffect(() => {
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -93,12 +93,9 @@ const Dashboard: React.FC = () => {
       console.error('Error fetching data:', error);
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
+  }
+  fetchData()
+}, [])
 
 
   const simulateNeuralAnalysis = (motorData: MotorData[]) => {
