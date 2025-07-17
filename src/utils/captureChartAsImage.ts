@@ -1,7 +1,7 @@
 
 
 import { Chart, ChartConfiguration, ChartOptions, registerables } from 'chart.js';
-import { GraficaDataExi } from "../types/typeReports"
+import { GraficaDataExi } from "@/types"
 Chart.register(...registerables);
 
 export const generarGraficaBase64 = async (chartData: any, width: number = 500, height: number = 280): Promise<string> => {

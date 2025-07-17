@@ -1,4 +1,4 @@
-import type { ProjectData } from "@/types/sidebar" // Asumiendo que pusiste el tipo en este archivo
+import type { ProjectData } from "@/types/sidebar"
 
 export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
   copower: {
