@@ -80,8 +80,8 @@ export function SelectTenant() {
       setProgress(90)
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      // const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
-      const redirectUri = "http://localhost:3000/api/auth/callback"
+      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
+      // const redirectUri = "http://localhost:3000/api/auth/callback"
 
       const scope = "email+openid+profile"
 
@@ -225,7 +225,7 @@ export function SelectTenant() {
                         name="tenant"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nombre de la empresa</FormLabel>
+                            <FormLabel>Nombre</FormLabel>
                             <FormControl>
                               <Input placeholder="Ej: copower" {...field} />
                             </FormControl>
@@ -237,7 +237,7 @@ export function SelectTenant() {
                         )}
                       />
                       <Button type="submit" className="w-full">
-                        Submit
+                        Validar
                       </Button>
                     </form>
                   </Form>
