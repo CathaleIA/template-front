@@ -16,22 +16,13 @@ export default function ReportsPage() {
     const [loading, setLoading] = useState(false)
     const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set())
     const [pdfCache, setPdfCache] = useState<Map<string, string>>(new Map())
-    const [tenantLocalHost, setTenantLocalHost] = useState<string | null>(null)
 
     const { userr } = useUser()
-    const userPoolid = userr?.userName || ""
-
-    useEffect(() => {
-        const storedTenant = localStorage.getItem("tenant")
-        if (storedTenant) {
-            setTenantLocalHost(storedTenant)
-        }
-    }, [])
 
     useEffect(() => {
         const fetchDataIfNeeded = async () => {
-            if (!tenantLocalHost || !userr?.userName) {
-                console.log("Datos faltantes:", { tenantLocalHost, userName: userr?.userName })
+            if (!userr?.tenantName || !userr?.userName) {
+                //console.log("Datos faltantes:", { tenantLocalHost, userName: userr?.userName })
                 return
             }
 
@@ -41,7 +32,7 @@ export default function ReportsPage() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        tenantName: tenantLocalHost,
+                        tenantName: userr.tenantName,
                         userPoolid: userr.userName,
                     }),
                 })
@@ -60,7 +51,7 @@ export default function ReportsPage() {
         }
 
         fetchDataIfNeeded()
-    }, [tenantLocalHost, userr])
+    }, [userr])
 
     async function handleDownload(fileName: string) {
         if (!fileName.trim()) return alert("Nombre de archivo inválido")
@@ -76,7 +67,7 @@ export default function ReportsPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         userPoolId: userr?.userName,
-                        tenantName: tenantLocalHost,
+                        tenantName: userr?.tenantName,
                         key: fileName,
                     }),
                     cache: "force-cache"

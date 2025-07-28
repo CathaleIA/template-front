@@ -25,6 +25,9 @@ import { toast } from "sonner"
 import type { UserInfo } from "@/types/user"
 import { Trash2, Edit, Save, X } from "lucide-react"
 
+import { PageHeader } from "@/components/page-header"
+import { AppPageLoading } from "@/components/skeleton/app-page-loading"
+
 export default function UserPage() {
   const params = useParams()
   const username = params.username as string
@@ -132,9 +135,7 @@ export default function UserPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p>Loading user...</p>
-      </div>
+      <AppPageLoading />
     )
   }
 
@@ -145,54 +146,53 @@ export default function UserPage() {
       </div>
     )
   }
+  const EditDeleteActions = (
+    <div className="flex gap-2">
+      {!isEditing ? (
+        <>
+          <Button variant="outline" onClick={() => setIsEditing(true)}>
+            <Edit className="mr-2 h-4 w-4" /> Edit
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
+      ) : (
+        <>
+          <Button variant="outline" onClick={() => setIsEditing(false)}>
+            <X className="mr-2 h-4 w-4" /> Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            <Save className="mr-2 h-4 w-4" /> {saving ? "Saving..." : "Save"}
+          </Button>
+        </>
+      )}
+    </div>
+  );
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle>{user.userName}</CardTitle>
-            <CardDescription>User Details and Management</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            {!isEditing ? (
-              <>
-                <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete} disabled={deleting}>
-                        {deleting ? "Deleting..." : "Delete"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" onClick={() => setIsEditing(false)}>
-                  <X className="mr-2 h-4 w-4" /> Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  <Save className="mr-2 h-4 w-4" /> {saving ? "Saving..." : "Save"}
-                </Button>
-              </>
-            )}
-          </div>
-        </CardHeader>
-      </Card>
+    <div className="container mx-auto">
+      <PageHeader
+        title="Editar usuario"
+        description="Seguimiento personlaizado a sus usuarios."
+        actions={EditDeleteActions}
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Información básica */}
