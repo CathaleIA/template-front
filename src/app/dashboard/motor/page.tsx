@@ -51,7 +51,7 @@ export default function MotorGrid() {
 
             <div className="col-span-1 row-span-1">
                 <div className="flex flex-col bg-card shadow-2xl h-full rounded-md overflow-hidden">
-                    <div className="flex justify-center items-center bg-accent dark:bg-input/30 w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder">
+                    <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
                         </h1>
@@ -75,7 +75,7 @@ export default function MotorGrid() {
 
             <div className='col-span-1 row-span-2'>
                 <div className='flex flex-col bg-card shadow-2xl h-full rounded-tr-2xl'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RPM vs Hz</h1>
                     </div>
@@ -92,7 +92,7 @@ export default function MotorGrid() {
                         onValueChange={(value) => setselectTendency(value)}
                     >
                         <SelectTrigger
-                            className="bg-accent text-primary border-b-6 border-r-6 border-border rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="bg-card text-primary border-b-6 border-r-6 border-background rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -114,7 +114,7 @@ export default function MotorGrid() {
 
             <div className='col-span-1 row-span-2'>
                 <div className='flex flex-col bg-card shadow-2xl h-full rounded-br-2xl'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             PRESION</h1>
                     </div>

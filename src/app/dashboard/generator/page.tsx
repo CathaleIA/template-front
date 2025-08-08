@@ -3,17 +3,16 @@ import Tendency from "@/components/plotly/Tendency";
 import PolarPhaseAnglePlot from '@/components/plotly/Polar'
 
 import { PowerFactorData  } from '@/utils/generatedata/gauge'
-import { generateSimulatedData } from '@/utils/generatedata/cilinders'
 import { EnergyPowerData,PowerData } from "@/utils/generatedata/tendency";
 
 
-export default function () {
+export default function Generator() {
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-4 gap-3 h-[calc(100svh-var(--header-height))]! p-3 ">
 
             <div className="col-span-3 row-span-2">
                 <div className='flex flex-col bg-card shadow-2xl h-full'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             ENERGIA</h1>
                     </div>
@@ -24,7 +23,7 @@ export default function () {
             </div>
             <div className="col-span-1 row-span-1">
                 <div className='flex flex-col bg-card shadow-2xl h-full'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             VOLTAJE</h1>
                     </div>
@@ -55,7 +54,7 @@ export default function () {
             </div>
             <div className="col-span-1 row-span-3">
                 <div className='flex flex-col bg-card shadow-2xl h-full w-full'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             ANGULOS</h1>
                     </div>
@@ -70,7 +69,7 @@ export default function () {
             </div>
             <div className="col-span-1 row-span-2">
                 <div className='flex flex-col bg-card shadow-2xl h-full'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[55%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             FACT. DE POTENCIA</h1>
                     </div>
@@ -81,7 +80,7 @@ export default function () {
             </div>
             <div className="col-span-2 row-span-2">
                 <div className='flex flex-col bg-card shadow-2xl h-full'>
-                    <div className='flex justify-center items-center bg-accent dark:bg-input/30 w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-boder'>
+                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             POTENCIA</h1>
                     </div>
@@ -90,7 +89,6 @@ export default function () {
                     </div>
                 </div>
             </div>
-
         </div>
     )
 }
