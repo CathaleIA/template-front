@@ -5,7 +5,6 @@ interface TraceData {
   x: Date[];
   y: number[];
   name: string;
-  lineColor?: string;
   mode?: 'lines' | 'markers' | 'lines+markers';
 }
 const generateData = (
@@ -125,19 +124,16 @@ const generateEnergyData = (
 const EnergyConsumed: TraceData = {
   ...generateEnergyData(30, 150, 20, 14),
   name: 'Energía Consumida (kWh)',
-  lineColor: '#3b82f6',
   mode: 'lines'
 };
 const EnergyGenerated: TraceData = {
   ...generateEnergyData(30, 80, 15, 12),
   name: 'Energía Generada (kWh)',
-  lineColor: '#10b981',
   mode: 'lines'
 };
 const ReactiveEnergyGenerated: TraceData = {
   ...generateEnergyData(30, 60, 10, 10),
   name: 'Energía Reactiva Generada (kVARh)',
-  lineColor: '#f59e0b',
   mode: 'lines'
 };
 const energyTraces = [
@@ -148,19 +144,16 @@ const energyTraces = [
 const ActivePower: TraceData = {
   ...generateEnergyData(30, 1250, 100, 14), // Base de 1250 kW con variación de 100
   name: 'Potencia Activa (kW)',
-  lineColor: '#3b82f6',
   mode: 'lines'
 };
 const ReactivePower: TraceData = {
   ...generateEnergyData(30, 600, 50, 10), // Base de 600 kVAR con variación de 50
   name: 'Potencia Reactiva (kVAR)',
-  lineColor: '#f59e0b',
   mode: 'lines'
 };
 const ApparentPower: TraceData = {
   ...generateEnergyData(30, 1400, 120, 14), // Base de 1400 kVA con variación de 120
   name: 'Potencia Aparente (kVA)',
-  lineColor: '#10b981',
   mode: 'lines'
 };
 const powerTraces = [
@@ -190,8 +183,7 @@ function generarVelocidadMotor(puntos: number = 100): TraceData {
   return {
     x,
     y,
-    name: 'Velocidad Motor (RPM)',
-    lineColor: '#1f77b4',
+    name: 'Velocidad',
     mode: 'lines',
   };
 }
@@ -211,8 +203,7 @@ function generarFrecuenciaMotor(puntos: number = 100): TraceData {
   return {
     x,
     y,
-    name: 'Frecuencia Motor (Hz)',
-    lineColor: '#ff7f0e',
+    name: 'Frecuencia',
     mode: 'lines',
   };
 }

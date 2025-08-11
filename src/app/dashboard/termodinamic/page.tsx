@@ -12,7 +12,7 @@ export default function Healhtly() {
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-3 h-[calc(100svh-var(--header-height))]! p-3">
             <div className="col-span-2 row-span-1">
-                <div className='bg-card shadow-2xl h-full flex flex-col rounded-tr-2xl'>
+                <div className='bg-card  h-full flex flex-col rounded-tr-2xl shadow-lg/20'>
                     <Select
                         defaultValue="acople"
                         onValueChange={(value) => setselectTendency(value)}
@@ -37,7 +37,7 @@ export default function Healhtly() {
                 </div>
             </div>
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-card shadow-2xl h-full rounded-tr-2xl overflow-hidden">
+                <div className="flex flex-col bg-card  h-full rounded-tr-2xl shadow-lg/20">
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
@@ -64,7 +64,7 @@ export default function Healhtly() {
                 </div>
             </div>
             <div className="col-span-3 row-span-2">
-                <div className='flex flex-col bg-card shadow-2xl h-full rounded-bl-2xl'>
+                <div className='flex flex-col bg-card  h-full rounded-bl-2xl  rounded-br-2xl shadow-lg/20'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             DEVANADOS</h1>

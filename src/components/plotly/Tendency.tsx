@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface TraceData {
   x: Date[];
@@ -29,6 +30,7 @@ export default function FrequencyTrendChart({
   const containerRef = useRef<HTMLDivElement>(null);
   const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
   const currentTheme = useRef<string>('');
+      const { state, open } = useSidebar();
 
   // Detectar cambios de tema
   useEffect(() => {
@@ -156,6 +158,8 @@ export default function FrequencyTrendChart({
           config
         );
 
+        Plotly.Plots.resize(containerRef.current!);
+
       } catch (error) {
         console.error('Error al cargar Plotly:', error);
       }
@@ -170,6 +174,22 @@ export default function FrequencyTrendChart({
       }
     };
   }, [themeVersion, minPF, maxPF]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
   return (
     <div

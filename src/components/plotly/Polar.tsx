@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface PolarPhaseAngleProps {
     angles: {
@@ -20,6 +21,7 @@ const PolarPhaseAnglePlot = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [themeVersion, setThemeVersion] = useState(0);
     const currentTheme = useRef<string>('');
+        const { state, open } = useSidebar();
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -79,7 +81,7 @@ const PolarPhaseAnglePlot = ({
                             color: colors.muted,
                             width: 0.5
                         },
-                        mode:'lines',
+                        mode: 'lines',
                         showlegend: false,
                     },
                     // Área de los ángulos actuales
@@ -93,7 +95,7 @@ const PolarPhaseAnglePlot = ({
                             color: 'rgba(100, 200, 255, 0.3)',
                             width: 1
                         },
-                        mode:'lines',
+                        mode: 'lines',
                         name: 'Ángulos actuales',
                         hoverinfo: 'none'
                     },
@@ -248,6 +250,7 @@ const PolarPhaseAnglePlot = ({
                 };
 
                 await Plotly.newPlot(containerRef.current!, data, layout, config);
+                Plotly.Plots.resize(containerRef.current!);
 
             } catch (error) {
                 console.error('Failed to load Plotly:', error);
@@ -263,6 +266,22 @@ const PolarPhaseAnglePlot = ({
             }
         };
     }, [angles.l1l2, angles.l2l3, angles.l3l1, title, referenceAngle, themeVersion]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
     return (
         <div ref={containerRef} className="w-full h-full rounded-2xl overflow-hidden" />

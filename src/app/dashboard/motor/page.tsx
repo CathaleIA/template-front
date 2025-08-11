@@ -18,7 +18,7 @@ export default function MotorGrid() {
         // Grid principal: 4 columnas x 3 filas = 12 celdas de igual tamaño
         <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-3 h-[calc(100svh-var(--header-height))]! p-3">
             <div className='col-span-1 row-span-1'>
-                <div className="bg-card shadow-2xl h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl">
+                <div className="bg-card  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl shadow-lg/20 px-3">
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
                             <div>
@@ -41,7 +41,7 @@ export default function MotorGrid() {
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-1  row-span-2 rounded-2xl flex flex-col items-center justify-center text-center  px-6 py-8">
+                    <div className="col-span-1  row-span-2 rounded-2xl flex flex-col items-center justify-center text-center">
                         <h3 className="text-lg font-medium text-foreground mb-4">Potencia Mecánica</h3>
                         <p className="text-5xl font-bold text-foreground mb-2">840</p>
                         <p className="text-base text-muted-foreground">kW</p>
@@ -50,7 +50,7 @@ export default function MotorGrid() {
             </div>
 
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-card shadow-2xl h-full rounded-md overflow-hidden">
+                <div className="flex flex-col bg-card  h-full rounded-md shadow-lg/20">
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
@@ -74,7 +74,7 @@ export default function MotorGrid() {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-card shadow-2xl h-full rounded-tr-2xl'>
+                <div className='flex flex-col bg-card  h-full rounded-tr-2xl shadow-lg/20'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RPM vs Hz</h1>
@@ -86,7 +86,7 @@ export default function MotorGrid() {
             </div>
 
             <div className="col-span-2 row-span-3 rounded-br-full">
-                <div className='bg-card shadow-2xl h-full flex flex-col rounded-bl-2xl'>
+                <div className='bg-card  h-full flex flex-col rounded-bl-2xl shadow-lg/20'>
                     <Select
                         defaultValue="temperatura"
                         onValueChange={(value) => setselectTendency(value)}
@@ -113,7 +113,7 @@ export default function MotorGrid() {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-card shadow-2xl h-full rounded-br-2xl'>
+                <div className='flex flex-col bg-card  h-full rounded-br-2xl shadow-lg/20'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             PRESION</h1>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface HeatmapProps {
     data?: {
@@ -21,6 +21,7 @@ export default function TemperatureHeatmap({
     const containerRef = useRef<HTMLDivElement>(null);
     const [themeVersion, setThemeVersion] = useState(0);
     const currentTheme = useRef<string>('');
+    const { state, open } = useSidebar();
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -90,16 +91,16 @@ export default function TemperatureHeatmap({
                         namelength: 0
                     }
                 }], {
-                    // title: {text:`${title?? 'temperatura'} (Últimos 30 días)`},
-                    xaxis: { title: {text:'Hora del día'} },
-                    yaxis: { title:{ text:'Fecha'}, autorange: 'reversed' },
-                    margin: { t: 10, l: 70, r: 50, b:40 },
+                    yaxis: { title: { text: 'Fecha' }, autorange: 'reversed' },
+                    margin: { t: 10, l: 70, r: 50, b: 40 },
                     paper_bgcolor: colors.bgColor,
                     plot_bgcolor: colors.bgColor,
                     font: { color: colors.textColor },
-                } ,{
-                    displayModeBar:false,
+                }, {
+                    displayModeBar: false,
                 });
+
+                Plotly.Plots.resize(containerRef.current!);
 
             } catch (error) {
                 console.error('Failed to load Plotly:', error);
@@ -116,6 +117,22 @@ export default function TemperatureHeatmap({
         };
 
     }, [data, maxTemp, title, themeVersion]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
     return <div ref={containerRef} className="w-full h-full rounded-xl overflow-hidden" />;
 }

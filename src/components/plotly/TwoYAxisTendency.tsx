@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface TraceData {
     x: Date[];
     y: number[];
     name: string;
-    lineColor?: string;
     mode?: 'lines' | 'markers' | 'lines+markers';
 }
 
@@ -29,6 +29,7 @@ export default function FrequencyTrendChart2({
     const containerRef = useRef<HTMLDivElement>(null);
     const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
     const currentTheme = useRef<string>('');
+    const { state, open } = useSidebar();
 
     // Detectar cambios de tema
     useEffect(() => {
@@ -131,7 +132,7 @@ export default function FrequencyTrendChart2({
                         zerolinecolor: colors.gridColor,
                     },
 
-                    margin: { t: 30, l: 60, r: 60, b: 40 },
+                    margin: { t: 30, l: 50, r: 50, b: 20 },
                     legend: {
                         orientation: "h",
                         x: 0.5,
@@ -157,7 +158,6 @@ export default function FrequencyTrendChart2({
                     mode: trace.mode || 'lines',
                     name: trace.name,
                     line: {
-                        color: trace.lineColor || '',
                         width: 1,
                         simplify: true,
                     },
@@ -171,6 +171,8 @@ export default function FrequencyTrendChart2({
                     layout,
                     config
                 );
+
+                Plotly.Plots.resize(containerRef.current!);
 
             } catch (error) {
                 console.error('Error al cargar Plotly:', error);
@@ -186,6 +188,22 @@ export default function FrequencyTrendChart2({
             }
         };
     }, [themeVersion, minPF, maxPF]);
+    
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
     return (
         <div

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface PressureData {
     label: string;
@@ -21,6 +22,7 @@ const PressureGroupedBarChart = () => {
 
     const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
     const currentTheme = useRef<string>('');
+    const { state, open } = useSidebar();
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -45,16 +47,16 @@ const PressureGroupedBarChart = () => {
         const style = getComputedStyle(document.documentElement);
 
         const colors = {
-            bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-            cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-            textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
+            bgColor: style.getPropertyValue('--card').trim(),
+            cardColor: style.getPropertyValue('--background').trim(),
+            textColor: style.getPropertyValue('--foreground').trim(),
             successColor: style.getPropertyValue('--color-chart-1').trim(),
             warningColor: style.getPropertyValue('--color-chart-2').trim(),
             dangerColor: style.getPropertyValue('--color-chart-3').trim(),
-            gridColor: style.getPropertyValue('--color-border').trim() || '#E5E7EB',
+            gridColor: style.getPropertyValue('--color-border').trim(),
         };
 
-        const labels = pressureValues.map(p => p.label); // ['Presión PRE', 'Presión POS', ...]
+        const labels = pressureValues.map(p => p.label);
         const loadPlot = async () => {
             try {
                 const Plotly = await import('plotly.js-dist-min');
@@ -66,7 +68,7 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.min),
                         name: 'Mínimo',
-                        marker: { color: colors.dangerColor },
+                        // marker: { color: colors.dangerColor },
                         text: pressureValues.map(p => p.min.toString()),
                         textposition: 'outside',
                         width: 0.1,
@@ -77,10 +79,10 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.value),
                         name: 'Actual',
-                        marker: { color: colors.successColor },
+                        // marker: { color: colors.successColor },
                         text: pressureValues.map(p => p.value.toString()),
                         textposition: 'outside',
-                        width:0.4,
+                        width: 0.4,
                     },
                     {
                         type: 'bar',
@@ -88,7 +90,7 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.max),
                         name: 'Máximo',
-                        marker: { color: colors.warningColor },
+                        // marker: { color: colors.warningColor },
                         text: pressureValues.map(p => p.max.toString()),
                         textposition: 'outside',
                         width: 0.1,
@@ -97,7 +99,7 @@ const PressureGroupedBarChart = () => {
 
                 const layout: Partial<Plotly.Layout> = {
                     barmode: 'group',
-                    bargap:0.2,
+                    bargap: 0.2,
                     bargroupgap: 0,
                     paper_bgcolor: colors.bgColor,
                     plot_bgcolor: colors.bgColor,
@@ -131,6 +133,7 @@ const PressureGroupedBarChart = () => {
                 };
 
                 await Plotly.newPlot(containerRef.current!, data, layout, config);
+                Plotly.Plots.resize(containerRef.current!);
 
             } catch (error) {
                 console.error('Failed to load Plotly:', error);
@@ -148,6 +151,22 @@ const PressureGroupedBarChart = () => {
             }
         };
     }, [themeVersion]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
     return <div ref={containerRef} className="w-full h-full rounded-xl overflow-hidden" />;
 };

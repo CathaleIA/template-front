@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 
 interface VoltageGaugeProps {
@@ -33,8 +34,10 @@ const Gauge = ({
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
+    const [themeVersion, setThemeVersion] = useState(0);
     const currentTheme = useRef<string>('');
+
+    const { state, open } = useSidebar();
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -58,7 +61,6 @@ const Gauge = ({
 
         const style = getComputedStyle(document.documentElement);
 
-        // Obtener colores actuales
         const colors = {
             bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
             cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
@@ -72,18 +74,16 @@ const Gauge = ({
             dangerColor: style.getPropertyValue('--color-danger').trim(),
         };
 
-        console.log('VARIABLE QUE ME TRAIGO', colors);
-
         const loadPlot = async () => {
             try {
                 const Plotly = await import('plotly.js-dist-min');
 
                 const getGaugeColor = (value: number) => {
-                    if (value <= warningLow) return '#dc2626';             // Danger bajo
-                    if (value <= optimalMin) return '#f59e0b';              // Warning bajo
-                    if (value <= optimalMax) return '#16a34a';              // Óptimo
-                    if (value <= warningHight) return '#f59e0b';            // Warning alto
-                    return '#dc2626';                                       // Danger alto
+                    if (value <= warningLow) return '#dc2626';
+                    if (value <= optimalMin) return '#f59e0b';
+                    if (value <= optimalMax) return '#16a34a';
+                    if (value <= warningHight) return '#f59e0b';
+                    return '#dc2626';
                 };
 
 
@@ -158,6 +158,8 @@ const Gauge = ({
 
                 await Plotly.newPlot(containerRef.current!, data, layout, config);
 
+                Plotly.Plots.resize(containerRef.current!);
+
             } catch (error) {
                 console.error('Failed to load Plotly:', error);
             }
@@ -173,6 +175,23 @@ const Gauge = ({
             }
         };
     }, [variable, minVariable, maxVariable, title, unit, warningLow, warningHight, themeVersion]);
+    
+    // Efecto para redimensionar cuando cambia el estado del sidebar
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeTimer = setTimeout(() => {
+            try {
+                const Plotly = require('plotly.js-dist-min');
+                Plotly.Plots.resize(containerRef.current!);
+                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+            } catch (error) {
+                console.error('Error al redimensionar:', error);
+            }
+        }, 70);
+
+        return () => clearTimeout(resizeTimer);
+    }, [state, open]);
 
     return (
         <div ref={containerRef} className="w-full h-full rounded-2xl overflow-hidden" />

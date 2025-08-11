@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface CylinderTempChartProps {
   minTemp: number;
@@ -26,6 +27,7 @@ const CylinderTemperatureChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [themeVersion, setThemeVersion] = useState(0);
   const currentTheme = useRef<string>('');
+  const { state, open } = useSidebar();
 
   // Detectar cambios de tema
   useEffect(() => {
@@ -69,8 +71,6 @@ const CylinderTemperatureChart = ({
           lineMin: 'rgba(34, 197, 94, 0.5)',                               // Línea rango mínimo
         };
 
-
-        // Datos para el gráfico
         const data: Plotly.Data[] = [
           {
             type: 'scatter',
@@ -208,17 +208,39 @@ const CylinderTemperatureChart = ({
         };
 
         Plotly.newPlot(containerRef.current!, data, layout, config);
+        Plotly.Plots.resize(containerRef.current!);
 
-        return () => {
-          Plotly.purge(containerRef.current!);
-        };
       } catch (error) {
         console.error('Error al cargar Plotly:', error);
       }
     };
 
     loadPlot();
+
+    // Cleanup
+    return () => {
+      if (containerRef.current) {
+        const Plotly = require('plotly.js-dist-min');
+        Plotly.purge(containerRef.current);
+      }
+    };
   }, [minTemp, maxTemp, title, themeVersion, warningThreshold]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeTimer = setTimeout(() => {
+      try {
+        const Plotly = require('plotly.js-dist-min');
+        Plotly.Plots.resize(containerRef.current!);
+        console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+      } catch (error) {
+        console.error('Error al redimensionar:', error);
+      }
+    }, 70);
+
+    return () => clearTimeout(resizeTimer);
+  }, [state, open]);
 
   return (
     <div ref={containerRef} className='w-full h-full rounded-2xl overflow-hidden' />
