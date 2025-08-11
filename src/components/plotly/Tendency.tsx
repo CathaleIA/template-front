@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { compressIcon, expandIcon } from './CustomButtons';
+
 
 interface TraceData {
   x: Date[];
@@ -19,6 +21,7 @@ interface TendencyChartProps {
   yAxisTitle: string;
 }
 
+
 export default function FrequencyTrendChart({
   minPF = 50,
   maxPF = 60,
@@ -28,9 +31,10 @@ export default function FrequencyTrendChart({
 }: TendencyChartProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
+  const [themeVersion, setThemeVersion] = useState(0);
   const currentTheme = useRef<string>('');
-      const { state, open } = useSidebar();
+  const { state, open } = useSidebar();
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Detectar cambios de tema
   useEffect(() => {
@@ -71,10 +75,6 @@ export default function FrequencyTrendChart({
 
         // Configuración completa del layout
         const layout: Partial<Plotly.Layout> = {
-          // title: {
-          //   text: 'Tendencia de Frecuencia',
-          //   font: { color: colors.textColor, size: 10 }
-          // },
           paper_bgcolor: colors.bgColor,
           plot_bgcolor: colors.cardColor,
           font: { color: colors.textColor },
@@ -118,7 +118,9 @@ export default function FrequencyTrendChart({
             linecolor: colors.gridColor,
             zerolinecolor: colors.gridColor,
           },
-          margin: { t: 40, l: 50, r: 30, b: 20 },
+          margin: isMaximized
+            ? { t: 80, l: 100, r: 60, b: 40 }
+            : { t: 40, l: 50, r: 30, b: 20 },
           legend: {
             y: -0.4,          // Posición vertical (0 = fondo, 1 = parte superior)
             yanchor: "top",   // Ancla el a leyenda en la posición y
@@ -133,7 +135,18 @@ export default function FrequencyTrendChart({
           responsive: true,
           scrollZoom: true,
           displayModeBar: true,
-          displaylogo: false
+          displaylogo: false,
+          modeBarButtonsToAdd: [
+            {
+              name: 'toggle-maximize',
+              title: isMaximized ? 'Minimizar gráfico' : 'Maximizar gráfico',
+              icon: isMaximized ? compressIcon : expandIcon,
+              click: () => {
+                // Solo cambia el estado → el useEffect se encarga del resto
+                setIsMaximized((prev) => !prev);
+              },
+            },
+          ],
         };
 
         // Convertir los datos de entrada a traces de Plotly
@@ -173,28 +186,38 @@ export default function FrequencyTrendChart({
         Plotly.purge(containerRef.current);
       }
     };
-  }, [themeVersion, minPF, maxPF]);
+  }, [themeVersion, minPF, maxPF, isMaximized]);
 
-    useEffect(() => {
-        if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-        const resizeTimer = setTimeout(() => {
-            try {
-                const Plotly = require('plotly.js-dist-min');
-                Plotly.Plots.resize(containerRef.current!);
-                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
-            } catch (error) {
-                console.error('Error al redimensionar:', error);
-            }
-        }, 70);
+    const resizeTimer = setTimeout(() => {
+      try {
+        const Plotly = require('plotly.js-dist-min');
+        Plotly.Plots.resize(containerRef.current!);
+      } catch (error) {
+        console.error('Error al redimensionar:', error);
+      }
+    }, 160);
 
-        return () => clearTimeout(resizeTimer);
-    }, [state, open]);
+    return () => clearTimeout(resizeTimer);
+  }, [state, open, isMaximized]);
 
   return (
-    <div
-      ref={containerRef}
-      className='w-full h-full rounded-2xl  overflow-hidden'
-    />
+    <>
+      {isMaximized && (
+        <div className="fixed inset-0 bg-black/50 z-40" />
+      )}
+
+      <div
+        ref={containerRef}
+        className={`
+          rounded-2xl overflow-hidden
+          ${isMaximized
+                ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] z-50'
+                : 'w-full h-full'}
+        `}
+      />
+    </>
   );
 };

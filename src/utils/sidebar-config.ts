@@ -42,6 +42,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       { "title": "Termodicamic", "url": "/dashboard/termodinamic" },
       { "title": "Analytics", "url": "/dashboard/analisis" },
       { "title": "Administration", "url": "/dashboard/admin" },
+      { "title": "Test", "url": "/dashboard/test" },
       ],
 
         // { "title": "Reports", "url": "/dashboard/reports" },

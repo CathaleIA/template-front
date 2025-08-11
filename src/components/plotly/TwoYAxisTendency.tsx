@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { compressIcon, expandIcon } from './CustomButtons';
 
 interface TraceData {
     x: Date[];
@@ -30,6 +31,7 @@ export default function FrequencyTrendChart2({
     const [themeVersion, setThemeVersion] = useState(0); // Forzar recarga
     const currentTheme = useRef<string>('');
     const { state, open } = useSidebar();
+    const [isMaximized, setIsMaximized] = useState(false);
 
     // Detectar cambios de tema
     useEffect(() => {
@@ -94,7 +96,7 @@ export default function FrequencyTrendChart2({
                             bgcolor: colors.buttonColor,
                             font: { color: colors.textColor },
                             activecolor: colors.bgColor,
-                            x: 0,
+                            x: -0.1,
                             xanchor: 'left',
                             y: 1.15,
                             yanchor: 'top'
@@ -132,7 +134,9 @@ export default function FrequencyTrendChart2({
                         zerolinecolor: colors.gridColor,
                     },
 
-                    margin: { t: 30, l: 50, r: 50, b: 20 },
+                    margin: isMaximized
+                        ? { t: 80, l: 100, r: 60, b: 40 }
+                        : { t: 40, l: 50, r: 30, b: 20 },
                     legend: {
                         orientation: "h",
                         x: 0.5,
@@ -144,11 +148,23 @@ export default function FrequencyTrendChart2({
 
                 };
 
-                const config = {
+                const config: Partial<Plotly.Config> = {
                     responsive: true,
                     scrollZoom: true,
                     displayModeBar: true,
-                    displaylogo: false
+                    displaylogo: false,
+                    modeBarButtonsToAdd: [
+                        {
+                            name: 'toggle-maximize',
+                            title: isMaximized ? 'Minimizar gráfico' : 'Maximizar gráfico',
+                            icon: isMaximized ? compressIcon : expandIcon,
+                            click: () => {
+                                // Solo cambia el estado → el useEffect se encarga del resto
+                                setIsMaximized((prev) => !prev);
+                            },
+                        },
+                    ],
+                    modeBarButtonsToRemove: isMaximized ? [] : ['toImage', 'zoom2d'],
                 };
 
                 const plotlyTraces: Array<Plotly.Data> = traces.map((trace, index) => ({
@@ -187,8 +203,8 @@ export default function FrequencyTrendChart2({
                 Plotly.purge(containerRef.current);
             }
         };
-    }, [themeVersion, minPF, maxPF]);
-    
+    }, [themeVersion, minPF, maxPF, isMaximized]);
+
     useEffect(() => {
         if (!containerRef.current) return;
 
@@ -203,12 +219,23 @@ export default function FrequencyTrendChart2({
         }, 70);
 
         return () => clearTimeout(resizeTimer);
-    }, [state, open]);
+    }, [state, open, isMaximized]);
 
     return (
-        <div
-            ref={containerRef}
-            className='w-full h-full rounded-2xl  overflow-hidden'
-        />
+        <>
+            {isMaximized && (
+                <div className="fixed inset-0 bg-black/50 z-40" />
+            )}
+
+            <div
+                ref={containerRef}
+                className={`
+                    rounded-2xl overflow-hidden
+                    ${isMaximized
+                        ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] z-50'
+                        : 'w-full h-full'}
+                `}
+            />
+        </>
     );
 };
