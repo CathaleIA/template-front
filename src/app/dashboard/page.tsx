@@ -1,11 +1,8 @@
-//dashboard/page.tsx
-
 'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { Toaster } from "@/components/ui/sonner"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -13,8 +10,8 @@ export default function DashboardPage() {
   useEffect(() => {
     // Redirect a la primera sección después de un breve delay
     const timer = setTimeout(() => {
-      router.push('/dashboard/reports') // o la primera ruta de tu sidebar
-    }, 100)
+      router.push('/dashboard/activo') // o la primera ruta de tu sidebar
+    }, 50)
 
     return () => clearTimeout(timer)
   }, [router])
