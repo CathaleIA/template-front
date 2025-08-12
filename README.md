@@ -22,3 +22,5 @@
 #c2410c
 #a16207
 #b91c1c
+
+-> Credicts for de 3D Motor Author: `"Motor" (https://skfb.ly/68vGM) by Zuncho Multimedia is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).`

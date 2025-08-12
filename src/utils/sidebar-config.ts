@@ -43,6 +43,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       { "title": "Analytics", "url": "/dashboard/analisis" },
       { "title": "Administration", "url": "/dashboard/admin" },
       { "title": "Test", "url": "/dashboard/test" },
+      { "title": "Activos", "url": "/dashboard/activo" },
       ],
 
         // { "title": "Reports", "url": "/dashboard/reports" },

@@ -4,7 +4,7 @@ import { FrecuencyCilindersData, VelocidadFrecuencyData } from '@/utils/generate
 import { generateSimulatedData } from '@/utils/generatedata/cilinders'
 
 import CylinderTemperatureChart from '@/components/plotly/AreaTendency';
-import PressureBars from '@/components/plotly/HorizontalBar'
+import PressureBars from '@/components/plotly/Bar';
 import Tendency from "@/components/plotly/Tendency";
 import FrequencyTrendChart2 from '@/components/plotly/TwoYAxisTendency';
 

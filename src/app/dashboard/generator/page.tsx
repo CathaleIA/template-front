@@ -60,7 +60,7 @@ export default function Generator() {
                     </div>
                     <div className="flex-1 min-h-0">
                         <PolarPhaseAnglePlot
-                            angles={{ l1l2: 130, l2l3: 110, l3l1: 120 }}
+                            angles={{ l1l2: 140, l2l3: 100, l3l1: 120 }}
                             title="Ángulos de Fase del Sistema"
                             referenceAngle={120}
                         />

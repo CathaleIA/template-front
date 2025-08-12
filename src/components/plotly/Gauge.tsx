@@ -67,9 +67,9 @@ const Gauge = ({
             textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
             buttonColor: style.getPropertyValue('--color-muted').trim(),
             gridColor: style.getPropertyValue('--color-border').trim(),
-            space1Color: style.getPropertyValue('--color-chart-1').trim(),
-            space2olor: style.getPropertyValue('--color-chart-2').trim(),
-            space3Color: style.getPropertyValue('--color-chart-3').trim(),
+            space1Color: style.getPropertyValue('--plotly-1').trim(),
+            space2olor: style.getPropertyValue('--plotly-2').trim(),
+            space3Color: style.getPropertyValue('--plotly-3').trim(),
             lineColor: style.getPropertyValue('--color-chart-5').trim(),
             dangerColor: style.getPropertyValue('--color-danger').trim(),
         };
@@ -85,7 +85,6 @@ const Gauge = ({
                     if (value <= warningHight) return '#f59e0b';
                     return '#dc2626';
                 };
-
 
                 const data: Plotly.Data[] = [
                     {

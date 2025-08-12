@@ -49,11 +49,12 @@ const PressureGroupedBarChart = () => {
         const colors = {
             bgColor: style.getPropertyValue('--card').trim(),
             cardColor: style.getPropertyValue('--background').trim(),
-            textColor: style.getPropertyValue('--foreground').trim(),
-            successColor: style.getPropertyValue('--color-chart-1').trim(),
-            warningColor: style.getPropertyValue('--color-chart-2').trim(),
-            dangerColor: style.getPropertyValue('--color-chart-3').trim(),
             gridColor: style.getPropertyValue('--color-border').trim(),
+            textColor: style.getPropertyValue('--foreground').trim(),
+            warningColor: style.getPropertyValue('--plotly-4').trim(),
+            successColor: style.getPropertyValue('--plotly-2').trim(),
+            dangerColor: style.getPropertyValue('--plotly-3').trim(),
+
         };
 
         const labels = pressureValues.map(p => p.label);
@@ -68,7 +69,7 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.min),
                         name: 'Mínimo',
-                        // marker: { color: colors.dangerColor },
+                        marker: { color: colors.dangerColor },
                         text: pressureValues.map(p => p.min.toString()),
                         textposition: 'outside',
                         width: 0.1,
@@ -79,7 +80,7 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.value),
                         name: 'Actual',
-                        // marker: { color: colors.successColor },
+                        marker: { color: colors.successColor },
                         text: pressureValues.map(p => p.value.toString()),
                         textposition: 'outside',
                         width: 0.4,
@@ -90,7 +91,7 @@ const PressureGroupedBarChart = () => {
                         x: labels,
                         y: pressureValues.map(p => p.max),
                         name: 'Máximo',
-                        // marker: { color: colors.warningColor },
+                        marker: { color: colors.warningColor },
                         text: pressureValues.map(p => p.max.toString()),
                         textposition: 'outside',
                         width: 0.1,

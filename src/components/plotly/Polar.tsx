@@ -59,6 +59,8 @@ const PolarPhaseAnglePlot = ({
             successColor: style.getPropertyValue('--color-success').trim(),
             muted: style.getPropertyValue('--bg-bg').trim(),
             refenrenceLine: style.getPropertyValue('--foreground').trim(),
+            trianguleBg: style.getPropertyValue('--plotly-5').trim(),
+            trianguleBg2: style.getPropertyValue('--plotly-6').trim(),
         };
 
         const loadPlot = async () => {
@@ -76,9 +78,9 @@ const PolarPhaseAnglePlot = ({
                         r: [1, 1, 1, 1],
                         theta: [0, 120, 240, 0],
                         fill: 'toself',
-                        fillcolor: colors.muted,
+                        fillcolor: colors.trianguleBg,
                         line: {
-                            color: colors.muted,
+                            color: colors.trianguleBg,
                             width: 0.5
                         },
                         mode: 'lines',
@@ -90,9 +92,9 @@ const PolarPhaseAnglePlot = ({
                         r: [0.8, 0.8, 0.8, 0.8],
                         theta: [0, angles.l1l2, angles.l1l2 + angles.l2l3, 0],
                         fill: 'toself',
-                        fillcolor: 'rgba(100, 200, 255, 0.3)',
+                        fillcolor: colors.trianguleBg2,
                         line: {
-                            color: 'rgba(100, 200, 255, 0.3)',
+                            color: colors.trianguleBg2,
                             width: 1
                         },
                         mode: 'lines',
@@ -106,7 +108,7 @@ const PolarPhaseAnglePlot = ({
                         theta: [0, 0, angles.l1l2, 0],
                         mode: 'lines',
                         line: {
-                            color: 'blue',
+                            // color: 'blue',
                             width: 3
                         },
                         name: 'L1-L2',
@@ -119,7 +121,7 @@ const PolarPhaseAnglePlot = ({
                         theta: [angles.l1l2, angles.l1l2, angles.l1l2 + angles.l2l3, angles.l1l2],
                         mode: 'lines',
                         line: {
-                            color: 'green',
+                            // color: 'green',
                             width: 3
                         },
                         name: 'L2-L3',
@@ -132,7 +134,7 @@ const PolarPhaseAnglePlot = ({
                         theta: [angles.l1l2 + angles.l2l3, angles.l1l2 + angles.l2l3, 360, angles.l1l2 + angles.l2l3],
                         mode: 'lines',
                         line: {
-                            color: 'orange',
+                            // color: 'orange',
                             width: 3
                         },
                         name: 'L3-L1',

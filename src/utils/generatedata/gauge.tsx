@@ -68,7 +68,7 @@ const VelocidadData: VoltageGaugeProps = {
 }
 
 const PowerFactorData: VoltageGaugeProps = {
-    variable: 0.96,
+    variable: 0.9,
     minVariable: 0,
     maxVariable: 1.5,
     title: 'Factor de potencia',

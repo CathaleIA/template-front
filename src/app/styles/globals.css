@@ -39,6 +39,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-plotly-1: var(--plotly-1);
+  --color-plotly-2: var(--plotly-2);
+  --color-plotly-3: var(--plotly-3);
+  --color-plotly-4: var(--plotly-4);
+  --color-plotly-5: var(--plotly-5);
+  --color-plotly-6: var(--plotly-5);
 }
 
 :root {
@@ -75,6 +81,13 @@
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a3a3a3;
   --background-image: url('/assets/background.svg');
+  --plotly-1: #e5e5e5;
+  --plotly-2: #a3a3a3;
+  --plotly-3: #525252;
+  --plotly-4: #262626;
+  --plotly-5: #e0f2fe;
+  --plotly-6: #bae6fd;
+  
 }
 
 .dark {
@@ -109,8 +122,10 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #ffffff1a;
   --sidebar-ring: #8e8e8e;
-
   --background-image: url('/assets/background-dark.svg');
+  --plotly-5: #1f1f1f;
+  --plotly-6: #595F634D;
+
 }
 
 
@@ -275,17 +290,4 @@
     display: flex !important;
     flex-wrap: nowrap !important;
     border: none !important;
-}
-
-/* Fullscreen mode for Plotly */
-.js-plotly-plot.fullscreen {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 90vw !important;
-  height: 90vh !important;
-  z-index: 1000 !important;
-  background-color: var(--card) !important;
-  inset: 0 !important;
-  border-radius: 0 !important;
 }
