@@ -66,7 +66,7 @@ export default async function DashboardLayout({
                     <Separator/>
                     <div className="flex items-center justify-center py-3">
                       <p className="text-sm text-muted-foreground">
-                        © 2025 Hecho con ❤️ por los tres mosqueteros | Todos los derechos reservados.
+                        © 2025 Hecho con ❤️ I&D | Todos los derechos reservados.
                       </p>
                     </div>
                   </footer>
