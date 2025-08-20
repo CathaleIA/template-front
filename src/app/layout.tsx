@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Poppins, Open_Sans, Montserrat } from "next/font/google"
 import { LanguageProvider } from "@/context/LanguageContext"
 import { ThemeProvider } from "@/context/theme-provider"
+import { ApolloHook } from '@/hooks/apollo-provider'
 
 import "@/app/styles/globals.css"
 import { UserProvider } from "@/context/UserContext"
@@ -41,16 +42,18 @@ export default function RootLayout({
         className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat antialiased`}
       >
         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <LanguageProvider>
             <UserProvider>
-              <div className="min-h-screen bg-background">
-                <main>{children}</main>
-              </div>
+              <ApolloHook>
+                <div className="min-h-screen bg-background">
+                  <main>{children}</main>
+                </div>
+              </ApolloHook>
             </UserProvider>
           </LanguageProvider>
         </ThemeProvider>
