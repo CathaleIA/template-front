@@ -35,6 +35,16 @@ const SUBSCRIBE_UPDATE = gql`
   }
 `;
 
+// Y define la query correctamente con variables
+const GET_TODAY_DATA = gql`
+  query getHistoricalData($start: AWSDateTime!, $end: AWSDateTime!) {
+    getHistoricalData(start: $start, end: $end) {
+      timestamp
+      value
+    }
+  }
+`;
+
 export const StatusComponent = ({ assetId }: { assetId: string }) => {
   const { data, loading, error } = useQuery(GET_STATUS, {
     variables: { assetId },
@@ -80,6 +90,26 @@ export const UpdateSubscription = () => {
     <div>
       <h3>Última actualización:</h3>
       <pre>{JSON.stringify(data?.onUpdate, null, 2)}</pre>
+    </div>
+  );
+};
+
+export const TodayDataComponent = () => {
+  // Define un rango de tiempo (por ejemplo, hoy)
+  const start = '2025-01-01T00:00:00Z';
+  const end = '2025-01-31T23:59:59Z';
+
+  const { data, loading, error } = useQuery(GET_TODAY_DATA, {
+    variables: { start, end },
+  });
+
+  if (loading) return <p>Cargando datos históricos...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      <h3>Datos de Snowflake (hoy)</h3>
+      <pre>{JSON.stringify(data?.getHistoricalData, null, 2)}</pre>
     </div>
   );
 };

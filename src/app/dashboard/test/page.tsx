@@ -1,4 +1,4 @@
-import { StatusComponent, MetricsComponent, UpdateSubscription } from '@/components/querys/test-query'
+import { StatusComponent, MetricsComponent, UpdateSubscription, TodayDataComponent } from '@/components/querys/test-query'
 
 export default function MyPlot() {
   return (
@@ -14,7 +14,9 @@ export default function MyPlot() {
 
       <div className="3d-model-section w-[80vw] h-[80vh]">
         <h3>Suscripción en vivo</h3>
-        <UpdateSubscription />
+        <StatusComponent assetId='GEN-02' />
+        {/* <UpdateSubscription /> */}
+        <TodayDataComponent />
       </div>
 
     </div>

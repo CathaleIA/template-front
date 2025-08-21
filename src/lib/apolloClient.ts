@@ -1,74 +1,41 @@
-// lib/apolloClient.ts
 'use client';
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  HttpLink,
-  split,
-} from '@apollo/client';
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient } from 'graphql-ws';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { setContext } from '@apollo/client/link/context';
+import { ApolloClient, InMemoryCache, HttpLink, ApolloLink } from '@apollo/client';
+import { AuthOptions, createAuthLink } from 'aws-appsync-auth-link';
+import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
 
-async function getTokenFromCookie(): Promise<string | null> {
+// Función para obtener el token JWT
+async function getLatestAuthToken() {
   try {
     const response = await fetch('/api/auth/tokens');
-    if (!response.ok) {
-      console.error('Failed to fetch tokens:', response.statusText);
-      return null;
-    }
     const data = await response.json();
-    console.log(data)
-    return data.id_token || null;
+    return data.id_token;
   } catch (error) {
-    console.error('Error fetching token:', error);
-    return null;
+    console.error('Error getting auth token:', error);
+    throw error;
   }
 }
 
-const httpLink = new HttpLink({
-  uri: process.env.NEXT_PUBLIC_APPSYNC_API_URL,
-});
+// Configuración de AppSync
+const url = process.env.NEXT_PUBLIC_APPSYNC_API_URL!;
+const region = process.env.NEXT_PUBLIC_APPSYNC_REGION!;
 
-const authLink = setContext(async (_, { headers }) => {
-  const token = await getTokenFromCookie();
-  return {
-    headers: {
-      ...headers,
-      Authorization: token ? `Bearer ${token}` : '',
-    },
-  };
-});
+const auth: AuthOptions = {
+  type: 'AMAZON_COGNITO_USER_POOLS',
+  jwtToken: getLatestAuthToken,
+};
 
-const wsLink = typeof window !== 'undefined'
-  ? new GraphQLWsLink(createClient({
-      url: process.env.NEXT_PUBLIC_APPSYNC_WS_URL!,
-      connectionParams: async () => {
-        const token = await getTokenFromCookie();
-        return {
-          Authorization: token ? `Bearer ${token}` : '',
-        };
-      },
-    }))
-  : null;
 
-const splitLink = typeof window !== 'undefined' && wsLink
-  ? split(
-      ({ query }) => {
-        const definition = getMainDefinition(query);
-        return (
-          definition.kind === 'OperationDefinition' &&
-          definition.operation === 'subscription'
-        );
-      },
-      wsLink,
-      authLink.concat(httpLink)
-    )
-  : authLink.concat(httpLink);
+// Crear los links
+const httpLink = new HttpLink({ uri: url });
 
+const link = ApolloLink.from([
+  createAuthLink({ url, region, auth }),
+  createSubscriptionHandshakeLink({ url, region, auth }, httpLink),
+]);
+
+// Cliente Apollo
 export const apolloClient = new ApolloClient({
-  link: splitLink,
+  link,
   cache: new InMemoryCache(),
 });
