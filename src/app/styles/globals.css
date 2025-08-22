@@ -87,7 +87,12 @@
   --plotly-4: #262626;
   --plotly-5: #e0f2fe;
   --plotly-6: #bae6fd;
-  
+
+  --button-custom: #409EFF;
+  --active-color: #1890ff;
+  --background-active: #e8f4ff;
+  --hover-text: #66b1ff;
+
 }
 
 .dark {
