@@ -34,19 +34,17 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <link href="https://fonts.alicdn.com/t/c/font_4263068_ixqvs8kkdl.css" rel="stylesheet" />
+      </head>
       <body
-        className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-montserrat antialiased`}
+        className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-sans antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
             <UserProvider>
               <ApolloHook>
@@ -59,5 +57,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
