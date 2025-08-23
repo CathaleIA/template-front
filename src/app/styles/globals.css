@@ -1,19 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@font-face {
-  font-family: "AlibabaSans";
-  src: url("https://fonts.alicdn.com/t/c/font_4263068_ixqvs8kkdl.woff2") format("woff2"),
-    url("https://fonts.alicdn.com/t/c/font_4263068_ixqvs8kkdl.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "AlibabaSans", sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

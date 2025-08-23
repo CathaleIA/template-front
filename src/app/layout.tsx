@@ -1,27 +1,16 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Poppins, Open_Sans, Montserrat } from "next/font/google"
-import { LanguageProvider } from "@/context/LanguageContext"
+import { Noto_Sans } from 'next/font/google';
 import { ThemeProvider } from "@/context/theme-provider"
 import { ApolloHook } from '@/hooks/apollo-provider'
 
 import "@/app/styles/globals.css"
 import { UserProvider } from "@/context/UserContext"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
-const poppins = Poppins({
-  weight: ["400", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-})
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  variable: "--font-open-sans",
-})
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
-})
+const notoSans = Noto_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-noto-sans" 
+});
 
 export const metadata: Metadata = {
   title: "Cathaleia dashboard",
@@ -38,14 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <link href="https://fonts.alicdn.com/t/c/font_4263068_ixqvs8kkdl.css" rel="stylesheet" />
-      </head>
       <body
-        className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${openSans.variable} font-sans antialiased`}
+        className={`${notoSans.variable} font-sans`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LanguageProvider>
             <UserProvider>
               <ApolloHook>
                 <div className="min-h-screen bg-background">
@@ -53,7 +38,6 @@ export default function RootLayout({
                 </div>
               </ApolloHook>
             </UserProvider>
-          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
