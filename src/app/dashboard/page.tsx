@@ -10,7 +10,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Redirect a la primera sección después de un breve delay
     const timer = setTimeout(() => {
-      router.push('/dashboard/activo') // o la primera ruta de tu sidebar
+      router.push('/dashboard/reports') // o la primera ruta de tu sidebar
     }, 50)
 
     return () => clearTimeout(timer)

@@ -88,7 +88,7 @@ const data = {
         },
         {
           title: "Tendencia de datos",
-          url: "/dashboard/motor",
+          url: "/dashboard/tendencydata",
         },
         {
           title: "Administracion",
@@ -108,6 +108,10 @@ const data = {
         {
           title: "Cliente Apollo",
           url: "/dashboard/test",
+        },
+        {
+          title: "Tabs submenu",
+          url: "/dashboard/tabtest",
         },
       ],
     },
@@ -161,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={navUserData} logout= {logout} />
+        <NavUser user={navUserData} logout={logout} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -45,6 +45,11 @@
   --color-plotly-4: var(--plotly-4);
   --color-plotly-5: var(--plotly-5);
   --color-plotly-6: var(--plotly-5);
+  --color-button-custom: var(--button-custom);
+  --color-text-active: var(--text-active);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-hover-text: var(--hover-text);
+  --color-link-active: var(--link-active);
 }
 
 :root {
@@ -72,14 +77,14 @@
   --chart-3: #052e16;
   --chart-4: #eab308;
   --chart-5: #f97316;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #171717;
+  --sidebar: #171717;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #1d4ed8;
   --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #171717;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #a3a3a3;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #ffffff1a;
+  --sidebar-ring: #8e8e8e;
   --background-image: url('/assets/background.svg');
   --plotly-1: #e5e5e5;
   --plotly-2: #a3a3a3;
@@ -87,12 +92,11 @@
   --plotly-4: #262626;
   --plotly-5: #e0f2fe;
   --plotly-6: #bae6fd;
-
   --button-custom: #409EFF;
-  --active-color: #1890ff;
-  --background-active: #e8f4ff;
+  --text-active: #1890ff;
+  --sidebar-hover: #e8f4ff;
   --hover-text: #66b1ff;
-
+  --link-active: #096dd9;
 }
 
 .dark {
@@ -121,16 +125,17 @@
   --chart-5: oklch(0.645 0.246 16.439); */
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #1d4ed8;
+  --sidebar-primary: #fafafa;
   --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #262626;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #ffffff1a;
-  --sidebar-ring: #8e8e8e;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #a3a3a3;
   --background-image: url('/assets/background-dark.svg');
   --plotly-5: #1f1f1f;
   --plotly-6: #595F634D;
 
+  --sidebar-hover: #262626;
 }
 
 
@@ -209,9 +214,9 @@
 
 /* Table styles */
 .table-style {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 15px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
 }
 
 .th-style {

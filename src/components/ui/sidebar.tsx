@@ -604,23 +604,24 @@ function SidebarMenuButton({
           <div
             ref={dropdownRef}
             className={cn(
-              "fixed z-[9999] min-w-[200px] bg-card border border-border  rounded-md shadow-xl py-1 transition-all duration-300 ease-in-out origin-top-left ml-2",
+              "fixed z-[9999] min-w-[200px] bg-card text-primary border border-border shadow-md/20 transition-all duration-300 ease-in-out origin-top-left ml-2",
               isOpen
                 ? "opacity-100 scale-100 translate-x-0 translate-y-0"
                 : "opacity-0 scale-95 -translate-x-2 -translate-y-2 pointer-events-none"
             )}
           >
-
-            {subItems.map((sub, i) => (
-              <Link
-                key={i}
-                href={sub.url}
-                className="block px-3 py-2 text-sm  transition-colors hover:bg-muted"
-                onClick={() => setIsOpen(false)}
-              >
-                {sub.title}
-              </Link>
-            ))}
+            <div className="flex flex-col">
+              {subItems.map((sub, i) => (
+                <Link
+                  key={i}
+                  href={sub.url}
+                  className="w-full text-sm transition-colors hover:bg-sidebar-hover p-3"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {sub.title}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )

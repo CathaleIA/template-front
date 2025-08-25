@@ -10,7 +10,7 @@ import { useState } from "react";
 export default function Healhtly() {
     const [selectTendency, setselectTendency] = useState('acople');
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-3 h-[calc(100svh-var(--header-height))]! p-3">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-3 h-[calc(100svh-var(--header-height))]! p-3 px-5">
             <div className="col-span-2 row-span-1">
                 <div className='bg-card  h-full flex flex-col rounded-tr-2xl shadow-lg/20'>
                     <Select

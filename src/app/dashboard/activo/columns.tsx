@@ -55,7 +55,7 @@ export const columns: ColumnDef<ParadasData>[] = [
                 <Link
                     // href={`/dashboard/users/${username}`}
                     href={'#'}
-                    className="text-blue-600 underline font-medium cursor-pointer"
+                    className="text-text-active underline font-medium cursor-pointer hover:text-link-active transition-colors"
                     style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
                 >
                     {username}

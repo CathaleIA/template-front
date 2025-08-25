@@ -63,7 +63,7 @@ export const columns: ColumnDef<UsersInfo>[] = [
             return (
                 <Link
                     href={`/dashboard/users/${username}`}
-                    className="text-blue-600 underline font-medium cursor-pointer"
+                    className="text-text-active underline font-medium cursor-pointer hover:text-link-active transition-colors"
                     style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
                 >
                     {username}
