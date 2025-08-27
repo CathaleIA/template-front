@@ -6,9 +6,9 @@ import { PowerFactorData  } from '@/utils/generatedata/gauge'
 import { EnergyPowerData,PowerData } from "@/utils/generatedata/tendency";
 
 
-export default function Generator() {
+const GeneratorComponent = () => {
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-4 gap-3 h-[calc(100svh-var(--header-height))]! p-3 ">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-4 gap-3 h-[calc(100svh-var(--header-height))]!">
 
             <div className="col-span-3 row-span-2">
                 <div className='flex flex-col bg-card  h-full shadow-lg/20'>
@@ -92,3 +92,5 @@ export default function Generator() {
         </div>
     )
 }
+
+export default GeneratorComponent;

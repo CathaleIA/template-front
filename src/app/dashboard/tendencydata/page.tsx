@@ -1,6 +1,3 @@
-import { AppWindowIcon, CodeIcon } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 
 import {
     Tabs,
@@ -9,9 +6,11 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs"
 
-import  MotorGrid  from "@/app/dashboard/motor/page"
-import Healhtly from "@/app/dashboard/termodinamic/page"
-import Generator from "@/app/dashboard/generator/page"
+
+import GeneratorComponent from "@/components/tendency-navigation/GeneratorComponent"
+import MotorGridComponent from "@/components/tendency-navigation/MotorComponent"
+import HealhtlyComponent  from "@/components/tendency-navigation/TermodinamicComponente"
+
 
 import ActivosPage from "@/app/dashboard/activo/page"
 
@@ -29,13 +28,13 @@ export default function TabsDemo() {
                     <TabsTrigger value="active">Activo</TabsTrigger>
                 </TabsList>
                 <TabsContent value="generator" className=" bg-card">
-                    <Generator/>
+                    <GeneratorComponent/>
                 </TabsContent>
                 <TabsContent value="motor" className=" bg-card">
-                    <MotorGrid/>
+                    <MotorGridComponent/>
                 </TabsContent>
                 <TabsContent value="termo" className=" bg-card">
-                    <Healhtly/>
+                    <HealhtlyComponent/>
                 </TabsContent>
                 <TabsContent value="active" className=" bg-card">
                     <ActivosPage/>

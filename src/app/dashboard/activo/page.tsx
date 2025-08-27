@@ -99,7 +99,7 @@ export default function ActivosPage() {
     }, [])
     return (
 
-        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 h-[calc(100svh-var(--header-height))]! gap-3 p-3'>
+        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 h-[calc(100svh-var(--header-height))]! gap-3'>
             <div className="col-span-1 row-span-1">
                 <div className='bg-card h-full flex flex-col rounded-2xl shadow-lg/20'>
                     <Select

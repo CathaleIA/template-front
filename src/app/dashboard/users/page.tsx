@@ -70,7 +70,7 @@ export default function DemoPage() {
 
     return (
 
-        <div className="container mx-auto">
+        <div className="container mx-auto px-5">
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra los usuarios de tu aplicación desde este panel de control."

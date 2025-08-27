@@ -26,11 +26,8 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        // Fondo transparente para que no interfiera con los SVGs
         "bg-transparent text-muted-foreground",
-        // Flex que se adapta al contenido y permite overflow
         "inline-flex h-auto w-full items-center justify-start",
-        // Padding reducido y sin restricciones de tamaño
         "p-0 gap-0",
         className
       )}
@@ -48,18 +45,15 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       {...props}
       className={cn(
-        // Base: tamaño fijo, transición solo en ancho
         "relative group box-border min-w-0",
         "h-9.5 w-[150px]", // ancho fijo inicial
         "transition-[width] duration-300 ease-in-out",
-        "hover:w-[200px] data-[state=active]:w-[200px]", // crece solo en X
+        "hover:w-[200px] data-[state=active]:w-[200px]",
         "flex items-center justify-center",
-        // Solapamiento para que se vean superpuestos
-        "-ml-7 first:ml-0", // asumo que era -ml-3 (lo corrijo)
+        "-ml-7 first:ml-0",
         "focus:outline-none focus:z-20 focus-visible:ring-2 focus-visible:ring-ring",
         "disabled:pointer-events-none disabled:opacity-50",
-        // Z-index para que el hover esté encima
-        "hover:z-30 data-[state=active]:z-20",
+        "hover:z-2 data-[state=active]:z-3",
         "px-3",
         "overflow-hidden",
         className
@@ -70,7 +64,6 @@ function TabsTrigger({
         className={cn(
           "absolute inset-0 w-full h-full text-background transition-all duration-200 pointer-events-none",
           "group-hover:opacity-0 group-data-[state=active]:opacity-0",
-          // Asegurar que el SVG se ajuste correctamente
           "object-contain"
         )}
         preserveAspectRatio="none"
@@ -82,7 +75,6 @@ function TabsTrigger({
         className={cn(
           "absolute inset-0 w-full h-full text-ring/60 transition-all duration-200 pointer-events-none",
           "opacity-0 group-hover:opacity-100",
-          // Si está activo Y hover, mostrar gris
           "group-data-[state=active]:group-hover:opacity-100",
           "object-contain"
         )}
@@ -95,8 +87,6 @@ function TabsTrigger({
         className={cn(
           "absolute inset-0 w-full h-full text-sidebar-hover transition-all duration-200 pointer-events-none",
           "opacity-0 group-data-[state=active]:opacity-100",
-          // // Si está activo Y hover, ocultar azul para mostrar gris
-          // "group-data-[state=active]:group-hover:opacity-0",
           "object-contain"
         )}
         preserveAspectRatio="none"

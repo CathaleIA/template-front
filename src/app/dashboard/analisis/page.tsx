@@ -69,33 +69,33 @@ const Dashboard: React.FC = () => {
   const [selectedParameter, setSelectedParameter] = useState('temperatura');
   const [neuralProcessing, setNeuralProcessing] = useState(false);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('https://46ou4qrae1.execute-api.us-east-1.amazonaws.com/prod/history?hours=500000');
-      const result = await response.json();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://46ou4qrae1.execute-api.us-east-1.amazonaws.com/prod/history?hours=500000');
+        const result = await response.json();
 
-      const processedData = result.map((item: any) => ({
-        ...item,
-        timestamp: new Date(item.timestamp).toISOString(),
-        createdAt: new Date(item.createdAt).toISOString()
-      })).sort((a: MotorData, b: MotorData) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
+        const processedData = result.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp).toISOString(),
+          createdAt: new Date(item.createdAt).toISOString()
+        })).sort((a: MotorData, b: MotorData) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
 
-      setData(processedData);
-      setTimeout(() => {
+        setData(processedData);
+        setTimeout(() => {
+          setLoading(false);
+          simulateNeuralAnalysis(processedData);
+        }, 1500);
+      } catch (error) {
+        console.error('Error fetching data:', error);
         setLoading(false);
-        simulateNeuralAnalysis(processedData);
-      }, 1500);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setLoading(false);
+      }
     }
-  }
-  fetchData()
-}, [])
+    fetchData()
+  }, [])
 
 
   const simulateNeuralAnalysis = (motorData: MotorData[]) => {
@@ -210,10 +210,10 @@ useEffect(() => {
         }
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl p-7 bg-card">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Registros</p>
@@ -223,7 +223,7 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Anomalías Detectadas</p>
@@ -233,7 +233,7 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Estado Crítico</p>
@@ -245,7 +245,7 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Confianza IA</p>
@@ -260,7 +260,7 @@ useEffect(() => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chart Section */}
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Análisis de Tendencias</h2>
               <select
@@ -294,7 +294,7 @@ useEffect(() => {
           </div>
 
           {/* Trend Analysis */}
-          <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+          <div className="bg-card rounded-lg  p-6 border border-border">
             <h2 className="text-lg font-semibold text-foreground mb-4">Análisis Neural - Tendencias</h2>
             <div className="space-y-4">
               {trends.map((trend, index) => (
@@ -321,7 +321,7 @@ useEffect(() => {
             </div>
           </div>
         </div>
-        <div className="mt-6 bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="mt-6 bg-card rounded-lg  p-6 border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-6">Registro de Animalias</h2>
           <DataTable columns={columns} data={anomalies} filters={filters} />
         </div>

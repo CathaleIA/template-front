@@ -117,8 +117,9 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="ml-auto hidden h-8 lg:flex">
-          <Plus className="h-4 w-4" />
+        {/* <Button className="ml-auto hidden h-8 lg:flex"> */}
+        <Button variant="custom" size="custom" className="gap-1">
+          <Plus className="h-1 w-1" />
           Create User
         </Button>
       </DialogTrigger>
@@ -217,10 +218,15 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
           </div>
 
           <DialogFooter className="gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={loading}>
-              Cancel
+            <Button 
+              type="button" 
+              variant="customdestructive" 
+              size="custom"
+              onClick={handleCancel} 
+              disabled={loading}>
+                Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button variant="custom" size="custom" className="gap-1" disabled={loading}>
               {loading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

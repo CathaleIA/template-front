@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+
 import {
   AudioWaveform,
   BookOpen,
@@ -14,7 +14,6 @@ import {
   ClipboardMinus,
 } from "lucide-react"
 
-
 import {
   Sidebar,
   SidebarContent,
@@ -27,10 +26,6 @@ import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
 import { NavUserData } from "@/types"
 import { useUser } from "@/context/UserContext"
-
-
-
-
 
 // This is sample data.
 const data = {
@@ -61,7 +56,7 @@ const data = {
       title: "Servicio de Reportes",
       url: "*",
       icon: ClipboardMinus,
-      isActive: true,
+      isActive: false,
       items: [
         {
           title: "Crear",
@@ -81,6 +76,7 @@ const data = {
       title: "Analisis de Sitio",
       url: "#",
       icon: Brain,
+      isActive: true,
       items: [
         {
           title: "Analisis Inteligente",
