@@ -294,7 +294,7 @@ export default function ReportsPage() {
           title="Generador de Reportes"
           description="Configura y genera reportes técnicos de manera eficiente."
         />
-        <div className="grid grid-cols-1 xl:grid-cols-7 gap-8 p-7 bg-card">
+        <div className="grid grid-cols-1 xl:grid-cols-7 gap-6 p-5 bg-card">
           {/* Columna izquierda: Formulario - 43% */}
           <div className="xl:col-span-3 space-y-6">
             <Card className="bg-background border-none">
@@ -392,7 +392,6 @@ export default function ReportsPage() {
                         size="custom"
                         className="gap-1 w-full"
                         onClick={() => document.getElementById("archivo")?.click()}
-
                       >
                         <Upload />
                         {archivoToFront ? archivoToFront.name : "Seleccionar archivo"}
@@ -410,7 +409,7 @@ export default function ReportsPage() {
                             onClick={() => setArchivo(null)}
                             className=""
                           >
-                            <X/>
+                            <X />
                           </Button>
                         </div>
                       )}

@@ -245,23 +245,23 @@ export default function AdminDashboard() {
             <TabsTrigger value="export">Exportar</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="data">
+          <TabsContent value="data" className="p-5 bg-card">
             <DataComponent sensorData={sensorData} setSensorData={setSensorData} metricsConfig={metricsConfig} currentValues={currentValues} setCurrentValues={setCurrentValues} />
           </TabsContent>
 
-          <TabsContent value="thresholds">
+          <TabsContent value="thresholds" className="p-5 bg-card">
             <ThresholdsComponent metricsConfig={metricsConfig} currentValues={currentValues} thresholds={thresholds} setThresholds={setThresholds} />
           </TabsContent>
 
-          <TabsContent value="notifications">
+          <TabsContent value="notifications" className="p-5 bg-card">
             <NotificationComponent setEmailSettings={setEmailSettings} emailSettings={emailSettings} systemSettings={systemSettings} setSystemSettings={setSystemSettings}/>
           </TabsContent>
             
-          <TabsContent value="system">
+          <TabsContent value="system" className="p-5 bg-card">
             <SystemComponent systemSettings={systemSettings} setSystemSettings={setSystemSettings}/>
           </TabsContent>
 
-          <TabsContent value="export" className="p-1">
+          <TabsContent value="export" className="p-5 bg-card">
             <ExportComponent thresholds={thresholds} emailSettings={emailSettings} systemSettings={systemSettings} sensorData={sensorData} />
           </TabsContent>
         </Tabs>

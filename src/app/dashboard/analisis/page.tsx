@@ -210,10 +210,10 @@ const Dashboard: React.FC = () => {
         }
       />
 
-      <div className="max-w-7xl p-7 bg-card">
+      <div className="max-w-7xl p-5 bg-card">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-card rounded-lg  p-6 border border-border">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-6">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Registros</p>
@@ -223,7 +223,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg  p-6 border border-border">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Anomalías Detectadas</p>
@@ -233,7 +233,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg  p-6 border border-border">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Estado Crítico</p>
@@ -245,7 +245,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg  p-6 border border-border">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Confianza IA</p>
@@ -260,7 +260,7 @@ const Dashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chart Section */}
-          <div className="bg-card rounded-lg  p-6 border border-border">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Análisis de Tendencias</h2>
               <select
@@ -294,7 +294,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Trend Analysis */}
-          <div className="bg-card rounded-lg  p-6 border border-border">
+          <div className="bg-background rounded-lg  p-6 border border-border">
             <h2 className="text-lg font-semibold text-foreground mb-4">Análisis Neural - Tendencias</h2>
             <div className="space-y-4">
               {trends.map((trend, index) => (
@@ -321,7 +321,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="mt-6 bg-card rounded-lg  p-6 border border-border">
+        <div className="mt-6 bg-background rounded-lg  p-6 border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-6">Registro de Animalias</h2>
           <DataTable columns={columns} data={anomalies} filters={filters} />
         </div>

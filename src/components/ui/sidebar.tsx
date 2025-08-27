@@ -25,12 +25,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -503,6 +497,8 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
+
+
 function SidebarMenuButton({
   asChild = false,
   isActive = false,
@@ -590,6 +586,7 @@ function SidebarMenuButton({
   }
 
   if (subItems && subItems.length > 0) {
+    console.log(subItems)
     if (state === "collapsed" && !isMobile) {
       return (
         <div
@@ -604,7 +601,7 @@ function SidebarMenuButton({
           <div
             ref={dropdownRef}
             className={cn(
-              "fixed z-[9999] min-w-[200px] bg-card text-primary border border-border shadow-md/20 transition-all duration-300 ease-in-out origin-top-left ml-2",
+              "fixed z-[9999] min-w-[200px] bg-background text-primary border border-border shadow-md/20 transition-all duration-300 ease-in-out origin-top-left ml-2",
               isOpen
                 ? "opacity-100 scale-100 translate-x-0 translate-y-0"
                 : "opacity-0 scale-95 -translate-x-2 -translate-y-2 pointer-events-none"
@@ -615,12 +612,13 @@ function SidebarMenuButton({
                 <Link
                   key={i}
                   href={sub.url}
-                  className="w-full text-sm transition-colors hover:bg-sidebar-hover p-3"
+                  className="w-full text-sm transition-colors hover:bg-blue-hover p-3"
                   onClick={() => setIsOpen(false)}
                 >
                   {sub.title}
                 </Link>
               ))}
+              
             </div>
           </div>
         </div>
@@ -746,7 +744,7 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        "border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5",
+        "border-sidebar-border ml-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l pl-2 py-0.5",
         "group-data-[collapsible=icon]:hidden",
         className
       )}

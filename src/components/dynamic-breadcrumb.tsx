@@ -84,7 +84,7 @@ export function DynamicBreadcrumb() {
                 <BreadcrumbLink asChild>
                   <Link
                     href={breadcrumb.href}
-                    className="text-text-active underline flex items-center"
+                    className="text-blue-link underline flex items-center"
                     style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
                   >
                     {index === 0 && <Home className="h-4 w-4 mr-1" />}

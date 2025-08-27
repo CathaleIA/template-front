@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 
 export default function ActivosPage() {
-    const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState<UsersInfo[]>([])
     const [selectTendency, setselectTendency] = useState<'motor' | 'turbine'>('motor');
@@ -99,15 +98,15 @@ export default function ActivosPage() {
     }, [])
     return (
 
-        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 h-[calc(100svh-var(--header-height))]! gap-3'>
+        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 gap-4 p-6'>
             <div className="col-span-1 row-span-1">
-                <div className='bg-card h-full flex flex-col rounded-2xl shadow-lg/20'>
+                <div className='bg-background h-full flex flex-col rounded-2xl border'>
                     <Select
                         defaultValue="motor"
                         onValueChange={(value) => setselectTendency(value as 'motor' | 'turbine')}
                     >
                         <SelectTrigger
-                            className="bg-card text-primary border-b-6 border-r-6 border-background rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="bg-background text-primary border-b-6 border-r-6 border-card rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -127,13 +126,13 @@ export default function ActivosPage() {
             </div>
 
             <div className='col-span-1 row-span-1'>
-                <div className='grid grid-rows-[auto_1fr] h-full bg-card rounded-tr-2xl rounded-tl-2xl shadow-lg/20 overflow-hidden'>
+                <div className='grid grid-rows-[auto_1fr] h-full bg-background rounded-tr-2xl rounded-tl-2xl border overflow-hidden'>
                     {/* Tabs para alternar entre especificaciones e indicadores */}
                     <div className="flex">
                         <button
                             onClick={() => setActiveTab?.('specs')}
                             className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${activeTab === 'specs'
-                                ? 'bg-primary/10 text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase border-b-5 border-primary'
+                                ? 'bg-input text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase border-b-5 border-primary'
                                 : 'text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase hover:text-foreground'
                                 }`}
                         >
@@ -224,9 +223,8 @@ export default function ActivosPage() {
                 </div>
             </div>
 
-
             <div className='col-span-2 row-span-1 overflow-y-auto'>
-                <div className="mt-6 bg-card rounded-lg shadow-sm p-6 border border-border">
+                <div className="bg-background rounded-lg shadow-sm p-6 border border-border">
                     <h2 className="text-lg font-semibold text-foreground mb-6">Registro de paradas</h2>
                     <DataTable columns={columns} data={data2} />
                 </div>

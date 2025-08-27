@@ -65,9 +65,9 @@ export default function FrequencyTrendChart({
 
         // Obtener colores actuales
         const colors = {
-          bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-          cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-          textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
+          bgColor: style.getPropertyValue('--background').trim(),         // Fondo del dashboard
+          cardColor: style.getPropertyValue('--card').trim(),             // Fondo de la card
+          textColor: style.getPropertyValue('--ring').trim(),       // Texto principal
           buttonColor: style.getPropertyValue('--color-muted').trim(),
           gridColor: style.getPropertyValue('--color-border').trim(),
           lineColor: style.getPropertyValue('--color-chart-5').trim(),
@@ -214,8 +214,8 @@ export default function FrequencyTrendChart({
         className={`
           rounded-2xl overflow-hidden
           ${isMaximized
-                ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] z-50'
-                : 'w-full h-full'}
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] z-50'
+            : 'w-full h-full'}
         `}
       />
     </>

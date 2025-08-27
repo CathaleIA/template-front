@@ -85,7 +85,7 @@ function TabsTrigger({
       {/* Fondo: SVG para activo (AZUL) */}
       <ButtonShape
         className={cn(
-          "absolute inset-0 w-full h-full text-sidebar-hover transition-all duration-200 pointer-events-none",
+          "absolute inset-0 w-full h-full text-blue-hover transition-all duration-200 pointer-events-none",
           "opacity-0 group-data-[state=active]:opacity-100",
           "object-contain"
         )}
@@ -94,7 +94,7 @@ function TabsTrigger({
       />
 
       {/* Texto */}
-      <span className="relative z-1 text-sm font-semibold text-primary leading-none drop-shadow-sm group-data-[state=active]:font-semibold group-data-[state=active]:text-text-active">
+      <span className="relative z-1 text-sm font-semibold text-primary leading-none drop-shadow-sm group-data-[state=active]:font-semibold group-data-[state=active]:text-blue-link">
         {children}
       </span>
     </TabsPrimitive.Trigger>

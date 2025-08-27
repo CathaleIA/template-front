@@ -60,18 +60,8 @@ export default async function DashboardLayout({
               <SidebarInset className="flex flex-1 flex-col overflow-hidden">
                 <main className="flex-1 overflow-auto scroll-container">
                   <Toaster position="top-right" />
-                  <div className="min-h-full flex flex-col">
-                    <div className="flex-1 pb-25">
-                      {children}
-                    </div>
-                    <footer className="mt-auto">
-                      <Separator />
-                      <div className="flex items-center justify-center py-3">
-                        <p className="text-sm text-muted-foreground">
-                          © 2025 Hecho con ❤️ I&D | Todos los derechos reservados.
-                        </p>
-                      </div>
-                    </footer>
+                  <div className="flex-1">
+                    {children}
                   </div>
                 </main>
               </SidebarInset>

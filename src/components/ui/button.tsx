@@ -20,8 +20,8 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        custom: "bg-button-custom hover:opacity-80 text-primary-foreground font-normal active:bg-blue-700 transition-colors",
-        customdestructive: "hover:bg-sidebar-hover text-primary hover:text-button-custom border active:border-blue-700 font-normal",
+        custom: "bg-blue-primary hover:opacity-80 text-primary-foreground font-normal active:bg-blue-700 transition-colors",
+        customdestructive: "hover:bg-blue-hover text-primary hover:text-blue-primary border active:border-blue-700 font-normal",
         customclose: " border text-border hover:border-ring hover:text-ring rounded-full"
       },
       size: {

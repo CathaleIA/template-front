@@ -45,11 +45,10 @@
   --color-plotly-4: var(--plotly-4);
   --color-plotly-5: var(--plotly-5);
   --color-plotly-6: var(--plotly-5);
-  --color-button-custom: var(--button-custom);
-  --color-text-active: var(--text-active);
-  --color-sidebar-hover: var(--sidebar-hover);
-  --color-hover-text: var(--hover-text);
-  --color-link-active: var(--link-active);
+  --color-blue-primary: var(--blue-primary);
+  --color-blue-link: var(--blue-link);
+  --color-blue-hover: var(--blue-hover);
+  --color-blue-linkactive: var(--blue-linkactive);
 }
 
 :root {
@@ -92,11 +91,11 @@
   --plotly-4: #262626;
   --plotly-5: #e0f2fe;
   --plotly-6: #bae6fd;
-  --button-custom: #409EFF;
-  --text-active: #1890ff;
-  --sidebar-hover: #e8f4ff;
-  --hover-text: #66b1ff;
-  --link-active: #096dd9;
+
+  --blue-primary: #409EFF;
+  --blue-link: #1890ff;
+  --blue-hover: #e8f4ff;
+  --blue-linkactive: #096dd9;
 }
 
 .dark {
@@ -135,7 +134,7 @@
   --plotly-5: #1f1f1f;
   --plotly-6: #595F634D;
 
-  --sidebar-hover: #262626;
+  --blue-hover: #262626;
 }
 
 

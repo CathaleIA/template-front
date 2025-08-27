@@ -76,23 +76,85 @@ const data = {
       title: "Analisis de Sitio",
       url: "#",
       icon: Brain,
-      isActive: true,
-      items: [
+      isActive: false,
+      sites: [
         {
-          title: "Analisis Inteligente",
-          url: "/dashboard/analisis",
-        },
-        {
-          title: "Tendencia de datos",
+          title: "Campo CTY",
           url: "/dashboard/tendencydata",
+          sistemas: [
+            {
+              title: "GEN 01",
+              url: "#",
+              items: [
+                {
+                  title: "Analisis Inteligente",
+                  url: "/dashboard/analisis",
+                },
+                {
+                  title: "Tendencia de datos",
+                  url: "/dashboard/tendencydata",
+                },
+                {
+                  title: "Administracion",
+                  url: "/dashboard/admin",
+                },
+                {
+                  title: "Activos Actuales",
+                  url: "/dashboard/activo",
+                },
+              ]
+            },
+            {
+              title: "GEN 02",
+              url: "#",
+              items: [
+                {
+                  title: "Analisis Inteligente",
+                  url: "/dashboard/analisis",
+                },
+                {
+                  title: "Tendencia de datos",
+                  url: "/dashboard/tendencydata",
+                },
+                {
+                  title: "Administracion",
+                  url: "/dashboard/admin",
+                },
+                {
+                  title: "Activos Actuales",
+                  url: "/dashboard/activo",
+                },
+              ]
+            },
+          ],
         },
         {
-          title: "Administracion",
-          url: "/dashboard/admin",
-        },
-        {
-          title: "Activos Actuales",
-          url: "/dashboard/activo",
+          title: "Campo Miraflores",
+          url: "/dashboard/tendencydata",
+          sistemas: [
+            {
+              title: "Turbina 001",
+              url: "#",
+              items: [
+                {
+                  title: "Analisis Inteligente",
+                  url: "#",
+                },
+                {
+                  title: "Tendencia de datos",
+                  url: "#",
+                },
+                {
+                  title: "Administracion",
+                  url: "#",
+                },
+                {
+                  title: "Activos Actuales",
+                  url: "#",
+                },
+              ]
+            },
+          ],
         },
       ],
     },
