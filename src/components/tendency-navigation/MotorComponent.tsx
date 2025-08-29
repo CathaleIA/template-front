@@ -17,7 +17,7 @@ const MotorGridComponent = () => {
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
             <div className='col-span-1 row-span-1'>
-                <div className="bg-card  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl border px-3">
+                <div className="bg-background  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl border px-3">
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
                             <div>
@@ -49,7 +49,7 @@ const MotorGridComponent = () => {
             </div>
 
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-card  h-full rounded-md border">
+                <div className="flex flex-col bg-background  h-full rounded-md border">
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
@@ -73,7 +73,7 @@ const MotorGridComponent = () => {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-card  h-full rounded-tr-2xl border'>
+                <div className='flex flex-col bg-background  h-full rounded-tr-2xl border'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RPM vs Hz</h1>
@@ -85,7 +85,7 @@ const MotorGridComponent = () => {
             </div>
 
             <div className="col-span-2 row-span-3 rounded-br-full">
-                <div className='bg-card  h-full flex flex-col rounded-bl-2xl border'>
+                <div className='bg-background  h-full flex flex-col rounded-bl-2xl border'>
                     <Select
                         defaultValue="temperatura"
                         onValueChange={(value) => setselectTendency(value)}
@@ -112,7 +112,7 @@ const MotorGridComponent = () => {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-card  h-full rounded-br-2xl border'>
+                <div className='flex flex-col bg-background  h-full rounded-br-2xl border'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             PRESION</h1>

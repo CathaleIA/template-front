@@ -65,26 +65,60 @@ export default function FrequencyTrendChart({
 
         // Obtener colores actuales
         const colors = {
-          bgColor: style.getPropertyValue('--background').trim(),         // Fondo del dashboard
-          cardColor: style.getPropertyValue('--card').trim(),             // Fondo de la card
-          textColor: style.getPropertyValue('--ring').trim(),       // Texto principal
-          buttonColor: style.getPropertyValue('--color-muted').trim(),
-          gridColor: style.getPropertyValue('--color-border').trim(),
-          lineColor: style.getPropertyValue('--color-chart-5').trim(),
+          paperColor: style.getPropertyValue('--third-paper').trim(),
+          plotColor: style.getPropertyValue('--third-plot').trim(),
+          textColor: style.getPropertyValue('--third-text').trim(),
+          gridColor: style.getPropertyValue('--third-grid').trim(),
+          rangeSelectorColor: style.getPropertyValue('--third-range-selector').trim(),
+          blueTenue: style.getPropertyValue('--third-bg-blue').trim(),
         };
+
+        const variablesMaximazed = isMaximized
+          ? {
+            titleAxisYOne: { text: 'Velocidad [rpm]', font: { color: colors.textColor, size: 16, weight: 900 } },
+            titleAxisYTwo: { text: 'Frecuencia [Hz]', font: { color: colors.textColor, size: 16, weight: 900 } }
+          }
+          : {
+            titleAxisYOne: { text: undefined, font: { color: colors.textColor } },
+            titleAxisYTwo: { text: undefined, font: { color: colors.textColor } },
+            anguleTicks: 90
+          }
 
         // Configuración completa del layout
         const layout: Partial<Plotly.Layout> = {
-          paper_bgcolor: colors.bgColor,
-          plot_bgcolor: colors.cardColor,
+          title: isMaximized ? {
+            text: tittle,
+            font: {
+              size: 16,
+              weight: 900,
+            }
+          } : undefined,
+          paper_bgcolor: colors.paperColor,
+          plot_bgcolor: colors.plotColor,
           font: { color: colors.textColor },
           xaxis: {
             type: 'date',
-            gridcolor: colors.gridColor,
-            linecolor: colors.gridColor,
-            zerolinecolor: colors.gridColor,
             autorange: true,
+            zeroline: false,
+            gridcolor: colors.gridColor,
+            linewidth: 1,
+            linecolor: isMaximized
+              ? colors.textColor
+              : colors.rangeSelectorColor,
+            ticklen: 3,
+            tickfont: {
+              size: isMaximized
+                ? 14
+                : 10,
+              color: colors.textColor
+            },
             rangeselector: {
+              font: {
+                color: colors.textColor,
+                size: isMaximized
+                  ? 14
+                  : 10,
+              },
               buttons: [
                 { count: 1, label: '1h', step: 'hour', stepmode: 'backward' },
                 { count: 24, label: '1d', step: 'hour', stepmode: 'backward' },
@@ -92,43 +126,65 @@ export default function FrequencyTrendChart({
                 { count: 1, label: '1m', step: 'month', stepmode: 'backward' },
                 { step: 'all', label: 'Todo' }
               ],
-              bgcolor: colors.buttonColor,
-              font: { color: colors.textColor },
-              activecolor: colors.bgColor,
-              x: 0,
-              xanchor: 'left',
-              y: 1.15,
-              yanchor: 'top'
+              x: 1,
+              xanchor: 'right',
+              y: 1,
+              yanchor: 'bottom',
+              bgcolor: colors.rangeSelectorColor,
+              activecolor: colors.paperColor,
             },
             rangeslider: {
               visible: true,
               thickness: 0.1,
-              bgcolor: colors.cardColor,
-              bordercolor: colors.gridColor
+              bgcolor: colors.plotColor,
             }
           },
           yaxis: {
-            title: {
-              text: yAxisTitle,
-              font: { color: colors.textColor }
-            },
             range: [minPF - 1, maxPF + 1],
-            gridcolor: colors.gridColor,
-            fixedrange: false,
-            linecolor: colors.gridColor,
             zerolinecolor: colors.gridColor,
+            title: variablesMaximazed.titleAxisYTwo,
+            gridcolor: colors.gridColor,
+            zeroline: false,
+            linewidth: 1,
+            linecolor: isMaximized
+              ? colors.textColor
+              : colors.rangeSelectorColor,
+            fixedrange: false,
+            automargin: false,
+            tickfont: {
+              size: isMaximized
+                ? 14
+                : 10,
+              color: colors.textColor
+            },
+            ticklabelposition: "outside",
+            tickangle: variablesMaximazed.anguleTicks,
+            ticklen: 5,
           },
           margin: isMaximized
-            ? { t: 80, l: 100, r: 60, b: 40 }
-            : { t: 40, l: 50, r: 30, b: 20 },
+            ? { r: 100, b: 30, t: 80, l: 100, }
+            : { r: 60, b: 0, t: 10, l: 35 },
           legend: {
-            y: -0.4,          // Posición vertical (0 = fondo, 1 = parte superior)
-            yanchor: "top",   // Ancla el a leyenda en la posición y
-            yref: "paper",
+            orientation: "h",
             x: 0.5,
-            xanchor: "center", // Ancla la leyenda en el centro horizontal
-            orientation: "h"   // Orientación horizontal (opcional)
+            xanchor: "center",
+            y: isMaximized
+              ? 1
+              : -0.4,
+            yanchor: isMaximized
+              ? "bottom"
+              : "top",
+            font: {
+              size: isMaximized
+                ? 14
+                : 10,
+              color: colors.textColor
+            }
           },
+          modebar: {
+            orientation: "v",
+            bgcolor: colors.blueTenue,
+          }
         };
 
         const config = {

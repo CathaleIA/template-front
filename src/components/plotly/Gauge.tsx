@@ -62,15 +62,12 @@ const Gauge = ({
         const style = getComputedStyle(document.documentElement);
 
         const colors = {
-            bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-            cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-            textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
-            buttonColor: style.getPropertyValue('--color-muted').trim(),
-            gridColor: style.getPropertyValue('--color-border').trim(),
+            paperColor: style.getPropertyValue('--third-paper').trim(),
+            plotColor: style.getPropertyValue('--third-plot').trim(),
+            textColor: style.getPropertyValue('--third-text').trim(),
             space1Color: style.getPropertyValue('--plotly-1').trim(),
             space2olor: style.getPropertyValue('--plotly-2').trim(),
             space3Color: style.getPropertyValue('--plotly-3').trim(),
-            lineColor: style.getPropertyValue('--color-chart-5').trim(),
             dangerColor: style.getPropertyValue('--color-danger').trim(),
         };
 
@@ -109,7 +106,7 @@ const Gauge = ({
                                 thickness: 0.5
                             },
                             borderwidth: 1,
-                            bordercolor: colors.bgColor,
+                            bordercolor: colors.paperColor,
                             steps: [
                                 {
                                     range: [minVariable, warningLow],
@@ -144,7 +141,7 @@ const Gauge = ({
 
                 const layout: Partial<Plotly.Layout> = {
                     margin: { t: 80, b: 40, l: 40, r: 40 },
-                    paper_bgcolor: colors.bgColor,
+                    paper_bgcolor: colors.paperColor,
                     font: { color: colors.textColor },
                     autosize: true,
                 };
@@ -174,7 +171,7 @@ const Gauge = ({
             }
         };
     }, [variable, minVariable, maxVariable, title, unit, warningLow, warningHight, themeVersion]);
-    
+
     // Efecto para redimensionar cuando cambia el estado del sidebar
     useEffect(() => {
         if (!containerRef.current) return;

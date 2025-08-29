@@ -55,20 +55,18 @@ const CylinderTemperatureChart = ({
         const style = getComputedStyle(document.documentElement);
 
         const colors = {
-          bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-          cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-          textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
-          dangerColor: style.getPropertyValue('--destructive').trim(),    // Alertas críticas
-          warningColor: style.getPropertyValue('--chart-4').trim(),       // Advertencias (amarillo)
-          successColor: style.getPropertyValue('--chart-2').trim(),       // Línea de seguridad (verde)
-          gridColor: style.getPropertyValue('--border').trim(),           // Líneas de cuadrícula
-          lineColor: '#3b82f6',                                           // Línea de temperatura actual (azul claro)
-          markerNormal: '#1d4ed8',                                        // Marcadores normales (azul oscuro)
-          markerBorder: '#262626',                                        // Borde de marcador (gris oscuro)
-          fillMax: 'rgba(248, 113, 113, 0.15)',                            // Relleno rango máximo (rojo claro)
-          lineMax: 'rgba(248, 113, 113, 0.5)',                             // Línea rango máximo
-          fillMin: 'rgba(34, 197, 94, 0.15)',                              // Relleno rango mínimo (verde claro)
-          lineMin: 'rgba(34, 197, 94, 0.5)',                               // Línea rango mínimo
+          paperColor: style.getPropertyValue('--third-paper').trim(),
+          plotColor: style.getPropertyValue('--third-plot').trim(),
+          textColor: style.getPropertyValue('--third-text').trim(),
+          cardColor: style.getPropertyValue('--background').trim(),
+          dangerColor: style.getPropertyValue('--destructive').trim(),
+          warningColor: style.getPropertyValue('--chart-4').trim(),
+          successColor: style.getPropertyValue('--chart-2').trim(),
+          rangeSelectorColor: style.getPropertyValue('--third-range-selector').trim(),
+          gridColor: style.getPropertyValue('--third-grid').trim(),
+          blueTenue: style.getPropertyValue('--third-bg-blue').trim(),
+
+          lineColor: '#3b82f6',
         };
 
         const data: Plotly.Data[] = [
@@ -147,28 +145,51 @@ const CylinderTemperatureChart = ({
 
         // Configuración del layout
         const layout: Partial<Plotly.Layout> = {
-          paper_bgcolor: colors.bgColor,
-          plot_bgcolor: colors.cardColor,
+          paper_bgcolor: colors.paperColor,
+          plot_bgcolor: colors.plotColor,
           font: { color: colors.textColor },
           xaxis: {
             title: { text: 'Cilindros', standoff: 15 },
-            tickangle: -45,
-            linecolor: colors.gridColor,
-            gridcolor: colors.gridColor,
+            linewidth: 1,
+            linecolor: colors.rangeSelectorColor,
+            zeroline: false,
+            ticklen: 3,
+            tickfont: {
+              size: 10,
+              color: colors.textColor
+            },
           },
           yaxis: {
+            gridcolor: colors.gridColor,
+            zeroline: false,
+            linewidth: 1,
+            linecolor: colors.rangeSelectorColor,
             title: { text: 'Temperatura (°C)', standoff: 15 },
             range: [Math.min(...min) - 5, Math.max(...max) + 5],
-            linecolor: colors.gridColor,
-            gridcolor: colors.gridColor,
+            tickfont: {
+              size: 10,
+              color: colors.textColor
+            },
+            ticklabelposition: "outside",
+            tickangle: 45,
+            ticklen: 5,
+
           },
           margin: { t: 90, l: 70, r: 30, b: 80 },
           legend: {
-            orientation: 'h',
-            y: 1.1,
+            orientation: "h",
             x: 0.5,
-            xanchor: 'center',
-            font: { size: 12 }
+            xanchor: "center",
+            y: 1.1,
+            yanchor: "top",
+            font: {
+              size: 10,
+              color: colors.textColor
+            }
+          },
+          modebar: {
+            orientation: "h",
+            bgcolor: colors.blueTenue,
           },
           hovermode: 'closest',
           shapes: [
