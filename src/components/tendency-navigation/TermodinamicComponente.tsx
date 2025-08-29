@@ -7,12 +7,12 @@ import { Heatdata } from '@/utils/generatedata/heatmap'
 import { DevanadosData } from "@/utils/generatedata/tendency";
 import { useState } from "react";
 
-export default function Healhtly() {
+const HealhtlyComponent = () => {
     const [selectTendency, setselectTendency] = useState('acople');
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-3 h-[calc(100svh-var(--header-height))]! p-3">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
             <div className="col-span-2 row-span-1">
-                <div className='bg-card  h-full flex flex-col rounded-tr-2xl shadow-lg/20'>
+                <div className='bg-background  h-full flex flex-col rounded-tr-2xl border'>
                     <Select
                         defaultValue="acople"
                         onValueChange={(value) => setselectTendency(value)}
@@ -37,7 +37,7 @@ export default function Healhtly() {
                 </div>
             </div>
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-card  h-full rounded-tr-2xl shadow-lg/20">
+                <div className="flex flex-col bg-background  h-full rounded-tr-2xl border">
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
@@ -64,7 +64,7 @@ export default function Healhtly() {
                 </div>
             </div>
             <div className="col-span-3 row-span-2">
-                <div className='flex flex-col bg-card  h-full rounded-bl-2xl  rounded-br-2xl shadow-lg/20'>
+                <div className='flex flex-col bg-background  h-full rounded-bl-2xl  rounded-br-2xl border'>
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             DEVANADOS</h1>
@@ -77,3 +77,5 @@ export default function Healhtly() {
         </div>
     )
 }
+
+export default HealhtlyComponent;

@@ -45,6 +45,16 @@
   --color-plotly-4: var(--plotly-4);
   --color-plotly-5: var(--plotly-5);
   --color-plotly-6: var(--plotly-5);
+  --color-blue-primary: var(--blue-primary);
+  --color-blue-link: var(--blue-link);
+  --color-blue-hover: var(--blue-hover);
+  --color-blue-linkactive: var(--blue-linkactive);
+  --color-third-bg-blue: var(--third-bg-blue)
+  --color-third-paper: var(--third-paper);
+  --color-third-plot: var(--third-plot);
+  --color-third-text: var(--third-text);
+  --color-third-grid: var(--third-grid);
+  --color-third-range-selector: var(--third-range-selector);
 }
 
 :root {
@@ -72,22 +82,35 @@
   --chart-3: #052e16;
   --chart-4: #eab308;
   --chart-5: #f97316;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #171717;
+  --sidebar: #282c34;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #1d4ed8;
   --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #171717;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #a3a3a3;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #ffffff1a;
+  --sidebar-ring: #8e8e8e;
   --background-image: url('/assets/background.svg');
+
   --plotly-1: #e5e5e5;
   --plotly-2: #a3a3a3;
   --plotly-3: #525252;
   --plotly-4: #262626;
   --plotly-5: #e0f2fe;
   --plotly-6: #bae6fd;
-  
+  --plotly-range : #f5f5f5;
+
+  --third-paper: #fafafa;
+  --third-plot: #f5f5f5;
+  --third-text: #404040;
+  --third-grid: #ffffff;
+  --third-range-selector: #d4d4d4;
+  --third-bg-blue: #e8f4ff;
+
+  --blue-primary: #409EFF;
+  --blue-link: #1890ff;
+  --blue-hover: #e8f4ff;
+  --blue-linkactive: #096dd9;
 }
 
 .dark {
@@ -116,16 +139,26 @@
   --chart-5: oklch(0.645 0.246 16.439); */
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #1d4ed8;
+  --sidebar-primary: #fafafa;
   --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #262626;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #ffffff1a;
-  --sidebar-ring: #8e8e8e;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #a3a3a3;
   --background-image: url('/assets/background-dark.svg');
+
   --plotly-5: #1f1f1f;
   --plotly-6: #595F634D;
+  --plotly-rangeselector : #171717;
 
+  --third-paper: #0a0a0a;
+  --third-plot: #171717;
+  --third-text: #e5e5e5;
+  --third-grid: #ffffff1a;
+  --third-range-selector: #171717;
+  --third-bg-blue: #171717;
+
+  --blue-hover: #262626;
 }
 
 
@@ -204,9 +237,9 @@
 
 /* Table styles */
 .table-style {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 15px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
 }
 
 .th-style {
@@ -279,15 +312,17 @@
 
 /*PARA PLOTLY*/
 .modebar-container .modebar {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    border : 0px !important;
+  /* position: relative !important; */
+  right: 0 !important;
+    /* display: flex !important;
+    flex-direction: row !important; */
+    /* flex-wrap: nowrap !important; */
+    /* border : 0px !important;
     border : none !important;
-    padding: 6px !important;
+     */
 }
-.modebar-container .modebar-group {
+/* .modebar-container .modebar-group {
     display: flex !important;
     flex-wrap: nowrap !important;
     border: none !important;
-}
+} */

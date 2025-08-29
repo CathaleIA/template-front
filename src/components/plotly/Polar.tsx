@@ -21,7 +21,7 @@ const PolarPhaseAnglePlot = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [themeVersion, setThemeVersion] = useState(0);
     const currentTheme = useRef<string>('');
-        const { state, open } = useSidebar();
+    const { state, open } = useSidebar();
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -47,17 +47,10 @@ const PolarPhaseAnglePlot = ({
 
         // Obtener colores actuales
         const colors = {
-            bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-            cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-            textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
-            gridColor: style.getPropertyValue('--color-border').trim(),
-            phase1Color: style.getPropertyValue('--color-chart-1').trim(),
-            phase2Color: style.getPropertyValue('--color-chart-2').trim(),
-            phase3Color: style.getPropertyValue('--color-chart-3').trim(),
-            referenceColor: style.getPropertyValue('--color-chart-5').trim(),
-            dangerColor: style.getPropertyValue('--color-danger').trim(),
-            successColor: style.getPropertyValue('--color-success').trim(),
-            muted: style.getPropertyValue('--bg-bg').trim(),
+            paperColor: style.getPropertyValue('--third-paper').trim(),
+            plotColor: style.getPropertyValue('--third-plot').trim(),
+            textColor: style.getPropertyValue('--third-text').trim(),
+            gridColor: style.getPropertyValue('--third-grid').trim(),
             refenrenceLine: style.getPropertyValue('--foreground').trim(),
             trianguleBg: style.getPropertyValue('--plotly-5').trim(),
             trianguleBg2: style.getPropertyValue('--plotly-6').trim(),
@@ -195,14 +188,18 @@ const PolarPhaseAnglePlot = ({
                 ];
 
                 const layout: Partial<Plotly.Layout> = {
+                    autosize: true,
+                    paper_bgcolor: colors.paperColor,
+                    plot_bgcolor: colors.plotColor,
+                    font: { color: colors.textColor },
                     title: {
                         text: `<b>L1-L2: ${angles.l1l2}° | L2-L3: ${angles.l2l3}° | L3-L1: ${adjustedL3L1.toFixed(1)}°</b>`,
-                        font: {
-                            size: 13,
-                            color: colors.textColor
-                        },
-                        x: 0.5,
-                        xanchor: 'center'
+                        font: { size: 11, weight: 900 },
+                        x: 0.5, // centrado
+                        xanchor: 'center',
+                        y: 0.9, // posición vertical ajustada (ajusta esto si es necesario)
+                        yanchor: 'bottom',
+                        pad: { t: 0, b: 2 }, // ← Esto es clave: reduce el padding interno del título
                     },
                     polar: {
                         radialaxis: {
@@ -227,22 +224,19 @@ const PolarPhaseAnglePlot = ({
                     },
                     showlegend: true,
                     legend: {
-                        orientation: 'h',
-                        yanchor: 'bottom',  // Ancla al fondo
-                        y: -0.3,           // Ajusta posición vertical (negativo = fuera del gráfico)
-                        xanchor: 'center',  // Centrado horizontal
-                        x: 0.5,            // Posición horizontal central
+                        // orientation: 'h',
+                        yanchor: 'bottom',
+                        y: 0,
+                        xanchor: 'center',
+                        x: 0.5,
                         bgcolor: 'rgba(0,0,0,0)',
                         font: {
-                            size: 12       // Tamaño consistente
+                            size: 12
                         },
-                        itemwidth: 30,     // Ancho fijo por ítem
-                        itemsizing: 'constant' // Tamaño uniforme
+                        itemwidth: 30,
+                        itemsizing: 'constant'
                     },
-                    paper_bgcolor: colors.bgColor,
-                    font: { color: colors.textColor },
-                    margin: { t: 80, b: 60, l: 20, r: 20 },
-                    autosize: true,
+                    margin: { r: 35, b: 30, t: 0, l: 35 },
                 };
 
                 const config: Partial<any> = {

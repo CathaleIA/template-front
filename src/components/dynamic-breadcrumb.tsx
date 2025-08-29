@@ -64,6 +64,7 @@ export function DynamicBreadcrumb() {
   }
 
   const breadcrumbs = generateBreadcrumbs()
+  console.log(breadcrumbs)
 
   // No mostrar breadcrumb si solo hay "Inicio"
   if (breadcrumbs.length <= 1) {
@@ -74,17 +75,18 @@ export function DynamicBreadcrumb() {
     <Breadcrumb className="hidden sm:block">
       <BreadcrumbList>
         {breadcrumbs.map((breadcrumb, index) => (
-          <div key={breadcrumb.href} className="flex items-center">
+
+          <div key={breadcrumb.href} className="flex items-center font-bold">
             <UIBreadcrumbItem>
               {breadcrumb.isCurrentPage ? (
-                <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                <BreadcrumbPage className="font-bold">{breadcrumb.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                    <Link
-                      href={breadcrumb.href}
-                      className="text-blue-600 underline flex items-center"
-                      style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
-                    >
+                  <Link
+                    href={breadcrumb.href}
+                    className="text-blue-link underline flex items-center"
+                    style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
+                  >
                     {index === 0 && <Home className="h-4 w-4 mr-1" />}
                     {breadcrumb.label}
                   </Link>

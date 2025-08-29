@@ -43,9 +43,9 @@ export default function TemperatureHeatmap({
 
         const style = getComputedStyle(document.documentElement);
         const colors = {
-            bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-            cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-            textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
+            paperColor: style.getPropertyValue('--third-paper').trim(),
+            plotColor: style.getPropertyValue('--third-plot').trim(),
+            textColor: style.getPropertyValue('--third-text').trim(),
             successColor: style.getPropertyValue('--color-chart-1').trim(),
             warningColor: style.getPropertyValue('--color-chart-2').trim(),
             dangerColor: style.getPropertyValue('--color-chart-3').trim(),
@@ -91,10 +91,32 @@ export default function TemperatureHeatmap({
                         namelength: 0
                     }
                 }], {
-                    yaxis: { title: { text: 'Fecha' }, autorange: 'reversed' },
+                    xaxis: {
+                        autorange: 'reversed',
+                        fixedrange: false,
+                        automargin: false,
+                        tickfont: {
+                            size: 10,
+                            color: colors.textColor
+                        },
+                        tickangle: 45,
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Fecha'
+                        },
+                        autorange: 'reversed',
+                        fixedrange: false,
+                        automargin: false,
+                        tickfont: {
+                            size: 10,
+                            color: colors.textColor
+                        },
+                        tickangle: 45,
+                    },
                     margin: { t: 10, l: 70, r: 50, b: 40 },
-                    paper_bgcolor: colors.bgColor,
-                    plot_bgcolor: colors.bgColor,
+                    paper_bgcolor: colors.paperColor,
+                    plot_bgcolor: colors.plotColor,
                     font: { color: colors.textColor },
                 }, {
                     displayModeBar: false,

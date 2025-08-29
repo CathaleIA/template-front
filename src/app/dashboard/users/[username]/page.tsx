@@ -150,13 +150,18 @@ export default function UserPage() {
     <div className="flex gap-2">
       {!isEditing ? (
         <>
-          <Button variant="outline" onClick={() => setIsEditing(true)}>
+          <Button variant="custom" size="custom" className="gap-1" onClick={() => setIsEditing(true)}>
             <Edit className="mr-2 h-4 w-4" /> Edit
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              <Button 
+                variant="customdestructive"
+                size="custom"
+                className="gap-1"
+              >
+                <Trash2/> 
+                Delete
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -175,11 +180,15 @@ export default function UserPage() {
         </>
       ) : (
         <>
-          <Button variant="outline" onClick={() => setIsEditing(false)}>
-            <X className="mr-2 h-4 w-4" /> Cancel
+          <Button 
+            variant="customdestructive" 
+            size="custom" 
+            className="gap-1"
+            onClick={() => setIsEditing(false)}>
+              <X/> Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            <Save className="mr-2 h-4 w-4" /> {saving ? "Saving..." : "Save"}
+          <Button variant="custom" size="custom" className="gap-1" onClick={handleSave} disabled={saving}>
+            <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save"}
           </Button>
         </>
       )}

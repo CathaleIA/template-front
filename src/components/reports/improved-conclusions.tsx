@@ -71,18 +71,17 @@ export function ImprovedConclusions() {
             {conclusiones.map((con, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 p-1 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/15 transition-colors"
+                className="flex items-center gap-2 p-1 border border-primary/20 rounded-lg group"
               >
                 <CheckCircle className="w-4 h-4 text-primary" />
                 <p className="text-sm text-foreground flex-1">{con}</p>
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
+                  variant="customclose"
+                  size="customicon"
                   onClick={() => handleEliminar(index)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary/80 hover:bg-primary/20 h-6 w-6 p-0"
                 >
-                  <X className="w-3 h-3" />
+                  <X/>
                 </Button>
               </div>
             ))}
@@ -109,16 +108,22 @@ export function ImprovedConclusions() {
               }}
             />
             <div className="flex gap-1">
-              <Button type="submit" disabled={!conclusion.trim()} size="sm" className="bg-primary hover:bg-primary/90">
-                <Plus className="w-4 h-4"/>
+              <Button
+                type="submit"
+                variant="custom"
+                size="custom"
+                className="gap-1"
+                disabled={!conclusion.trim()}
+              >
+                <Plus />
                 Agregar
               </Button>
               <Button
                 type="button"
+                variant="customdestructive"
+                size="custom"
+                className="gap-1"
                 onClick={handleCancel}
-                variant="outline"
-                size="sm"
-                className="border-primary/30 hover:bg-primary/5"
               >
                 Cancelar
               </Button>
@@ -127,14 +132,15 @@ export function ImprovedConclusions() {
         ) : (
           <Button
             type="button"
+            variant="customdestructive"
+            size="custom"
+            className="w-full gap-1"
             onClick={(e) => {
               e.preventDefault()
               setIsAdding(true)
             }}
-            variant="outline"
-            className="w-full border-dashed border-primary/30 hover:bg-primary/5 hover:border-primary/50"
           >
-            <Plus className="w-4 h-4" />
+            <Plus/>
             Agregar Conclusión
           </Button>
         )}
@@ -143,11 +149,14 @@ export function ImprovedConclusions() {
         {conclusiones.length > 0 && (
           <Button
             type="button"
+            variant="custom"
+            size="custom"
+            className="w-full"
             onClick={(e) => {
               e.preventDefault()
               handleCargarEnHTML()
             }}
-            className="w-full"
+            
           >
             <Upload className="w-4 h-4" />
             Cargar conclusiones al HTML ({conclusiones.length})

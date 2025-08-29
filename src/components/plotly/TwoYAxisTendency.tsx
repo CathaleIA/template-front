@@ -62,30 +62,64 @@ export default function FrequencyTrendChart2({
 
                 // Obtener colores actuales
                 const colors = {
-                    bgColor: style.getPropertyValue('--card').trim(),         // Fondo del dashboard
-                    cardColor: style.getPropertyValue('--background').trim(),             // Fondo de la card
-                    textColor: style.getPropertyValue('--foreground').trim(),       // Texto principal
-                    buttonColor: style.getPropertyValue('--color-muted').trim(),
-                    gridColor: style.getPropertyValue('--color-border').trim(),
-                    lineColor: style.getPropertyValue('--color-chart-5').trim(),
+                    paperColor: style.getPropertyValue('--third-paper').trim(),
+                    plotColor: style.getPropertyValue('--third-plot').trim(),
+                    textColor: style.getPropertyValue('--third-text').trim(),
+                    gridColor: style.getPropertyValue('--third-grid').trim(),
+                    rangeSelectorColor: style.getPropertyValue('--third-range-selector').trim(),
+                    blueTenue: style.getPropertyValue('--third-bg-blue').trim(),
                 };
 
                 const frecuenciaY = traces[0]?.y || [];
                 const minF = Math.min(...frecuenciaY);
                 const maxF = Math.max(...frecuenciaY);
 
+                const variablesMaximazed = isMaximized
+                    ? {
+                        titleAxisYOne: { text: 'Velocidad [rpm]', font: { color: colors.textColor, size: 16, weight: 900 } },
+                        titleAxisYTwo: { text: 'Frecuencia [Hz]', font: { color: colors.textColor, size: 16, weight: 900 } }
+                    }
+                    : {
+                        titleAxisYOne: { text: undefined, font: { color: colors.textColor } },
+                        titleAxisYTwo: { text: undefined, font: { color: colors.textColor } },
+                        anguleTicks: 90
+                    }
+
                 // Configuración completa del layout
                 const layout: Partial<Plotly.Layout> = {
-                    paper_bgcolor: colors.bgColor,
-                    plot_bgcolor: colors.cardColor,
+                    title: isMaximized ? {
+                        text: tittle,
+                        font: {
+                            size: 12,
+                            weight: 900,
+                        }
+                    } : undefined,
+                    paper_bgcolor: colors.paperColor,
+                    plot_bgcolor: colors.plotColor,
                     font: { color: colors.textColor },
                     xaxis: {
                         type: 'date',
-                        gridcolor: colors.gridColor,
-                        linecolor: colors.gridColor,
-                        zerolinecolor: colors.gridColor,
                         autorange: true,
+                        zeroline: false,
+                        gridcolor: colors.gridColor,
+                        linewidth: 1,
+                        linecolor: isMaximized
+                            ? colors.textColor
+                            : colors.rangeSelectorColor,
+                        ticklen: 3,
+                        tickfont: {
+                            size: isMaximized
+                                ? 14
+                                : 10,
+                            color: colors.textColor
+                        },
                         rangeselector: {
+                            font: {
+                                color: colors.textColor,
+                                size: isMaximized
+                                    ? 14
+                                    : 10,
+                            },
                             buttons: [
                                 { count: 1, label: '1h', step: 'hour', stepmode: 'backward' },
                                 { count: 24, label: '1d', step: 'hour', stepmode: 'backward' },
@@ -93,59 +127,88 @@ export default function FrequencyTrendChart2({
                                 { count: 1, label: '1m', step: 'month', stepmode: 'backward' },
                                 { step: 'all', label: 'Todo' }
                             ],
-                            bgcolor: colors.buttonColor,
-                            font: { color: colors.textColor },
-                            activecolor: colors.bgColor,
-                            x: -0.1,
-                            xanchor: 'left',
-                            y: 1.15,
-                            yanchor: 'top'
+                            x: 1,
+                            xanchor: 'right',
+                            y: 1,
+                            yanchor: 'bottom',
+                            bgcolor: colors.rangeSelectorColor,
+                            activecolor: colors.paperColor,
                         },
                         rangeslider: {
                             visible: true,
                             thickness: 0.1,
-                            bgcolor: colors.cardColor,
-                            bordercolor: colors.gridColor
+                            bgcolor: colors.plotColor,
                         }
                     },
                     yaxis: {
-                        title: {
-                            text: 'Frecuencia [Hz]',
-                            font: { color: colors.textColor }
-                        },
-                        range: [minF - 1, maxF + 1],
+                        title: variablesMaximazed.titleAxisYTwo,
                         gridcolor: colors.gridColor,
+                        zeroline: false,
+                        linewidth: 1,
+                        linecolor: isMaximized
+                            ? colors.textColor
+                            : colors.rangeSelectorColor,
+                        range: [minF - 1, maxF + 1],
                         fixedrange: false,
-                        linecolor: colors.gridColor,
-                        zerolinecolor: colors.gridColor,
+                        automargin: false,
+                        tickfont: {
+                            size: isMaximized
+                                ? 14
+                                : 10,
+                            color: colors.textColor
+                        },
+                        ticklabelposition: "outside",
+                        tickangle: variablesMaximazed.anguleTicks,
+                        ticklen: 5,
                     },
                     yaxis2: {
-                        title: {
-                            text: 'Velocidad [rpm]', // Puedes personalizarlo
-                            font: { color: colors.textColor }
-                        },
-                        overlaying: 'y', // Superpone sobre el eje izquierdo
-                        side: 'right',
-                        range: [minPF - 1, maxPF + 1], // Puedes ajustar si RPM tiene otro rango
-                        tickformat: '~s',
+                        title: variablesMaximazed.titleAxisYOne,
                         gridcolor: colors.gridColor,
+                        zeroline: false,
+                        linewidth: 1,
+                        linecolor: isMaximized
+                            ? colors.textColor
+                            : colors.rangeSelectorColor,
                         fixedrange: false,
-                        linecolor: colors.gridColor,
-                        zerolinecolor: colors.gridColor,
+                        overlaying: 'y',
+                        side: 'right',
+                        range: [minPF - 1, maxPF + 1],
+                        tickfont: {
+                            size: isMaximized
+                                ? 14
+                                : 10,
+                            color: colors.textColor
+                        },
+                        tickformat: '~s',
+                        tickangle: variablesMaximazed.anguleTicks,
+                        ticklen: 5,
                     },
-
                     margin: isMaximized
-                        ? { t: 80, l: 100, r: 60, b: 40 }
-                        : { t: 40, l: 50, r: 30, b: 20 },
+                        ? { r: 100, b: 30, t: 80, l: 100, }
+                        : { r: 60, b: 0, t: 10, l: 35 },
                     legend: {
                         orientation: "h",
                         x: 0.5,
                         xanchor: "center",
-                        y: -0.35,
-                        yanchor: "top",
-                        font: { size: 10, color: colors.textColor }
+                        y: isMaximized
+                            ? 1
+                            : -0.4,
+                        yanchor: isMaximized
+                            ? "bottom"
+                            : "top",
+                        font: {
+                            size: isMaximized
+                                ? 14
+                                : 10,
+                            color: colors.textColor
+                        }
                     },
-
+                    modebar: {
+                        orientation: "v",
+                        // activecolor: colors.bg3,
+                        //color: colors.bg1,
+                        bgcolor: colors.blueTenue,
+                    }
                 };
 
                 const config: Partial<Plotly.Config> = {

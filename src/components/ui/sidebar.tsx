@@ -25,11 +25,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+import Link from "next/link"
+
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "18rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH_ICON = "3.2rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextProps = {
@@ -474,7 +476,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 group-data-[collapsible=icon]:[&>svg]:size-5 [&>svg]:shrink-0 group-data-[collapsible=icon]:my-2",
   {
     variants: {
       variant: {
@@ -495,21 +497,74 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
+
+
 function SidebarMenuButton({
   asChild = false,
   isActive = false,
   variant = "default",
   size = "default",
   tooltip,
+  subItems,
   className,
+  closeDelay = 200,
   ...props
 }: React.ComponentProps<"button"> & {
   asChild?: boolean
   isActive?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
+  subItems?: { title: string; url: string }[]
+  closeDelay?: number
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : "button"
   const { isMobile, state } = useSidebar()
+  const [isOpen, setIsOpen] = React.useState(false)
+
+  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  const dropdownRef = React.useRef<HTMLDivElement>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  // Posicionamiento
+  React.useLayoutEffect(() => {
+    if (isOpen && dropdownRef.current && containerRef.current) {
+      const container = containerRef.current
+      const dropdown = dropdownRef.current
+      const containerRect = container.getBoundingClientRect()
+
+      dropdown.style.left = `${containerRect.right + 8}px`
+      dropdown.style.top = `${containerRect.top}px`
+    }
+  }, [isOpen])
+
+  const cancelClose = React.useCallback(() => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }, [])
+
+  const scheduleClose = React.useCallback(() => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false)
+    }, closeDelay)
+  }, [closeDelay])
+
+  const handleMouseEnter = React.useCallback(() => {
+    cancelClose()
+    setIsOpen(true)
+  }, [cancelClose])
+
+  const handleMouseLeave = React.useCallback(() => {
+    scheduleClose()
+  }, [scheduleClose])
+
+  React.useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const button = (
     <Comp
@@ -522,28 +577,74 @@ function SidebarMenuButton({
     />
   )
 
-  if (!tooltip) {
+  if ((!subItems || subItems.length === 0) && !tooltip) {
     return button
   }
 
   if (typeof tooltip === "string") {
-    tooltip = {
-      children: tooltip,
+    tooltip = { children: tooltip }
+  }
+
+  if (subItems && subItems.length > 0) {
+    console.log(subItems)
+    if (state === "collapsed" && !isMobile) {
+      return (
+        <div
+          ref={containerRef}
+          className="relative"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {button}
+
+          {/* Dropdown personalizado */}
+          <div
+            ref={dropdownRef}
+            className={cn(
+              "fixed z-[9999] min-w-[200px] bg-background text-primary border border-border shadow-md/20 transition-all duration-300 ease-in-out origin-top-left ml-2",
+              isOpen
+                ? "opacity-100 scale-100 translate-x-0 translate-y-0"
+                : "opacity-0 scale-95 -translate-x-2 -translate-y-2 pointer-events-none"
+            )}
+          >
+            <div className="flex flex-col">
+              {subItems.map((sub, i) => (
+                <Link
+                  key={i}
+                  href={sub.url}
+                  className="w-full text-sm transition-colors hover:bg-blue-hover p-3"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {sub.title}
+                </Link>
+              ))}
+              
+            </div>
+          </div>
+        </div>
+      )
+    } else {
+      return button
     }
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
-      />
-    </Tooltip>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent
+          side="right"
+          align="center"
+          hidden={state !== "collapsed" || isMobile}
+          {...tooltip}
+        >
+          {tooltip?.children}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
+
 
 function SidebarMenuAction({
   className,
@@ -569,7 +670,7 @@ function SidebarMenuAction({
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
+        "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
         className
       )}
       {...props}
@@ -643,7 +744,7 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        "border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5",
+        "border-sidebar-border ml-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l pl-2 py-0.5",
         "group-data-[collapsible=icon]:hidden",
         className
       )}

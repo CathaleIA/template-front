@@ -4,6 +4,13 @@ import * as React from "react"
 import Image from 'next/image'
 
 import { NavUser } from "@/components/navegation/nav-user"
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
 import {
   Sidebar,
   SidebarContent,
@@ -21,11 +28,7 @@ import {
 
 import AppSidebarSkeleton from "@/components/skeleton/app-sidebar-skeleton"
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+
 
 import { ChevronRight, File, Folder } from "lucide-react"
 

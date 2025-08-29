@@ -48,12 +48,14 @@ const PressureGroupedBarChart = () => {
 
         const colors = {
             bgColor: style.getPropertyValue('--card').trim(),
-            cardColor: style.getPropertyValue('--background').trim(),
+            paperColor: style.getPropertyValue('--third-paper').trim(),
+            plotColor: style.getPropertyValue('--third-plot').trim(),
+            textColor: style.getPropertyValue('--third-text').trim(),
             gridColor: style.getPropertyValue('--color-border').trim(),
-            textColor: style.getPropertyValue('--foreground').trim(),
             warningColor: style.getPropertyValue('--plotly-4').trim(),
             successColor: style.getPropertyValue('--plotly-2').trim(),
             dangerColor: style.getPropertyValue('--plotly-3').trim(),
+            rangeSelectorColor: style.getPropertyValue('--third-range-selector').trim(),
 
         };
 
@@ -102,19 +104,35 @@ const PressureGroupedBarChart = () => {
                     barmode: 'group',
                     bargap: 0.2,
                     bargroupgap: 0,
-                    paper_bgcolor: colors.bgColor,
-                    plot_bgcolor: colors.bgColor,
+                    paper_bgcolor: colors.paperColor,
+                    plot_bgcolor: colors.plotColor,
                     font: { color: colors.textColor },
                     xaxis: {
                         // title: { text: 'Tipo de Presión' },
                         type: 'category',
-                        tickangle: -20,
+                        zeroline: false,
+                        gridcolor: colors.gridColor,
+                        linewidth: 1,
+                        linecolor: colors.rangeSelectorColor,
+                        ticklen: 3,
+                        tickfont: {
+                            size: 10,
+                            color: colors.textColor
+                        },
                     },
                     yaxis: {
                         title: { text: 'Presion [psi]' },
-                        showgrid: true,
+                        zeroline: false,
+                        linewidth: 1,
+                        linecolor: colors.rangeSelectorColor,
                         gridcolor: colors.gridColor,
+                        tickfont: {
+                            size: 10,
+                            color: colors.textColor
+                        },
+                        ticklabelposition: "outside",
                         tickvals: [0, 20, 40, 60, 80, 100],
+                        ticklen: 5,
                         range: [0, 100],
                     },
                     margin: { t: 30, b: 60, l: 40, r: 20 },

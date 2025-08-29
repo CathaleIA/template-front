@@ -289,16 +289,16 @@ export default function ReportsPage() {
 
   return (
     <div className="container mx-auto">
-      <div className="max-w-[1600px] mx-auto">
+      <div className="max-w-[1600px]">
         <PageHeader
           title="Generador de Reportes"
           description="Configura y genera reportes técnicos de manera eficiente."
         />
-        <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-7 gap-6 p-5 bg-card">
           {/* Columna izquierda: Formulario - 43% */}
           <div className="xl:col-span-3 space-y-6">
-            <Card className="shadow-lg border-none">
-              <CardHeader className="bg-muted/50 border-b">
+            <Card className="bg-background border-none">
+              <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="w-5 h-5" />
                   Configuración del Reporte
@@ -377,7 +377,7 @@ export default function ReportsPage() {
                   {/* Cargar archivo - ancho completo */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Archivo de Datos</Label>
-                    <div className="border-2 border-dashed border-border rounded-lg p-2 hover:border-primary/50 transition-colors">
+                    <div className="border-1 border-dashed border-border rounded-lg p-2 hover:border-primary/50 transition-colors">
                       <Input
                         id="archivo"
                         type="file"
@@ -388,28 +388,28 @@ export default function ReportsPage() {
                         className="hidden"
                       />
                       <Button
-                        type="button"
-                        variant="outline"
+                        variant="customdestructive"
+                        size="custom"
+                        className="gap-1 w-full"
                         onClick={() => document.getElementById("archivo")?.click()}
-                        className="w-full border-2 hover:bg-primary/5 hover:border-primary/50"
                       >
-                        <Upload className="w-5 h-5 mr-2" />
+                        <Upload />
                         {archivoToFront ? archivoToFront.name : "Seleccionar archivo"}
                       </Button>
                       {archivoToFront && (
-                        <div className="flex items-center justify-between gap-2 mt-3 p-1 bg-primary/10 rounded-lg border border-primary/20">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-primary" />
-                            <span className="text-sm text-primary font-medium">{archivoToFront.name}</span>
+                        <div className="flex items-center justify-between gap-2 mt-3 p-1 rounded-sm border border-border">
+                          <div className="flex items-center gap-1">
+                            <FileText className="h-4 w-4" />
+                            <span className="text-sm text-primary">{archivoToFront.name}</span>
                           </div>
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="sm"
+                            variant="customclose"
+                            size="customicon"
                             onClick={() => setArchivo(null)}
-                            className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                            className=""
                           >
-                            <X className="w-4 h-4" />
+                            <X />
                           </Button>
                         </div>
                       )}
@@ -418,12 +418,14 @@ export default function ReportsPage() {
 
                   {/* Botón de procesamiento - ancho completo */}
                   <Button
+                    variant="custom"
+                    size="custom"
+                    className="gap-1 w-full"
                     onClick={(e) => {
                       e.preventDefault()
                       processFile()
                     }}
                     disabled={!activo || !archivoToFront || isProcessing}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                   >
                     {isProcessing ? (
                       <>
@@ -441,12 +443,14 @@ export default function ReportsPage() {
                 <div className="space-y-3">
                   <ImprovedConclusions />
                   <Button
+                    className="w-full"
+                    variant="customdestructive"
+                    size="custom"
+                    disabled={!resultadoHtml || isGeneratingPdf}
                     onClick={(e) => {
                       e.preventDefault()
                       generateReport()
                     }}
-                    disabled={!resultadoHtml || isGeneratingPdf}
-                    className="w-full"
                   >
                     {isGeneratingPdf ? (
                       <p>Generando PDF...</p>
@@ -457,9 +461,12 @@ export default function ReportsPage() {
                   {/* Botones simples de descarga */}
                   <div className="flex gap-2">
                     <Button
+                      variant="custom"
+                      size="custom"
+                      className="flex-1 gap-1"
                       onClick={handleDownload}
                       disabled={isDownloading || !fileName.trim()}
-                      className="flex-1"
+
                     >
                       {isDownloading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -469,10 +476,11 @@ export default function ReportsPage() {
                       Descargar
                     </Button>
                     <Button
+                      variant="customdestructive"
+                      size="custom"
+                      className="flex-1 gap-1"
                       onClick={handlePreview}
                       disabled={!pdfBase64}
-                      variant="outline"
-                      className="flex-1"
                     >
                       <Eye className="w-4 h-4" />
                       Vista Previa
@@ -484,8 +492,8 @@ export default function ReportsPage() {
           </div>
           {/* Columna derecha: Vista previa del reporte - 57% */}
           <div className="xl:col-span-4 space-y-6">
-            <Card className="shadow-lg border-none h-full">
-              <CardHeader className="bg-muted/50 border-b">
+            <Card className="bg-background border-none h-full">
+              <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                   <View className="w-5 h-5" />
                   Vista Previa del Reporte
