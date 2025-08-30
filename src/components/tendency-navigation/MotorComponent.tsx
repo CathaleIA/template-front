@@ -11,13 +11,12 @@ import FrequencyTrendChart2 from '@/components/plotly/TwoYAxisTendency';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
-
 const MotorGridComponent = () => {
     const [selectTendency, setselectTendency] = useState('temperatura');
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
             <div className='col-span-1 row-span-1'>
-                <div className="bg-background  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl border px-3">
+                <div className="bg-background  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl px-3 shadow-md">
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
                             <div>
@@ -49,9 +48,9 @@ const MotorGridComponent = () => {
             </div>
 
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-background  h-full rounded-md border">
-                    <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                <div className="flex flex-col bg-background h-full shadow-md rounded-tr-sm rounded-br-sm rounded-bl-sm">
+                    <div className="flex justify-center items-center bg-green-dark w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-green-medium">
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-green-gray uppercase">
                             RESUMEN
                         </h1>
                     </div>
@@ -73,10 +72,11 @@ const MotorGridComponent = () => {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-background  h-full rounded-tr-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
-                            RPM vs Hz</h1>
+                <div className='flex flex-col bg-background h-full shadow-md rounded-tr-sm rounded-br-sm rounded-bl-sm'>
+                    <div className="flex justify-center items-center bg-green-medium w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-green-dark">
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-green-gray uppercase">
+                            RPM vs Hz
+                        </h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">
                         <FrequencyTrendChart2 {...VelocidadFrecuencyData} />
@@ -85,13 +85,13 @@ const MotorGridComponent = () => {
             </div>
 
             <div className="col-span-2 row-span-3 rounded-br-full">
-                <div className='bg-background  h-full flex flex-col rounded-bl-2xl border'>
+                <div className='bg-background  h-full flex flex-col shadow-md rounded-tr-sm rounded-br-sm rounded-bl-sm'>
                     <Select
                         defaultValue="temperatura"
                         onValueChange={(value) => setselectTendency(value)}
                     >
                         <SelectTrigger
-                            className="bg-card text-primary border-b-6 border-r-6 border-background rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="bg-green-dark text-green-gray border-b-6 border-r-6 border-green-medium rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 font-bold text-xs "
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -112,9 +112,9 @@ const MotorGridComponent = () => {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-background  h-full rounded-br-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                <div className='flex flex-col bg-background  h-full rounded-br-sm rounded-bl-sm rounded-tr-sm shadow-md'>
+                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-green-gray border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-green-gray uppercase">
                             PRESION</h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">

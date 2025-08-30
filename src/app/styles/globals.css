@@ -55,6 +55,11 @@
   --color-third-text: var(--third-text);
   --color-third-grid: var(--third-grid);
   --color-third-range-selector: var(--third-range-selector);
+  --color-green-dark: var(--green-dark) ;
+  --color-green-medium: var(--green-medium);
+  --color-green-tenue: var(--green-tenue);
+  --color-green-live: var(--green-live);
+  --color-green-gray: var(--green-gray);
 }
 
 :root {
@@ -111,6 +116,12 @@
   --blue-link: #1890ff;
   --blue-hover: #e8f4ff;
   --blue-linkactive: #096dd9;
+
+  --green-dark: #012821;
+  --green-medium: #2a5c4c;
+  --green-tenue: #72bfaf;
+  --green-live: #00ffc2;
+  --green-gray: #d9d9d9;
 }
 
 .dark {

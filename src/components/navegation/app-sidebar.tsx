@@ -58,7 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [userr?.tenantName])
 
 
-  const tenantLogo = userr?.tenantName ? `/logos/${userr?.tenantName}.svg` : "/logos/cathaleia.png"
+  const tenantLogo = userr?.tenantName ? `/logos/${userr?.tenantName}.svg` : "/logos/cathaleia.svg"
   const navUserData: NavUserData = {
     name: userr?.userName?.toString() ?? "Usuario",
     email: userr?.email ?? "correo@desconocido.com",

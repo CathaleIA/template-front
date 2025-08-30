@@ -157,8 +157,6 @@ const PressureGroupedBarChart = () => {
             } catch (error) {
                 console.error('Failed to load Plotly:', error);
             }
-
-
         };
 
         loadPlot();
@@ -187,7 +185,9 @@ const PressureGroupedBarChart = () => {
         return () => clearTimeout(resizeTimer);
     }, [state, open]);
 
-    return <div ref={containerRef} className="w-full h-full rounded-xl overflow-hidden" />;
+    return (
+        <div ref={containerRef} className="w-full h-full overflow-hidden" />
+    );
 };
 
 export default PressureGroupedBarChart;
