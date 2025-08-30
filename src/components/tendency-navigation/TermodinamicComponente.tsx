@@ -18,7 +18,7 @@ const HealhtlyComponent = () => {
                         onValueChange={(value) => setselectTendency(value)}
                     >
                         <SelectTrigger
-                            className="bg-card text-primary border-b-6 border-r-6 border-background rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="text-xs text-green-gray pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 bg-green-dark rounded-br-full border-b-6 border-r-6 border-green-medium"
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -38,8 +38,8 @@ const HealhtlyComponent = () => {
             </div>
             <div className="col-span-1 row-span-1">
                 <div className="flex flex-col bg-background  h-full rounded-tr-2xl border">
-                    <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className="flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium">
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             RESUMEN
                         </h1>
                     </div>
@@ -65,8 +65,8 @@ const HealhtlyComponent = () => {
             </div>
             <div className="col-span-3 row-span-2">
                 <div className='flex flex-col bg-background  h-full rounded-bl-2xl  rounded-br-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             DEVANADOS</h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">

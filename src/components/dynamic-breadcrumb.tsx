@@ -76,15 +76,15 @@ export function DynamicBreadcrumb() {
       <BreadcrumbList>
         {breadcrumbs.map((breadcrumb, index) => (
 
-          <div key={breadcrumb.href} className="flex items-center font-bold">
+          <div key={breadcrumb.href} className="flex items-center font-bold text-brackground">
             <UIBreadcrumbItem>
               {breadcrumb.isCurrentPage ? (
-                <BreadcrumbPage className="font-bold">{breadcrumb.label}</BreadcrumbPage>
+                <BreadcrumbPage className="font-bold text-brackground">{breadcrumb.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
                   <Link
                     href={breadcrumb.href}
-                    className="text-blue-link underline flex items-center"
+                    className="text-green-live underline flex items-center"
                     style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
                   >
                     {index === 0 && <Home className="h-4 w-4 mr-1" />}

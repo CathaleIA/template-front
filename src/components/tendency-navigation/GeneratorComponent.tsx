@@ -11,8 +11,8 @@ const GeneratorComponent = () => {
 
             <div className="col-span-3 row-span-2">
                 <div className='flex flex-col bg-background  h-full border'>
-                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             ENERGIA</h1>
                     </div>
                     <div className="flex-1 min-h-0">
@@ -22,8 +22,8 @@ const GeneratorComponent = () => {
             </div>
             <div className="col-span-1 row-span-1">
                 <div className='flex flex-col bg-background  h-full rounded-tr-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             VOLTAJE</h1>
                     </div>
                     <div className="flex-1 min-h-0 text-primary px-2">
@@ -53,8 +53,8 @@ const GeneratorComponent = () => {
             </div>
             <div className="col-span-1 row-span-3">
                 <div className='flex flex-col bg-background  h-full w-full rounded-br-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             ANGULOS</h1>
                     </div>
                     <div className="flex-1 min-h-0">
@@ -68,8 +68,8 @@ const GeneratorComponent = () => {
             </div>
             <div className="col-span-1 row-span-2">
                 <div className='flex flex-col bg-background  h-full rounded-bl-2xl border'>
-                    <div className='flex justify-center items-center bg-card w-[55%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[55%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             FACT. DE POTENCIA</h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">
@@ -79,8 +79,8 @@ const GeneratorComponent = () => {
             </div>
             <div className="col-span-2 row-span-2">
                 <div className='flex flex-col bg-background  h-full border'>
-                    <div className='flex justify-center items-center bg-card w-[35%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             POTENCIA</h1>
                     </div>
                     <div className="flex-1 min-h-0">

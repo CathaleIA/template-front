@@ -215,8 +215,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-none">
-      <SidebarHeader>
+    <Sidebar collapsible="icon" {...props} className="bg-sidebar-gradient border-none">
+      <SidebarHeader className="bg-green-medium h-(--header-height)">
         <TeamSwitcher user={userr} />
       </SidebarHeader>
       <SidebarContent>
