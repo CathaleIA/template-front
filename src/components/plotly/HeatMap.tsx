@@ -156,5 +156,5 @@ export default function TemperatureHeatmap({
         return () => clearTimeout(resizeTimer);
     }, [state, open]);
 
-    return <div ref={containerRef} className="w-full h-full rounded-xl overflow-hidden" />;
+    return <div ref={containerRef} className="w-full h-full rounded-bl-4xl overflow-hidden" />;
 }

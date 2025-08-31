@@ -186,7 +186,7 @@ const PressureGroupedBarChart = () => {
     }, [state, open]);
 
     return (
-        <div ref={containerRef} className="w-full h-full overflow-hidden" />
+        <div ref={containerRef} className="rounded-bl-4xl w-full h-full overflow-hidden" />
     );
 };
 

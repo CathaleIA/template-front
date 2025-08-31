@@ -50,7 +50,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="[--header-height:calc(theme(spacing.14))] min-h-screen overflow-hidden">
+    <div className="[--header-height:calc(theme(spacing.14))] [--header-h:calc(theme(spacing.9))] min-h-screen overflow-hidden">
       <NotificationProvider>
         <SidebarProvider className="flex h-screen flex-col">
           <div className="flex flex-1 min-h-0">

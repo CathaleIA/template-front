@@ -10,15 +10,15 @@ import { useState } from "react";
 const HealhtlyComponent = () => {
     const [selectTendency, setselectTendency] = useState('acople');
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-3 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height)-var(--header-h))]!">
             <div className="col-span-2 row-span-1">
-                <div className='bg-background  h-full flex flex-col rounded-tr-2xl border'>
+                <div className='bg-background  h-full flex flex-col shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
                     <Select
                         defaultValue="acople"
                         onValueChange={(value) => setselectTendency(value)}
                     >
                         <SelectTrigger
-                            className="text-xs text-green-gray pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 bg-green-dark rounded-br-full border-b-6 border-r-6 border-green-medium"
+                            className="text-xs text-green-gray pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 bg-green-medium rounded-br-full border-b-6 border-r-6 border-green-gray"
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -37,8 +37,8 @@ const HealhtlyComponent = () => {
                 </div>
             </div>
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-background  h-full rounded-tr-2xl border">
-                    <div className="flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium">
+                <div className="flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-sm rounded-br-sm rounded-bl-sm">
+                    <div className="flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray">
                         <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             RESUMEN
                         </h1>
@@ -64,8 +64,8 @@ const HealhtlyComponent = () => {
                 </div>
             </div>
             <div className="col-span-3 row-span-2">
-                <div className='flex flex-col bg-background  h-full rounded-bl-2xl  rounded-br-2xl border'>
-                    <div className='flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-dark rounded-br-full text-primary border-b-6 border-r-6 border-green-medium'>
+                <div className='flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
+                    <div className='flex justify-center items-center w-[45%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
                         <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
                             DEVANADOS</h1>
                     </div>

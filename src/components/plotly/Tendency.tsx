@@ -268,7 +268,7 @@ export default function FrequencyTrendChart({
       <div
         ref={containerRef}
         className={`
-          rounded-2xl overflow-hidden
+          rounded-bl-4xl overflow-hidden
           ${isMaximized
             ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] z-50'
             : 'w-full h-full'}
