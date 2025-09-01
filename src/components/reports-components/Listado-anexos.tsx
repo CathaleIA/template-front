@@ -1,5 +1,5 @@
 import type { ItemPremitive, ItemQuery } from "@/types/type-report/item"
-import { useState } from "react"
+import { useState }  from "react"
 import CardItem from "./Cards-params"
 
 interface CardProps {
