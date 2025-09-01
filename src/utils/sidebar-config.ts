@@ -30,7 +30,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       // ],
       [
         { "title": "Reports", "url": "#" },
-        { "title": "Create", "url": "/dashboard/reports" },
+        { "title": "Create", "url": "/dashboard/reports/principal" },
         { "title": "List", "url": "/dashboard/listreports" },
         { "title": "Config", "url": "#" },
       ],
@@ -71,7 +71,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
     tree: [
       [
         { "title": "Reports", "url": "#" },
-        { "title": "Create", "url": "/dashboard/reports" },
+        { "title": "Create", "url": "/dashboard/reports/items" },
         { "title": "List", "url": "/dashboard/listreports" },
         { "title": "Config", "url": "#" },
 
