@@ -1,4 +1,4 @@
-import {consult_item_file, reponse_consult_file} from "@/types/type-report/consult-item";
+import {consult_item_file, reponse_consult_file} from "@/types";
 export async function serviceAbstractFile(data: consult_item_file){
     // esto manda como request y espera un tipo de ItemPremitive[]
     try {

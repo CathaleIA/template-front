@@ -1,4 +1,4 @@
-import { ItemQuery, ItemPremitive } from "@/types/type-report/item";
+import { ItemQuery, ItemPremitive } from "@/types/item";
 export async function serviceQueryStatusFile(data: ItemQuery){
     // esto manda como request y espera un tipo de ItemPremitive[]
     try {

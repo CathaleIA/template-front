@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ItemQuery } from "@/types/type-report/item";
+import { ItemQuery } from "@/types";
 import { serviceQueryStatusFile } from "@/service-report/query-estatus";
 
 // desde aca hacemos la peticion como teniamos entendido

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import type { ZipUploadRequest, ZipUploadResponse } from "@/types/type-report/zip-upload" // Updated import to use correct interfaces
+import type { ZipUploadRequest, ZipUploadResponse } from "@/types" // Updated import to use correct interfaces
 import { Button } from "@/components/ui/button"
 import { Input } from  "@/components/ui/input" // Fixed import path
 import { Label } from  "@/components/ui/label" // Fixed import path

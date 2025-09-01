@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import {ZipUploadRequest } from '@/types/type-report/zip-upload';
+import {ZipUploadRequest } from '@/types';
 import {serviceUploadZipfile} from  '@/service-report/upload-zipfile';
 
 export async function POST(req: Request) {

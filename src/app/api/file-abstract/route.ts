@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consult_item_file } from "@/types/type-report/consult-item";
+import { consult_item_file } from "@/types";
 import {serviceAbstractFile } from "@/service-report/abstrac-file-base64";
 
 export async function POST(req: Request) {
