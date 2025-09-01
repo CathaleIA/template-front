@@ -22,6 +22,9 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+import { AnimatePresence } from "motion/react"
+import * as motion from "motion/react-client"
+
 interface ThresholdsProps {
     metricsConfig: MetricsConfig;
     currentValues: SensorData;
@@ -203,30 +206,51 @@ const ThresholdsComponent: React.FC<ThresholdsProps> = ({ metricsConfig, current
             </Card>
 
             <div className="mb-4">
-                <div className="flex space-x-2">
-                    {getCategories().map(category => (
-                        <Button
-                            key={category}
-                            variant={activeCategory === category ? "default" : "outline"}
-                            onClick={() => setActiveCategory(category)}
-                            className={cn(
-                                "transition-colors duration-200",
-                                activeCategory === category && "bg-primary hover:bg-primary/80 border-primary"
-                            )}
-                        >
-                            {category}
-                        </Button>
-                    ))}
-                </div>
+                <nav className="border-b-2 border-border w-auto text-sm font-semibold text-primary leading-none">
+                    <ul className="flex items-center w-auto list-none gap-8">
+                        {getCategories().map(category => (
+                            <motion.li
+                                key={category}
+                                initial={false}
+                                className={`relative py-3 w-auto list-none cursor-pointer hover:text-blue-link ${category === activeCategory
+                                    ? 'text-blue-link'
+                                    : ''
+                                    }`}
+                                onClick={() => setActiveCategory(category)}
+                            >
+                                {category}
+                                {category === activeCategory ? (
+                                    <motion.div
+                                        className="absolute bottom-[-2px] left-0 right-0 h-[2px] bg-blue-link"
+                                        layoutId="underline"
+                                        id="underline"
+                                    />
+                                ) : null}
+                            </motion.li>
+                        ))}
+                    </ul>
+                </nav>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {getMetricsByCategory(activeCategory).map(([metricKey, config]) =>
-                    renderThresholdCard(metricKey, config)
-                )}
+                <AnimatePresence mode="wait">
+                    {getMetricsByCategory(activeCategory).map(([metricKey, config]) => (
+                        <motion.div
+                            key={metricKey}
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -10, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex"
+                        >
+                            {renderThresholdCard(metricKey, config)}
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
         </>
     )
 }
+
 
 export default ThresholdsComponent;

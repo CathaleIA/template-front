@@ -193,7 +193,7 @@
 
 @layer utilities {
 
-    .text-links {
+  .text-links {
     color: var(--primary);
     font-style: italic;
   }
@@ -214,6 +214,18 @@
     .max-770\:hidden {
       display: none !important;
     }
+  }
+
+  .cards-plotly {
+    @apply rounded-sm border
+  }
+
+  .card-plotly2 {
+    @apply border rounded-bl-sm rounded-br-sm rounded-tr-sm
+  }
+
+  .card-plotly3 {
+    @apply border rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_0_10px_rgba(0,0,0,0.2)]
   }
 }
 

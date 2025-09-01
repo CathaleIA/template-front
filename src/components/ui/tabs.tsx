@@ -46,7 +46,7 @@ function TabsTrigger({
       {...props}
       className={cn(
         "relative group box-border min-w-0",
-        "h-9.5 w-[150px]", // ancho fijo inicial
+        "h-9.5 w-[150px]",
         "transition-[width] duration-300 ease-in-out",
         "hover:w-[200px] data-[state=active]:w-[200px]",
         "flex items-center justify-center",
@@ -54,7 +54,7 @@ function TabsTrigger({
         "focus:outline-none focus:z-20 focus-visible:ring-2 focus-visible:ring-ring",
         "disabled:pointer-events-none disabled:opacity-50",
         "hover:z-2 data-[state=active]:z-3",
-        "px-3",
+        "px-3 cursor-pointer",
         "overflow-hidden",
         className
       )}
@@ -76,7 +76,7 @@ function TabsTrigger({
           "absolute inset-0 w-full h-full text-ring/60 transition-all duration-200 pointer-events-none",
           "opacity-0 group-hover:opacity-100",
           "group-data-[state=active]:group-hover:opacity-100",
-          "object-contain"
+          "object-contain",
         )}
         preserveAspectRatio="none"
         style={{ width: '100%', height: '100%' }}

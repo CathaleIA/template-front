@@ -80,7 +80,7 @@ const data = {
       sites: [
         {
           title: "Campo CTY",
-          url: "/dashboard/tendencydata",
+          url: "/dashboard/tendencydata/cty/gen01",
           sistemas: [
             {
               title: "GEN 01",
@@ -92,7 +92,7 @@ const data = {
                 },
                 {
                   title: "Tendencia de datos",
-                  url: "/dashboard/tendencydata",
+                  url: "/dashboard/tendencydata/cty/gen51",
                 },
                 {
                   title: "Administracion",
@@ -114,7 +114,7 @@ const data = {
                 },
                 {
                   title: "Tendencia de datos",
-                  url: "/dashboard/tendencydata",
+                  url: "/dashboard/tendencydata/cty/gen52",
                 },
                 {
                   title: "Administracion",

@@ -10,14 +10,24 @@ import FrequencyTrendChart2 from '@/components/plotly/TwoYAxisTendency';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { BorderTrail } from '@/components/motion-primitives/border-trail';
 
 
 const MotorGridComponent = () => {
     const [selectTendency, setselectTendency] = useState('temperatura');
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]! bg-background p-4">
             <div className='col-span-1 row-span-1'>
-                <div className="bg-background  h-full grid grid-rows-2 grid-cols-2 rounded-tl-2xl border px-3">
+                <div
+                    className="relative grid grid-rows-2 grid-cols-2 bg-background px-3 h-full cards-plotly"
+                >
+                    <BorderTrail
+                        style={{
+                            boxShadow:
+                                '0px 0px 60px 30px rgb(255 255 255 / 50%), 0 0 100px 60px rgb(0 0 0 / 50%), 0 0 140px 90px rgb(0 0 0 / 50%)',
+                        }}
+                        size={100}
+                    />
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
                             <div>
@@ -49,7 +59,16 @@ const MotorGridComponent = () => {
             </div>
 
             <div className="col-span-1 row-span-1">
-                <div className="flex flex-col bg-background  h-full rounded-md border">
+                <div
+                    className="relative flex flex-col bg-background h-full card-plotly2"
+                >
+                    <BorderTrail
+                        style={{
+                            boxShadow:
+                                '0px 0px 60px 30px rgb(255 255 255 / 50%), 0 0 100px 60px rgb(0 0 0 / 50%), 0 0 140px 90px rgb(0 0 0 / 50%)',
+                        }}
+                        size={100}
+                    />
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
@@ -73,10 +92,13 @@ const MotorGridComponent = () => {
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-background  h-full rounded-tr-2xl border'>
+                <div
+                    className='flex flex-col bg-background  h-full card-plotly3'
+                >
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
-                            RPM vs Hz</h1>
+                            RPM vs Hz
+                        </h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">
                         <FrequencyTrendChart2 {...VelocidadFrecuencyData} />
@@ -84,8 +106,10 @@ const MotorGridComponent = () => {
                 </div>
             </div>
 
-            <div className="col-span-2 row-span-3 rounded-br-full">
-                <div className='bg-background  h-full flex flex-col rounded-bl-2xl border'>
+            <div className="col-span-2 row-span-3">
+                <div
+                    className='bg-background h-full flex flex-col card-plotly3'
+                >
                     <Select
                         defaultValue="temperatura"
                         onValueChange={(value) => setselectTendency(value)}
@@ -102,17 +126,18 @@ const MotorGridComponent = () => {
                     </Select>
                     <div className=' flex-1 min-h-0'>
                         {selectTendency === 'temperatura' ? (
-                            // <BarPlotly /> // Componente para
                             <CylinderTemperatureChart {...generateSimulatedData({})} />
                         ) : selectTendency === 'frecuencia' ? (
-                            <Tendency {...FrecuencyCilindersData} /> // Componente para frecuencia (o el que necesites)
+                            <Tendency {...FrecuencyCilindersData} />
                         ) : null}
                     </div>
                 </div>
             </div>
 
             <div className='col-span-1 row-span-2'>
-                <div className='flex flex-col bg-background  h-full rounded-br-2xl border'>
+                <div
+                    className='flex flex-col bg-background h-full card-plotly3'
+                >
                     <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
                             PRESION</h1>
