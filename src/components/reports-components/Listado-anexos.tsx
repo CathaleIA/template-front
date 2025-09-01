@@ -1,4 +1,4 @@
-import type { ItemPremitive, ItemQuery } from "@/types/item"
+import type { ItemPremitive, ItemQuery } from "@/types"
 import { useState }  from "react"
 import CardItem from "./Cards-params"
 

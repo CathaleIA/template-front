@@ -1,4 +1,4 @@
-import { ZipUploadRequest,ZipUploadResponse } from "@/types/zip-upload";
+import { ZipUploadRequest,ZipUploadResponse } from "@/types";
 export async function serviceUploadZipfile(data: ZipUploadRequest){
     // esto manda como request y espera un tipo de ItemPremitive[]
     try {
