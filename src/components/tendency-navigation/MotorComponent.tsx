@@ -23,10 +23,9 @@ const MotorGridComponent = () => {
                 >
                     <BorderTrail
                         style={{
-                            boxShadow:
-                                '0px 0px 60px 30px rgb(255 255 255 / 50%), 0 0 100px 60px rgb(0 0 0 / 50%), 0 0 140px 90px rgb(0 0 0 / 50%)',
+                            boxShadow:'0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 100px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
                         }}
-                        size={100}
+                        size={20}
                     />
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
@@ -64,10 +63,9 @@ const MotorGridComponent = () => {
                 >
                     <BorderTrail
                         style={{
-                            boxShadow:
-                                '0px 0px 60px 30px rgb(255 255 255 / 50%), 0 0 100px 60px rgb(0 0 0 / 50%), 0 0 140px 90px rgb(0 0 0 / 50%)',
+                            boxShadow:'0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 100px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
                         }}
-                        size={100}
+                        size={20}
                     />
                     <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
                         <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
