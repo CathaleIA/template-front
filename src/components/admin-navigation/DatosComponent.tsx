@@ -167,7 +167,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Upload className="h-5 w-5" />
@@ -239,7 +239,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Activity className="h-5 w-5" />

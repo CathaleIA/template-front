@@ -1,5 +1,6 @@
 import type React from "react"
 import { NotificationSystem } from "@/hooks/notification-system"
+import { Card } from "@/components/ui/card"
 
 interface PageHeaderProps {
   title: string
@@ -9,7 +10,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
-    <div className="border-b bg-background px-9 py-2">
+    <Card className="card-generic p-5 w-[100%]">
       <div className="grid grid-cols-[1fr_auto] gap-4">
         <div className="flex flex-col justify-end">
           <h1 className="font-bold text-foreground">{title}</h1>
@@ -29,6 +30,6 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
       <div className="px-6 pt-2">
         <NotificationSystem />
       </div>
-    </div>
+    </Card>
   )
 }

@@ -24,7 +24,7 @@ const SystemComponent: React.FC<SystemProps> = ({ systemSettings, setSystemSetti
     const { userr } = useUser();
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Settings className="h-5 w-5" />
@@ -69,7 +69,7 @@ const SystemComponent: React.FC<SystemProps> = ({ systemSettings, setSystemSetti
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Users className="h-5 w-5" />

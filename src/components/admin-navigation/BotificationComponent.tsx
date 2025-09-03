@@ -51,7 +51,7 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Mail className="h-5 w-5" />
@@ -134,7 +134,7 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Bell className="h-5 w-5" />

@@ -16,17 +16,11 @@ import { BorderTrail } from '@/components/motion-primitives/border-trail';
 const MotorGridComponent = () => {
     const [selectTendency, setselectTendency] = useState('temperatura');
     return (
-        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]! bg-background p-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height))]!">
             <div className='col-span-1 row-span-1'>
                 <div
-                    className="relative grid grid-rows-2 grid-cols-2 bg-background px-3 h-full cards-plotly"
+                    className="grid grid-rows-2 grid-cols-2 bg-bg-white px-3 h-full cards-plotly"
                 >
-                    <BorderTrail
-                        style={{
-                            boxShadow:'0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 100px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
-                        }}
-                        size={20}
-                    />
                     <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 mx-auto">
                         <div className="rounded-xl border-l-4 border-r-4 border-border flex items-center justify-between px-4">
                             <div>
@@ -59,16 +53,10 @@ const MotorGridComponent = () => {
 
             <div className="col-span-1 row-span-1">
                 <div
-                    className="relative flex flex-col bg-background h-full card-plotly2"
+                    className="flex flex-col bg-bg-white h-full card-plotly2"
                 >
-                    <BorderTrail
-                        style={{
-                            boxShadow:'0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 100px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
-                        }}
-                        size={20}
-                    />
-                    <div className="flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background">
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className="flex justify-center items-center bg-input/50 w-[45%] h-[35px] pr-2 rounded-br-full text-primary">
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-muted-foreground uppercase">
                             RESUMEN
                         </h1>
                     </div>
@@ -91,10 +79,10 @@ const MotorGridComponent = () => {
 
             <div className='col-span-1 row-span-2'>
                 <div
-                    className='flex flex-col bg-background  h-full card-plotly3'
+                    className='flex flex-col bg-bg-white  h-full card-plotly3'
                 >
-                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center bg-input/50 w-[45%] h-[35px] pr-2 rounded-br-full text-primary'>
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-muted-foreground uppercase">
                             RPM vs Hz
                         </h1>
                     </div>
@@ -106,15 +94,21 @@ const MotorGridComponent = () => {
 
             <div className="col-span-2 row-span-3">
                 <div
-                    className='bg-background h-full flex flex-col card-plotly3'
+                    className='bg-bg-white h-full flex flex-col card-plotly3'
                 >
                     <Select
                         defaultValue="temperatura"
                         onValueChange={(value) => setselectTendency(value)}
                     >
                         <SelectTrigger
-                            className="bg-card text-primary border-b-6 border-r-6 border-background rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="relative bg-input/50 text-primary rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 font-bold text-xs text-muted-foreground"
                         >
+                            <BorderTrail
+                                style={{
+                                    boxShadow: '0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 60px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
+                                }}
+                                size={10}
+                            />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="w-auto">
@@ -134,10 +128,10 @@ const MotorGridComponent = () => {
 
             <div className='col-span-1 row-span-2'>
                 <div
-                    className='flex flex-col bg-background h-full card-plotly3'
+                    className='flex flex-col bg-bg-white h-full card-plotly3'
                 >
-                    <div className='flex justify-center items-center bg-card w-[45%] h-[35px] pr-2 rounded-br-full text-primary border-b-6 border-r-6 border-background'>
-                        <h1 className="text-sm font-semibold leading-none tracking-tight text-muted-foreground uppercase">
+                    <div className='flex justify-center items-center bg-input/50 w-[45%] h-[35px] pr-2 rounded-br-full text-primary'>
+                        <h1 className="text-xs font-bold leading-none tracking-tight text-muted-foreground uppercase">
                             PRESION</h1>
                     </div>
                     <div className="flex-1 min-h-0 w-full">

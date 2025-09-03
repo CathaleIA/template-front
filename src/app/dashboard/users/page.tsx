@@ -11,6 +11,7 @@ import { useNotifications } from "@/context/notification-context"
 import { CreateUserDialog } from '@/components/create-user-dialog'
 import { CreateUserData } from "@/types"
 import { AppPageLoading } from "@/components/skeleton/app-page-loading"
+import { Card } from "@/components/ui/card"
 
 export default function DemoPage() {
     const { addNotification } = useNotifications()
@@ -69,8 +70,7 @@ export default function DemoPage() {
     }
 
     return (
-
-        <div className="container mx-auto px-5">
+        <div className="flex flex-col gap-2 p-5 bg-bg-inset h-[calc(100svh-var(--header-height))]!">
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra los usuarios de tu aplicación desde este panel de control."
@@ -78,11 +78,9 @@ export default function DemoPage() {
                     <CreateUserDialog onUserCreated={handleUserCreated} />
                 }
             />
-            <div className="mt-6 bg-card rounded-lg shadow-sm p-6 border border-border">
-                <h2 className="text-lg font-semibold text-foreground mb-6">Historico de usuarios</h2>
+            <div className="flex-1">
                 <DataTable columns={columns} data={data} filters={filters} />
             </div>
-
         </div>
     )
 }

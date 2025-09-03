@@ -183,37 +183,40 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col items-center gap-4 p-5">
       {/* Header */}
-      <PageHeader
-        title="Motor Analysis AI"
-        description="Neural Network Predictive Analytics."
-        actions={
-          <div className="flex items-center space-x-2">
-            {neuralProcessing ? (
-              <>
-                <div className="animate-pulse h-3 w-3 bg-primary rounded-full"></div>
-                <span className="text-sm text-muted-foreground">Procesando...</span>
-              </>
-            ) : analysisComplete ? (
-              <>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-muted-foreground">Análisis completado</span>
-              </>
-            ) : (
-              <>
-                <Zap className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Esperando análisis</span>
-              </>
-            )}
-          </div>
-        }
-      />
+      <div className="w-full">
+        <PageHeader
+          title="Motor Analysis AI"
+          description="Neural Network Predictive Analytics."
+          actions={
+            <div className="flex items-center space-x-2">
+              {neuralProcessing ? (
+                <>
+                  <div className="animate-pulse h-3 w-3 bg-primary rounded-full"></div>
+                  <span className="text-sm text-muted-foreground">Procesando...</span>
+                </>
+              ) : analysisComplete ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-muted-foreground">Análisis completado</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Esperando análisis</span>
+                </>
+              )}
+            </div>
+          }
+        />
+      </div>
 
-      <div className="max-w-7xl p-5 bg-card">
+
+      <div className='flex flex-col gap-4 w-full'>
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-6">
-          <div className="bg-background rounded-lg  p-6 border border-border">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-bg-white rounded-lg  p-6 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Registros</p>
@@ -223,7 +226,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-background rounded-lg  p-6 border border-border">
+          <div className="bg-bg-white rounded-lg  p-6 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Anomalías Detectadas</p>
@@ -233,7 +236,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-background rounded-lg  p-6 border border-border">
+          <div className="bg-bg-white rounded-lg  p-6 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Estado Crítico</p>
@@ -245,7 +248,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-background rounded-lg  p-6 border border-border">
+          <div className="bg-bg-white rounded-lg  p-6 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Confianza IA</p>
@@ -258,15 +261,15 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Chart Section */}
-          <div className="bg-background rounded-lg  p-6 border border-border">
+          <div className="bg-bg-white rounded-lg  p-6 ">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Análisis de Tendencias</h2>
               <select
                 value={selectedParameter}
                 onChange={(e) => setSelectedParameter(e.target.value)}
-                className="text-sm text-foreground border border-input rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+                className="text-sm text-foreground border border-input rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring bg-bg-white"
               >
                 <option value="temperatura">Temperatura</option>
                 <option value="torque">Torque</option>
@@ -294,11 +297,11 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Trend Analysis */}
-          <div className="bg-background rounded-lg  p-6 border border-border">
+          <div className="bg-bg-white rounded-lg p-6 ">
             <h2 className="text-lg font-semibold text-foreground mb-4">Análisis Neural - Tendencias</h2>
             <div className="space-y-4">
               {trends.map((trend, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg hover:shadow-lg">
                   <div className="flex items-center space-x-3">
                     {getTrendIcon(trend.trend)}
                     <div>
@@ -321,8 +324,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="mt-6 bg-background rounded-lg  p-6 border border-border">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Registro de Animalias</h2>
+        <div className="bg-bg-white rounded-lg p-6 ">
+          <h2 className="text-lg font-semibold text-foreground">Registro de Animalias</h2>
           <DataTable columns={columns} data={anomalies} filters={filters} />
         </div>
       </div>

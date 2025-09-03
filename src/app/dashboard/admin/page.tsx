@@ -11,10 +11,7 @@ import {
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { PageHeader } from "@/components/page-header"
-
 import {
-  LoadedDataInfo,
   SensorData,
   MetricsConfig,
   Thresholds,
@@ -27,6 +24,8 @@ import ThresholdsComponent from "@/components/admin-navigation/ThresholdsCompone
 import NotificationComponent from "@/components/admin-navigation/BotificationComponent";
 import SystemComponent from "@/components/admin-navigation/SystemComponent";
 import ExportComponent from "@/components/admin-navigation/ExportComponent";
+
+import { toast } from "sonner";
 
 
 // Configuración de métricas con metadatos
@@ -139,20 +138,21 @@ const metricsConfig: MetricsConfig = {
 
 // Configuración inicial de umbrales
 const defaultThresholds: Thresholds = {
-    temperaturaAgua: { normal: 50, warning: 100, danger: 150 },
-    temperaturaAceite: { normal: 90, warning: 110, danger: 130 },
-    presionAceite: { normal: 2, warning: 1.5, danger: 1 },
-    rpm: { normal: 6000, warning: 6500, danger: 7000 },
-    voltajeBateria: { normal: 12, warning: 11.5, danger: 11 },
-    consumoCombustibleLh: { normal: 10, warning: 15, danger: 20 },
-    cargaMotor: { normal: 80, warning: 90, danger: 95 },
-    temperaturaEGT: { normal: 450, warning: 550, danger: 650 },
-    presionCombustible: { normal: 3, warning: 2.5, danger: 2 },
-    presionTurbo: { normal: 1.8, warning: 2.2, danger: 2.5 },
-    lambda: { normal: 1, warning: 1.2, danger: 1.5 },
-    tiempoInyeccionMs: { normal: 5, warning: 8, danger: 10 },
-    tiempoEncendidoAvance: { normal: 20, warning: 30, danger: 40 },
+  temperaturaAgua: { normal: 50, warning: 100, danger: 150 },
+  temperaturaAceite: { normal: 90, warning: 110, danger: 130 },
+  presionAceite: { normal: 2, warning: 1.5, danger: 1 },
+  rpm: { normal: 6000, warning: 6500, danger: 7000 },
+  voltajeBateria: { normal: 12, warning: 11.5, danger: 11 },
+  consumoCombustibleLh: { normal: 10, warning: 15, danger: 20 },
+  cargaMotor: { normal: 80, warning: 90, danger: 95 },
+  temperaturaEGT: { normal: 450, warning: 550, danger: 650 },
+  presionCombustible: { normal: 3, warning: 2.5, danger: 2 },
+  presionTurbo: { normal: 1.8, warning: 2.2, danger: 2.5 },
+  lambda: { normal: 1, warning: 1.2, danger: 1.5 },
+  tiempoInyeccionMs: { normal: 5, warning: 8, danger: 10 },
+  tiempoEncendidoAvance: { normal: 20, warning: 30, danger: 40 },
 };
+
 
 export default function AdminDashboard() {
 
@@ -160,6 +160,8 @@ export default function AdminDashboard() {
 
   const [currentValues, setCurrentValues] = useState<SensorData>({});
   const [thresholds, setThresholds] = useState<Thresholds>(defaultThresholds);
+
+  const [isRefresquin, setIsRefresquin] = useState(false);
 
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({
     recipients: ["admin@empresa.com"],
@@ -195,73 +197,55 @@ export default function AdminDashboard() {
     });
   }, []);
 
+  const handleSaveConfiguration = () => {
+    const config = {
+      thresholds,
+      emailSettings,
+      systemSettings,
+      lastUpdated: new Date().toISOString()
+    };
+
+    toast.success("Success", { description: "Configuración guardada exitosamente" })
+  };
+
+  const handleResetToDefaults = () => {
+    setIsRefresquin(true)
+    setThresholds(defaultThresholds);
+    toast.info("Info", { description: "Configuración restablecida a valores predeterminados" })
+    setIsRefresquin(false)
+  };
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col space-y-4">
-        <PageHeader
-          title="Panel de Administración"
-          description="Configuración de alertas y notificaciones del sistema."
-          actions={
-            [
-              // <AlertDialog key="reset">
-              //   <AlertDialogTrigger asChild>
-              //     <Button variant="ghost">
-              //       <RefreshCw className="h-4 w-4" /> Restablecer
-              //     </Button>
-              //   </AlertDialogTrigger>
-              //   <AlertDialogContent>
-              //     <AlertDialogHeader>
-              //       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              //       <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-              //     </AlertDialogHeader>
-              //     <AlertDialogFooter>
-              //       <AlertDialogCancel>Cancel</AlertDialogCancel>
-              //       <AlertDialogAction onClick={handleResetToDefaults} disabled={isRefresquin}>
-              //         {isRefresquin ? "Restableciendo..." : "Restablecer"}
-              //       </AlertDialogAction>
-              //     </AlertDialogFooter>
-              //   </AlertDialogContent>
-              // </AlertDialog>, <Button
-              //   key="save"
-              //   onClick={handleSaveConfiguration}
-              //   type="submit"
-              //   variant="default"
-              //   size="default"
-              //   className="gap-2"
-              // >
-              //   <Save className="h-4 w-4" />
-              //   <span>Guardar</span>
-              // </Button>
-            ]
-          }
-        />
+        <Tabs defaultValue="data" className="bg-bg-inset">
+          <div className="pt-2 bg-bg-white">
+            <TabsList className="bg-bg-white">
+              <TabsTrigger value="data">Datos</TabsTrigger>
+              <TabsTrigger value="thresholds">Umbrales</TabsTrigger>
+              <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
+              <TabsTrigger value="system">Sistema</TabsTrigger>
+              <TabsTrigger value="export">Exportar</TabsTrigger>
+            </TabsList>
+          </div>
 
-        <Tabs defaultValue="data">
-          <TabsList>
-            <TabsTrigger value="data">Datos</TabsTrigger>
-            <TabsTrigger value="thresholds">Umbrales</TabsTrigger>
-            <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
-            <TabsTrigger value="system">Sistema</TabsTrigger>
-            <TabsTrigger value="export">Exportar</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="data" className="p-5 bg-card">
+          <TabsContent value="data" className="p-5">
             <DataComponent sensorData={sensorData} setSensorData={setSensorData} metricsConfig={metricsConfig} currentValues={currentValues} setCurrentValues={setCurrentValues} />
           </TabsContent>
 
-          <TabsContent value="thresholds" className="p-5 bg-card">
-            <ThresholdsComponent metricsConfig={metricsConfig} currentValues={currentValues} thresholds={thresholds} setThresholds={setThresholds} />
+          <TabsContent value="thresholds" className="p-5">
+            <ThresholdsComponent metricsConfig={metricsConfig} currentValues={currentValues} thresholds={thresholds} setThresholds={setThresholds} emailSettings={emailSettings} systemSettings={systemSettings} defaultThresholds={defaultThresholds} />
           </TabsContent>
 
-          <TabsContent value="notifications" className="p-5 bg-card">
-            <NotificationComponent setEmailSettings={setEmailSettings} emailSettings={emailSettings} systemSettings={systemSettings} setSystemSettings={setSystemSettings}/>
-          </TabsContent>
-            
-          <TabsContent value="system" className="p-5 bg-card">
-            <SystemComponent systemSettings={systemSettings} setSystemSettings={setSystemSettings}/>
+          <TabsContent value="notifications" className="p-5">
+            <NotificationComponent setEmailSettings={setEmailSettings} emailSettings={emailSettings} systemSettings={systemSettings} setSystemSettings={setSystemSettings} />
           </TabsContent>
 
-          <TabsContent value="export" className="p-5 bg-card">
+          <TabsContent value="system" className="p-5">
+            <SystemComponent systemSettings={systemSettings} setSystemSettings={setSystemSettings} />
+          </TabsContent>
+
+          <TabsContent value="export" className="p-5">
             <ExportComponent thresholds={thresholds} emailSettings={emailSettings} systemSettings={systemSettings} sensorData={sensorData} />
           </TabsContent>
         </Tabs>

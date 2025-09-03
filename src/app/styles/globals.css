@@ -55,6 +55,8 @@
   --color-third-text: var(--third-text);
   --color-third-grid: var(--third-grid);
   --color-third-range-selector: var(--third-range-selector);
+  --color-bg-inset: var(--bg-inset);
+  --color-bg-white: var(--bg-white);
 }
 
 :root {
@@ -100,7 +102,7 @@
   --plotly-6: #bae6fd;
   --plotly-range : #f5f5f5;
 
-  --third-paper: #fafafa;
+  --third-paper: #ffffff;
   --third-plot: #f5f5f5;
   --third-text: #404040;
   --third-grid: #ffffff;
@@ -111,6 +113,9 @@
   --blue-link: #1890ff;
   --blue-hover: #e8f4ff;
   --blue-linkactive: #096dd9;
+
+  --bg-inset: #F6F7F9;
+  --bg-white: #ffffff;
 }
 
 .dark {
@@ -159,6 +164,9 @@
   --third-bg-blue: #171717;
 
   --blue-hover: #262626;
+
+  --bg-white: #0a0a0a;
+  --bg-inset: #171717;
 }
 
 
@@ -217,15 +225,19 @@
   }
 
   .cards-plotly {
-    @apply rounded-sm border
+    @apply rounded-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
   }
 
   .card-plotly2 {
-    @apply border rounded-bl-sm rounded-br-sm rounded-tr-sm
+    @apply rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
   }
 
   .card-plotly3 {
-    @apply border rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_0_10px_rgba(0,0,0,0.2)]
+    @apply  rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
+  }
+
+  .card-generic {
+    @apply shadow-none bg-bg-white rounded-lg border-none
   }
 }
 
@@ -333,8 +345,3 @@
     border : none !important;
      */
 }
-/* .modebar-container .modebar-group {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    border: none !important;
-} */

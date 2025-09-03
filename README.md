@@ -24,3 +24,8 @@
 #b91c1c
 
 -> Credicts for de 3D Motor Author: `"Motor" (https://skfb.ly/68vGM) by Zuncho Multimedia is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).`
+
+1. Borde encabezado de tarjetas de plotly
+```html
+border-b-6 border-r-6 border-transparent
+```

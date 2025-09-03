@@ -62,7 +62,7 @@ function TabsTrigger({
       {/* Fondo: SVG por defecto (BLANCO) */}
       <ButtonShape
         className={cn(
-          "absolute inset-0 w-full h-full text-background transition-all duration-200 pointer-events-none",
+          "absolute inset-0 w-full h-full text-bg-white transition-all duration-200 pointer-events-none",
           "group-hover:opacity-0 group-data-[state=active]:opacity-0",
           "object-contain"
         )}
@@ -73,7 +73,7 @@ function TabsTrigger({
       {/* Fondo: SVG para hover (GRIS) */}
       <ButtonShape
         className={cn(
-          "absolute inset-0 w-full h-full text-ring/60 transition-all duration-200 pointer-events-none",
+          "absolute inset-0 w-full h-full text-input transition-all duration-200 pointer-events-none",
           "opacity-0 group-hover:opacity-100",
           "group-data-[state=active]:group-hover:opacity-100",
           "object-contain",
