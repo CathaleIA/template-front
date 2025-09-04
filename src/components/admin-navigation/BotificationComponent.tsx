@@ -51,7 +51,7 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Mail className="h-5 w-5" />
@@ -67,7 +67,7 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                             type="checkbox"
                             checked={emailSettings.enabled}
                             onChange={(e) => setEmailSettings(prev => ({ ...prev, enabled: e.target.checked }))}
-                            className="rounded"
+                            className="rounded invalid:ring-0 invalid:border-0 accent-blue-primary"
                         />
                         <Label>Habilitar notificaciones por email</Label>
                     </div>
@@ -101,14 +101,15 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                             />
                             <Button
                                 onClick={handleAddEmail}
-                                variant={"outline"}
+                                variant="customdestructive"
+                                size="custom"
                             >
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
 
-                    <div className="bg-muted p-4">
+                    <Alert className="p-4 border-none rounded-xs">
                         <Label className="block mb-1">Destinatarios actuales</Label>
                         <div className="space-y-2 ">
                             {emailSettings.recipients.length > 0 ? (
@@ -130,11 +131,11 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                                 <p className="text-sm text-foreground">No hay destinatarios configurados</p>
                             )}
                         </div>
-                    </div>
+                    </Alert>
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-generic">
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Bell className="h-5 w-5" />
@@ -154,7 +155,7 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                                 max="30"
                                 value={systemSettings.alertCooldown}
                                 onChange={(e) => setSystemSettings(prev => ({ ...prev, alertCooldown: parseInt(e.target.value) }))}
-                                className="w-full"
+                                className="w-full accent-blue-primary"
                             />
                             <span className="text-sm font-medium">{systemSettings.alertCooldown} minutos</span>
                         </div>
@@ -163,14 +164,17 @@ const NotificationComponent: React.FC<NotificationProps> = ({ setEmailSettings, 
                     <div className="flex items-center space-x-2">
                         <input
                             type="checkbox"
-                            checked={systemSettings.enableSounds}
-                            onChange={(e) => setSystemSettings(prev => ({ ...prev, enableSounds: e.target.checked }))}
-                            className="rounded"
+                            checked={!!systemSettings.enableSounds}
+                            onChange={(e) => setSystemSettings(prev => ({
+                                ...prev,
+                                enableSounds: e.target.checked
+                            }))}
+                            className="rounded invalid:ring-0 invalid:border-0 accent-blue-primary"
                         />
                         <Label>Habilitar sonidos de alerta</Label>
                     </div>
 
-                    <Alert>
+                    <Alert className="border-none rounded-xs">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Prueba de notificaciones</AlertTitle>
                         <AlertDescription>

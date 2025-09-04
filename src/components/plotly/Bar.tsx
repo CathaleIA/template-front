@@ -176,7 +176,7 @@ const PressureGroupedBarChart = () => {
             try {
                 const Plotly = require('plotly.js-dist-min');
                 Plotly.Plots.resize(containerRef.current!);
-                console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
+                //console.log('Redimensionando - Estado sidebar:', state, 'Open:', open);
             } catch (error) {
                 console.error('Error al redimensionar:', error);
             }

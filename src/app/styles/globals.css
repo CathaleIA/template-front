@@ -55,11 +55,10 @@
   --color-third-text: var(--third-text);
   --color-third-grid: var(--third-grid);
   --color-third-range-selector: var(--third-range-selector);
-  --color-green-dark: var(--green-dark) ;
-  --color-green-medium: var(--green-medium);
-  --color-green-tenue: var(--green-tenue);
-  --color-green-live: var(--green-live);
-  --color-green-gray: var(--green-gray);
+  --color-bg-inset: var(--bg-inset);
+  --color-bg-white: var(--bg-white);
+  --color-badge-error: var(--badge-error);
+  --color-badge-success: var(--badge-success);
 }
 
 :root {
@@ -105,7 +104,7 @@
   --plotly-6: #bae6fd;
   --plotly-range : #f5f5f5;
 
-  --third-paper: #fafafa;
+  --third-paper: #ffffff;
   --third-plot: #f5f5f5;
   --third-text: #404040;
   --third-grid: #ffffff;
@@ -117,11 +116,11 @@
   --blue-hover: #e8f4ff;
   --blue-linkactive: #096dd9;
 
-  --green-dark: #012821;
-  --green-medium: #2a5c4c;
-  --green-tenue: #72bfaf;
-  --green-live: #00ffc2;
-  --green-gray: #d9d9d9;
+  --bg-inset: #F6F7F9;
+  --bg-white: #ffffff;
+
+  --badge-success: #67C23A;
+  --badge-error: #F56C6C;
 }
 
 .dark {
@@ -170,6 +169,9 @@
   --third-bg-blue: #171717;
 
   --blue-hover: #262626;
+
+  --bg-white: #0a0a0a;
+  --bg-inset: #171717;
 }
 
 
@@ -204,7 +206,7 @@
 
 @layer utilities {
 
-    .text-links {
+  .text-links {
     color: var(--primary);
     font-style: italic;
   }
@@ -225,6 +227,22 @@
     .max-770\:hidden {
       display: none !important;
     }
+  }
+
+  .cards-plotly {
+    @apply rounded-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
+  }
+
+  .card-plotly2 {
+    @apply rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
+  }
+
+  .card-plotly3 {
+    @apply  rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
+  }
+
+  .card-generic {
+    @apply shadow-none bg-bg-white rounded-lg border-none
   }
 }
 
@@ -332,8 +350,3 @@
     border : none !important;
      */
 }
-/* .modebar-container .modebar-group {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    border: none !important;
-} */

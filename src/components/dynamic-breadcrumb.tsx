@@ -11,8 +11,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Home } from "lucide-react"
+import { Fragment } from "react"
 
-// Configuración para nombres más amigables
 const routeNames: Record<string, string> = {
   users: "Usuarios",
   settings: "Configuración",
@@ -44,58 +44,63 @@ export function DynamicBreadcrumb() {
     const segments = pathname.split("/").filter((segment) => segment !== "")
     const breadcrumbs: BreadcrumbItem[] = []
 
-
-    // Generar breadcrumbs para cada segmento
     segments.forEach((segment, index) => {
       const href = "/" + segments.slice(0, index + 1).join("/")
       const isCurrentPage = index === segments.length - 1
+      const label = routeNames[segment] ||
+        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
 
-      // Usar nombre amigable si existe, sino capitalizar el segmento
-      const label = routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
-
-      breadcrumbs.push({
-        label,
-        href,
-        isCurrentPage,
-      })
+      breadcrumbs.push({ label, href, isCurrentPage })
     })
 
     return breadcrumbs
   }
 
   const breadcrumbs = generateBreadcrumbs()
-  console.log(breadcrumbs)
 
-  // No mostrar breadcrumb si solo hay "Inicio"
-  if (breadcrumbs.length <= 1) {
+  const nopages: Array<string> = ["Cty", "ge51", "gen52"];
+
+  if (breadcrumbs.length === 0) {
     return null
   }
 
   return (
     <Breadcrumb className="hidden sm:block">
-      <BreadcrumbList>
-        {breadcrumbs.map((breadcrumb, index) => (
-
-          <div key={breadcrumb.href} className="flex items-center font-bold">
-            <UIBreadcrumbItem>
-              {breadcrumb.isCurrentPage ? (
-                <BreadcrumbPage className="font-bold">{breadcrumb.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link
-                    href={breadcrumb.href}
-                    className="text-blue-link underline flex items-center"
-                    style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
-                  >
+      <BreadcrumbList className="flex items-center gap-1.5 sm:gap-2.5">
+        {breadcrumbs.map((breadcrumb, index) => {
+          const isExcluded = nopages.includes(breadcrumb.label);
+          const isCurrentPage = breadcrumb.isCurrentPage;
+          const showAsLink = !isExcluded && !isCurrentPage
+          return (
+            <Fragment key={breadcrumb.href}>
+              <UIBreadcrumbItem>
+                {showAsLink ? (
+                  <BreadcrumbLink asChild>
+                    <Link
+                      href={breadcrumb.href}
+                      className="text-blue-link flex items-center font-semibold hover:underline"
+                      style={{ textDecorationThickness: '1px', textUnderlineOffset: '4px' }}
+                    >
+                      {index === 0 && <Home className="h-4 w-4 mr-1" />}
+                      {breadcrumb.label}
+                    </Link>
+                  </BreadcrumbLink>
+                ) : (
+                  <span className="text-muted-foreground flex items-center font-medium">
                     {index === 0 && <Home className="h-4 w-4 mr-1" />}
                     {breadcrumb.label}
-                  </Link>
-                </BreadcrumbLink>
+                  </span>
+                )}
+              </UIBreadcrumbItem>
+
+              {index < breadcrumbs.length - 1 && (
+                <BreadcrumbSeparator className="flex h-6 items-center">
+                  <span className="text-muted-foreground text-sm">/</span>
+                </BreadcrumbSeparator>
               )}
-            </UIBreadcrumbItem>
-            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-          </div>
-        ))}
+            </Fragment>
+          )
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   )

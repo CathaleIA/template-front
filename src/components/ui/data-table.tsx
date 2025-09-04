@@ -2,14 +2,6 @@
 
 import * as React from "react"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import {
     ColumnDef,
     ColumnFiltersState,
     SortingState,
@@ -26,43 +18,40 @@ import {
     Table,
     TableBody,
     TableCell,
+    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
 
-
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { DataTablePagination } from "@/components/ui/data-table-pagination"
 import { DataTableViewOptions } from "@/components/ui/data-table-view"
+import { Card } from "@/components/ui/card"
+import { Search } from "lucide-react"
 
-
-// Configuración para cada filtro
 interface FilterConfig {
     column: string
     placeholder: string
     type?: 'text' | 'select'
 }
 
-
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    filters?: FilterConfig[] // Opcional, puede no tener filtros
+    filters?: FilterConfig[]
+    actions?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     filters = [],
+    actions,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    // Inicializar con el primer filtro disponible:
-    const [activeFilter, setActiveFilter] = React.useState<string>(
-        filters.length > 0 ? filters[0].column : ""
-    )
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
     const table = useReactTable({
@@ -82,69 +71,70 @@ export function DataTable<TData, TValue>({
             columnVisibility,
             rowSelection,
         },
+        initialState: {
+            pagination: {
+                pageSize: 6,
+            }
+        }
     })
 
-    const handleFilterChange = (newFilter: string) => {
-        // Limpiar el filtro anterior
-        if (activeFilter) {
-            table.getColumn(activeFilter)?.setFilterValue("")
-        }
-        // Cambiar al nuevo filtro
-        setActiveFilter(newFilter)
-    }
+    const [filtersValue, setFiltersValue] = React.useState<Record<string, string>>({});
 
     return (
-        <div>
+        <div className="flex flex-col gap-4 bg-bg-inset">
             {filters.length > 0 && (
-                <div className="flex items-center justify-between gap-4 p-2">
+                <Card className="flex items-center justify-between card-generic p-5">
                     {/* Filtros agrupados a la izquierda */}
                     <div className="flex items-center gap-4">
-                        <div className="flex flex-col gap-1 w-auto">
-                            <Label htmlFor="filter-select" className="text-sm font-medium">
-                                Filtrar por:
-                            </Label>
-                            <Select
-                                value={activeFilter}
-                                onValueChange={handleFilterChange}
+                        <div className="flex flex-row gap-1 w-auto">
+                            {
+                                filters.map((filter) => (
+                                    <Input
+                                        key={filter.column}
+                                        placeholder={filter.placeholder}
+                                        value={filtersValue[filter.column] ?? ""}
+                                        onChange={(e) =>
+                                            setFiltersValue((prev) => ({
+                                                ...prev,
+                                                [filter.column]: e.target.value,
+                                            }))
+                                        }
+                                    >
+                                    </Input>
+                                ))
+                            }
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <Button
+                                variant="custom"
+                                size="custom"
+                                onClick={(event) => {
+                                    filters.forEach((filter) => {
+                                        const column = table.getColumn(filter.column)
+                                        if (column) {
+                                            column.setFilterValue(filtersValue[filter.column] ?? "")
+                                        }
+                                    })
+                                }}
                             >
-                                <SelectTrigger id="filter-select" className="w-44 md:w-48">
-                                    <SelectValue placeholder="Select filter..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {filters.map((filter) => (
-                                        <SelectItem key={filter.column} value={filter.column}>
-                                            {filter.column}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <Search />
+                                Buscar
+                            </Button>
                         </div>
 
-                        {activeFilter && (
-                            <div className="flex flex-col gap-1 w-auto">
-                                <Label htmlFor="filter-input" className="text-sm font-medium">
-                                    Buscar:
-                                </Label>
-                                <Input
-                                    id="filter-input"
-                                    placeholder={filters.find(f => f.column === activeFilter)?.placeholder || ""}
-                                    value={(table.getColumn(activeFilter)?.getFilterValue() as string) ?? ""}
-                                    onChange={(event) =>
-                                        table.getColumn(activeFilter)?.setFilterValue(event.target.value)
-                                    }
-                                    className="w-full max-w-sm"
-                                />
-                            </div>
-                        )}
                     </div>
                     <div className="flex gap-2">
-                    <DataTableViewOptions table={table} />
+                        <DataTableViewOptions table={table} />
                     </div>
-
-                </div>
+                </Card>
             )}
 
-            <div className="rounded-md border">
+            <Card className="flex flex-col card-generic p-5">
+                {actions && (
+                    <div className="flex justify-start items-center py-2">
+                        <div className="flex items-center space-x-2">{actions}</div>
+                    </div>
+                )}
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -187,10 +177,8 @@ export function DataTable<TData, TValue>({
                         )}
                     </TableBody>
                 </Table>
-            </div>
-
-            <DataTablePagination table={table} />
-
+                <DataTablePagination table={table} />
+            </Card>
         </div>
     )
 }

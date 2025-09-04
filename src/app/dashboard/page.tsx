@@ -8,7 +8,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/dashboard/admin') 
+      router.push('/dashboard/tendencydata/cty/gen51') 
     }, 50)
     return () => clearTimeout(timer)
   }, [router])

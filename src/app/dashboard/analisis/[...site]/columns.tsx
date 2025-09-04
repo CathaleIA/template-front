@@ -64,10 +64,10 @@ export const columns: ColumnDef<AnomalyDetection>[] = [
                     className = "bg-gray-500 text-white";
                     break;
                 case "medium":
-                    className = "bg-blue-500 text-white";
+                    className = "bg-blue-primary text-white";
                     break;
                 case "high":
-                    className = "bg-red-500 text-white";
+                    className = "bg-badge-error text-white";
                     break;
                 default:
                     className = "bg-gray-500 text-white";

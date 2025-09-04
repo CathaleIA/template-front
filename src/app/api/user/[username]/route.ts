@@ -18,11 +18,9 @@ export async function GET(
 
   try {
     const response = await fetch(`${API_BASE_URL}/user/${username}`, {
-      method: 'GET',
       headers: {
         Authorization: `Bearer ${TOKEN_ID}`,
       },
-      cache: "force-cache",
     });
 
     if (!response.ok) {

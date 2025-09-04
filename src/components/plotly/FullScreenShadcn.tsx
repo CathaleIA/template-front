@@ -56,7 +56,7 @@ export default function FullScreemShadcn({
     const createPlot = async (container: HTMLDivElement, isFullscreen = false) => {
         if (!container || !traces.length) return;
 
-        console.log('✅ Creando gráfico en fullscreen:', container);
+        //console.log('Creando gráfico en fullscreen:', container);
 
         const Plotly = await import('plotly.js-dist-min');
         const style = getComputedStyle(document.documentElement);
@@ -195,14 +195,14 @@ export default function FullScreemShadcn({
 
         const container = fullscreenContainerRef.current;
         if (container) {
-            console.log('🟢 Contenedor encontrado, creando gráfico fullscreen');
+            //console.log('🟢 Contenedor encontrado, creando gráfico fullscreen');
             createPlot(container, true);
         } else {
-            console.log('🟡 Contenedor aún no montado, esperando...');
+            //console.log('🟡 Contenedor aún no montado, esperando...');
             const interval = setInterval(() => {
                 const container = fullscreenContainerRef.current;
                 if (container) {
-                    console.log('🟢 Contenedor montado, creando gráfico');
+                    //console.log('🟢 Contenedor montado, creando gráfico');
                     clearInterval(interval);
                     createPlot(container, true);
                 }
