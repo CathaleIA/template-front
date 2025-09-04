@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import {CreateUserData} from "@/types"
+import { CreateUserData } from "@/types"
 
 interface CreateUserDialogProps {
   onUserCreated?: (user: CreateUserData) => void
@@ -40,9 +40,10 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     if (!formData.userName || !formData.userEmail || !formData.userRole) {
       toast(
         "Error",
-        {description: "Please fill in all fields",
+        {
+          description: "Please fill in all fields",
 
-      })
+        })
       return
     }
 
@@ -51,9 +52,10 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     if (!emailRegex.test(formData.userEmail)) {
       toast(
         "Error",
-        {description: "Please enter a valid email address",
+        {
+          description: "Please enter a valid email address",
 
-      })
+        })
       return
     }
 
@@ -75,8 +77,9 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       if (response.ok) {
         toast(
           "Success",
-          {description: "User created successfully",
-        })
+          {
+            description: "User created successfully",
+          })
 
         // Callback para notificar al componente padre
         onUserCreated?.(formData)
@@ -91,8 +94,9 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       console.error("Error creating user:", error)
       toast(
         "Error",
-        {description: "Failed to create user. Please try again.",
-      })
+        {
+          description: "Failed to create user. Please try again.",
+        })
     } finally {
       setLoading(false)
     }
@@ -119,8 +123,8 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       <DialogTrigger asChild>
         {/* <Button className="ml-auto hidden h-8 lg:flex"> */}
         <Button variant="custom" size="custom" className="gap-1">
-          <Plus className="h-1 w-1" />
-          Create User
+          <Plus/>
+          Crear Usuario
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -218,13 +222,13 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
           </div>
 
           <DialogFooter className="gap-2 pt-4">
-            <Button 
-              type="button" 
-              variant="customdestructive" 
+            <Button
+              type="button"
+              variant="customdestructive"
               size="custom"
-              onClick={handleCancel} 
+              onClick={handleCancel}
               disabled={loading}>
-                Cancel
+              Cancel
             </Button>
             <Button variant="custom" size="custom" className="gap-1" disabled={loading}>
               {loading ? (

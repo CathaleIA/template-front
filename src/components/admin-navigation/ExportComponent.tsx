@@ -101,8 +101,7 @@ const ExportComponent: React.FC<ExportProps> = ({ thresholds, emailSettings, sys
                 </Card>
             </div>
 
-
-            <Alert>
+            <Alert className="border-none bg-white">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Precaución con los datos sensibles</AlertTitle>
                 <AlertDescription>

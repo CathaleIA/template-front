@@ -30,7 +30,6 @@ export function UserProvider({ children }: UserProviderProps) {
       setLoading(true);
       setError(null);
       const userInfo = await AuthService.getCurrentUser();
-      console.log("User info:", userInfo);
       setUser(userInfo);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error loading user');

@@ -191,7 +191,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                             />
                             <Button
                                 type="button"
-                                variant="customdestructive"
+                                variant="custom"
                                 size="custom"
                                 onClick={() => document.getElementById("archivo")?.click()}
                                 disabled={isUploading}
@@ -228,7 +228,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                         </div>
                     </div>
 
-                    <Alert>
+                    <Alert className="border-none rounded-xs">
                         <FileText className="h-4 w-4" />
                         <AlertTitle>Formatos Soportados</AlertTitle>
                         <AlertDescription>
@@ -282,7 +282,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                     </div>
 
                     {Object.keys(currentValues).length > 0 && (
-                        <div className="mt-4 p-3 bg-muted rounded">
+                        <Alert className="mt-4 p-3 border-none rounded-xs">
                             <h4 className="font-medium text-foreground mb-2">Valores Actuales</h4>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 {Object.entries(currentValues).slice(0, 6).map(([key, value]) => (
@@ -292,7 +292,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </Alert>
                     )}
                 </CardContent>
             </Card>

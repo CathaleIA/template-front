@@ -12,6 +12,7 @@ import {
   PieChart,
   Settings2,
   ClipboardMinus,
+  Rotate3d,
 } from "lucide-react"
 
 import {
@@ -80,15 +81,15 @@ const data = {
       sites: [
         {
           title: "Campo CTY",
-          url: "/dashboard/tendencydata/cty/gen01",
+          url: "/dashboard/tendencydata/cty/gen51",
           sistemas: [
             {
-              title: "GEN 01",
+              title: "GEN 51",
               url: "#",
               items: [
                 {
                   title: "Analisis Inteligente",
-                  url: "/dashboard/analisis",
+                  url: "/dashboard/analisis/cty/gen51",
                 },
                 {
                   title: "Tendencia de datos",
@@ -96,21 +97,21 @@ const data = {
                 },
                 {
                   title: "Administracion",
-                  url: "/dashboard/admin",
+                  url: "/dashboard/admin/cty/gen51",
                 },
-                {
-                  title: "Activos Actuales",
-                  url: "/dashboard/activo",
-                },
+                // {
+                //   title: "Activos Actuales",
+                //   url: "/dashboard/activo",
+                // },
               ]
             },
             {
-              title: "GEN 02",
+              title: "GEN 52",
               url: "#",
               items: [
                 {
                   title: "Analisis Inteligente",
-                  url: "/dashboard/analisis",
+                  url: "/dashboard/analisis/cty/gen52",
                 },
                 {
                   title: "Tendencia de datos",
@@ -118,12 +119,12 @@ const data = {
                 },
                 {
                   title: "Administracion",
-                  url: "/dashboard/admin",
+                  url: "/dashboard/admin/cty/gen52",
                 },
-                {
-                  title: "Activos Actuales",
-                  url: "/dashboard/activo",
-                },
+                // {
+                //   title: "Activos Actuales",
+                //   url: "/dashboard/activo",
+                // },
               ]
             },
           ],
@@ -148,15 +149,20 @@ const data = {
                   title: "Administracion",
                   url: "#",
                 },
-                {
-                  title: "Activos Actuales",
-                  url: "#",
-                },
+                // {
+                //   title: "Activos Actuales",
+                //   url: "#",
+                // },
               ]
             },
           ],
         },
       ],
+    },
+    {
+      title: "Activos Generales",
+      url: "/dashboard/activo",
+      icon: Rotate3d,
     },
     {
       title: "Desarrollo",
@@ -166,10 +172,6 @@ const data = {
         {
           title: "Cliente Apollo",
           url: "/dashboard/test",
-        },
-        {
-          title: "Tabs submenu",
-          url: "/dashboard/tabtest",
         },
       ],
     },

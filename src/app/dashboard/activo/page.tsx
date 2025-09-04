@@ -8,7 +8,9 @@ import { columns } from './columns'
 import { DataTable } from '@/components/ui/data-table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-
+import { BorderTrail } from '@/components/motion-primitives/border-trail';
+import { AnimatePresence } from "motion/react"
+import * as motion from "motion/react-client"
 
 export default function ActivosPage() {
     const [loading, setLoading] = useState(false)
@@ -75,7 +77,6 @@ export default function ActivosPage() {
                 }
 
                 const rawData = await response.json()
-                console.log("rwar data", rawData)
                 const mappedUsers: UsersInfo[] = rawData.map((data: any) => ({
                     userName: data.user_name,
                     userRole: data.user_role,
@@ -98,16 +99,22 @@ export default function ActivosPage() {
     }, [])
     return (
 
-        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 gap-4 p-6'>
+        <div className='flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 gap-4 p-5'>
             <div className="col-span-1 row-span-1">
-                <div className='bg-background h-full flex flex-col rounded-2xl border'>
+                <div className='bg-bg-white h-full flex flex-col card-plotly2'>
                     <Select
                         defaultValue="motor"
                         onValueChange={(value) => setselectTendency(value as 'motor' | 'turbine')}
                     >
                         <SelectTrigger
-                            className="bg-background text-primary border-b-6 border-r-6 border-card rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0"
+                            className="relative bg-input/50 text-primary rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 font-bold text-xs text-muted-foreground"
                         >
+                            <BorderTrail
+                                style={{
+                                    boxShadow: '0px 0px 60px 30px rgb(130 130 130 / 90%), 0 0 60px 20px rgb(255 255 255 / 80%), 0 0 140px 90px rgb(130 130 130 / 50%)',
+                                }}
+                                size={10}
+                            />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="w-auto">
@@ -127,7 +134,6 @@ export default function ActivosPage() {
 
             <div className='col-span-1 row-span-1'>
                 <div className='grid grid-rows-[auto_1fr] h-full bg-background rounded-tr-2xl rounded-tl-2xl border overflow-hidden'>
-                    {/* Tabs para alternar entre especificaciones e indicadores */}
                     <div className="flex">
                         <button
                             onClick={() => setActiveTab?.('specs')}
@@ -148,10 +154,8 @@ export default function ActivosPage() {
                             Indicadores
                         </button>
                     </div>
-
-                    {/* Contenido con transición */}
                     <div className="relative overflow-hidden">
-                        {/* Panel de Especificaciones */}
+               
                         <div className={`absolute inset-0 transition-transform duration-300 ease-in-out p-4 ${activeTab === 'specs' ? 'translate-x-0' : '-translate-x-full'
                             }`}>
                             <div className="space-y-3 h-full overflow-y-auto">
@@ -177,7 +181,7 @@ export default function ActivosPage() {
                             </div>
                         </div>
 
-                        {/* Panel de Indicadores */}
+                  
                         <div className={`absolute inset-0 transition-transform duration-300 ease-in-out p-4 ${activeTab === 'indicators' ? 'translate-x-0' : 'translate-x-full'
                             }`}>
                             <div className="h-full overflow-y-auto">

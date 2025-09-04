@@ -28,7 +28,6 @@ export async function setTenantConfig(tenantName: string): Promise<{
   }
 
   const data = await res.json()
-  console.log("Datos del tenant obtenidos:", data)
 
   // 2. Enviar los datos al endpoint local para guardarlos como cookies seguras
   const response = await fetch("/api/auth/tenantset", {

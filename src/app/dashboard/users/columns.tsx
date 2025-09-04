@@ -64,7 +64,7 @@ export const columns: ColumnDef<UsersInfo>[] = [
                 <Link
                     href={`/dashboard/users/${username}`}
                     className="text-blue-link underline font-medium cursor-pointer hover:text-blue-linkactive transition-colors"
-                    style={{ textDecorationThickness: '2px', textUnderlineOffset: '4px' }}
+                    style={{ textDecorationThickness: '1px', textUnderlineOffset: '3px' }}
                 >
                     {username}
                 </Link>
@@ -86,10 +86,10 @@ export const columns: ColumnDef<UsersInfo>[] = [
 
             switch (status) {
                 case "FORCE_CHANGE_PASSWORD":
-                    className = "bg-blue-500 text-white";
+                    className = "bg-blue-primary text-white";
                     break;
                 case "CONFIRMED":
-                    className = "bg-green-500 text-white";
+                    className = "bg-badge-success text-white";
                     break;
                 case "PENDING_CONFIRMATION":
                     className = "bg-gray-500 text-white";
@@ -140,7 +140,7 @@ export const columns: ColumnDef<UsersInfo>[] = [
                         >
                             Copy user name
                         </DropdownMenuItem>
-                        <Link href={`/dashboard/users/${userSelect.userName}`} passHref legacyBehavior>
+                        <Link href={`/dashboard/users/${userSelect.userName}`} passHref>
                             <DropdownMenuItem>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View details

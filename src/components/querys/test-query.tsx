@@ -35,7 +35,6 @@ const SUBSCRIBE_UPDATE = gql`
   }
 `;
 
-// Y define la query correctamente con variables
 const GET_TODAY_DATA = gql`
   query getHistoricalData($start: AWSDateTime!, $end: AWSDateTime!) {
     getHistoricalData(start: $start, end: $end) {
@@ -108,7 +107,7 @@ export const TodayDataComponent = () => {
 
   return (
     <div>
-      <h3>Datos de Snowflake (hoy)</h3>
+      <h3 className='bg-blue-hover'>Ultimos 1000 registros de un campo de la CIRA (Consulta directa entre AWS y Snowflake)</h3>
       <pre>{JSON.stringify(data?.getHistoricalData, null, 2)}</pre>
     </div>
   );

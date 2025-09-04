@@ -57,6 +57,8 @@
   --color-third-range-selector: var(--third-range-selector);
   --color-bg-inset: var(--bg-inset);
   --color-bg-white: var(--bg-white);
+  --color-badge-error: var(--badge-error);
+  --color-badge-success: var(--badge-success);
 }
 
 :root {
@@ -116,6 +118,9 @@
 
   --bg-inset: #F6F7F9;
   --bg-white: #ffffff;
+
+  --badge-success: #67C23A;
+  --badge-error: #F56C6C;
 }
 
 .dark {

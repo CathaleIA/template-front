@@ -81,7 +81,7 @@ const SystemComponent: React.FC<SystemProps> = ({ systemSettings, setSystemSetti
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        <Alert>
+                        <Alert className="border-none rounded-xs">
                             <AlertTriangle className="h-4 w-4" />
                             <AlertTitle>Funcionalidad en desarrollo</AlertTitle>
                             <AlertDescription>
@@ -89,7 +89,7 @@ const SystemComponent: React.FC<SystemProps> = ({ systemSettings, setSystemSetti
                             </AlertDescription>
                         </Alert>
 
-                        <div className="p-4 border rounded">
+                        <Alert className="p-4 rounded-xs border-none">
                             <h4 className="font-medium mb-3 text-foreground">Usuario actual</h4>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center py-2">
@@ -100,7 +100,7 @@ const SystemComponent: React.FC<SystemProps> = ({ systemSettings, setSystemSetti
                                     <Badge variant="outline">Activo</Badge>
                                 </div>
                             </div>
-                        </div>
+                        </Alert>
 
                     </div>
                 </CardContent>

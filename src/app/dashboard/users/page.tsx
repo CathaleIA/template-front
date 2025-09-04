@@ -11,7 +11,7 @@ import { useNotifications } from "@/context/notification-context"
 import { CreateUserDialog } from '@/components/create-user-dialog'
 import { CreateUserData } from "@/types"
 import { AppPageLoading } from "@/components/skeleton/app-page-loading"
-import { Card } from "@/components/ui/card"
+
 
 export default function DemoPage() {
     const { addNotification } = useNotifications()
@@ -33,7 +33,6 @@ export default function DemoPage() {
                 }
 
                 const rawData = await response.json()
-                console.log("rwar data", rawData)
                 const mappedUsers: UsersInfo[] = rawData.map((data: any) => ({
                     userName: data.user_name,
                     userRole: data.user_role,
@@ -70,16 +69,13 @@ export default function DemoPage() {
     }
 
     return (
-        <div className="flex flex-col gap-2 p-5 bg-bg-inset h-[calc(100svh-var(--header-height))]!">
+        <div className="flex flex-col gap-4 p-5 bg-bg-inset h-[calc(100svh-var(--header-height))]!">
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra los usuarios de tu aplicación desde este panel de control."
-                actions={
-                    <CreateUserDialog onUserCreated={handleUserCreated} />
-                }
             />
             <div className="flex-1">
-                <DataTable columns={columns} data={data} filters={filters} />
+                <DataTable columns={columns} data={data} filters={filters} actions={<CreateUserDialog onUserCreated={handleUserCreated} />}/>
             </div>
         </div>
     )

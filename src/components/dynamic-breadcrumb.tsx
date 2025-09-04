@@ -58,7 +58,7 @@ export function DynamicBreadcrumb() {
 
   const breadcrumbs = generateBreadcrumbs()
 
-  const nopages: Array<string> = ["Tendencydata", "Cty"];
+  const nopages: Array<string> = ["Cty", "ge51", "gen52"];
 
   if (breadcrumbs.length === 0) {
     return null

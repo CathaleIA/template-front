@@ -18,6 +18,7 @@ import {
     Table,
     TableBody,
     TableCell,
+    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -39,13 +40,15 @@ interface FilterConfig {
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    filters?: FilterConfig[] // Opcional, puede no tener filtros
+    filters?: FilterConfig[]
+    actions?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     filters = [],
+    actions,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -78,7 +81,7 @@ export function DataTable<TData, TValue>({
     const [filtersValue, setFiltersValue] = React.useState<Record<string, string>>({});
 
     return (
-        <div className="flex flex-col gap-2 bg-bg-inset">
+        <div className="flex flex-col gap-4 bg-bg-inset">
             {filters.length > 0 && (
                 <Card className="flex items-center justify-between card-generic p-5">
                     {/* Filtros agrupados a la izquierda */}
@@ -101,7 +104,7 @@ export function DataTable<TData, TValue>({
                                 ))
                             }
                         </div>
-                        <div className="flex flex-col gap-1 w-auto">
+                        <div className="flex flex-col gap-1">
                             <Button
                                 variant="custom"
                                 size="custom"
@@ -126,7 +129,12 @@ export function DataTable<TData, TValue>({
                 </Card>
             )}
 
-            <Card className="card-generic p-5">
+            <Card className="flex flex-col card-generic p-5">
+                {actions && (
+                    <div className="flex justify-start items-center py-2">
+                        <div className="flex items-center space-x-2">{actions}</div>
+                    </div>
+                )}
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (

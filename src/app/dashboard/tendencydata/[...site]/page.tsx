@@ -13,8 +13,6 @@ import GeneratorComponent from "@/components/tendency-navigation/GeneratorCompon
 import MotorGridComponent from "@/components/tendency-navigation/MotorComponent"
 import HealhtlyComponent from "@/components/tendency-navigation/TermodinamicComponente"
 
-
-import ActivosPage from "@/app/dashboard/activo/page"
 import { useState } from "react"
 
 
@@ -33,7 +31,6 @@ export default function TendencySite({
                         <TabsTrigger value="generator">Generator</TabsTrigger>
                         <TabsTrigger value="motor">Motor</TabsTrigger>
                         <TabsTrigger value="termo">Termodinamic</TabsTrigger>
-                        <TabsTrigger value="active">Activo</TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -45,9 +42,6 @@ export default function TendencySite({
                 </TabsContent>
                 <TabsContent value="termo" className="p-5">
                     <HealhtlyComponent />
-                </TabsContent>
-                <TabsContent value="active" className="p-5">
-                    <ActivosPage />
                 </TabsContent>
             </Tabs>
         </div>

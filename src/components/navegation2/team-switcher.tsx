@@ -54,8 +54,7 @@ export function TeamSwitcher({
                 <AvatarImage src="/logos/cathaleia.png" alt="empresa" />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight text-white">
                 <span className="truncate font-medium">CATHALEIA</span>
                 <span className="truncate text-xs">Platform</span>
               </div>
@@ -63,7 +62,7 @@ export function TeamSwitcher({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-xs bg-bg-inset ml-2"
             align="start"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
