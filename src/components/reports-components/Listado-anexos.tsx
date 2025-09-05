@@ -1,14 +1,31 @@
 import type { ItemPremitive, ItemQuery } from "@/types"
-import { useState }  from "react"
-import CardItem from "./Cards-params"
+import { useState } from "react"
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableFooter,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+
+// Componente eventos de la llamada del archivo con HTML entocnes sera la del archiv o HTML
+// por otro lado tambien el LLamado de JSON y la GRAFICA
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+
 
 interface CardProps {
     tenant_name: string;
     job_id: string;
     estado: string;
+    onSelectAnexo?:(item: ItemPremitive) => void;
 }
 
-export default function ListadoAnexos({ tenant_name, job_id, estado }: CardProps) {
+export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAnexo }: CardProps) {
     const [items, setItems] = useState<ItemPremitive[]>([])
     const [isLoading, setIsLoading] = useState(false)
     // el operador de propagación no ssirva para expandir un iterable o objeto
@@ -57,18 +74,37 @@ export default function ListadoAnexos({ tenant_name, job_id, estado }: CardProps
             {!job_id && (
                 <p className="text-gray-500 text-sm">Selecciona un Job ID del paso anterior para cargar los anexos</p>
             )}
-           <div className="h-[400px] overflow-y-auto space-y-2">
-        {items.map((item, index) => (
-          <CardItem
-            key={`${item.job_id}-${index}`}
-            nameFile={item.s3_html_path?.split("/").pop() || "Desconocido"}
-            date={item.fecha_creacion}
-            estado={item.estado}
-            pool_user_id={item.pool_user_id}
-            lote={item.job_id}
-          />
-        ))}
-      </div>
+            <div className="h-[400px] overflow-y-auto space-y-2">
+                        <Table>
+                            <TableCaption>Listado anexos para gestionar.</TableCaption>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[120px]">Nombre Archivo</TableHead>
+                                    <TableHead>Fecha modificación</TableHead>
+                                    <TableHead>Estado</TableHead>
+                                    <TableHead>Activo - Dispositivo</TableHead>
+                                </TableRow>
+                            </TableHeader >
+                            <TableBody>
+                                {items.map((lote) => (
+                                    <TableRow key={lote.job_id}>
+                                        <TableCell>{lote.s3_json_path.split("/").pop() || "Desconocido"}</TableCell>
+                                        <TableCell>{lote.fecha_creacion}</TableCell>
+                                        <TableCell><Badge>{lote.estado}</Badge></TableCell>
+                                        <TableCell>{lote.pool_user_id}</TableCell>
+                                        <TableCell><Button onClick={() => onSelectAnexo?.(lote)}>Gestionar</Button></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell colSpan={4}>Total de lotes</TableCell>
+                                    <TableCell className="text-right">{items.length}</TableCell>
+                                </TableRow>
+                            </TableFooter>
+                        </Table>
+                    
+            </div>
         </div>
     )
 
