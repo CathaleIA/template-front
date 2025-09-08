@@ -204,7 +204,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                                     </>
                                 ) : (
                                     <>
-                                        <Upload/>
+                                        <Upload />
                                         {dataInfo ? dataInfo.fileName : "Seleccionar archivo"}
                                     </>
                                 )}
@@ -221,7 +221,7 @@ const DataComponent: React.FC<SensorListProps> = ({ sensorData, setSensorData, m
                                         size="customicon"
                                         onClick={() => setDataInfo(null)}
                                     >
-                                        <X/>
+                                        <X />
                                     </Button>
                                 </div>
                             )}

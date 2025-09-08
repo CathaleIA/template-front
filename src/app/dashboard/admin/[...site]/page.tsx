@@ -26,6 +26,7 @@ import SystemComponent from "@/components/admin-navigation/SystemComponent";
 import ExportComponent from "@/components/admin-navigation/ExportComponent";
 
 import { toast } from "sonner";
+import AnalisysSkeleton from "@/components/skeleton/analysis-skeleton";
 
 // Configuración de métricas con metadatos
 const metricsConfig: MetricsConfig = {
@@ -159,7 +160,7 @@ export default function AdminSite({
     params: Promise<{ site: string[] }>
 }) {
     const [sensorData, setSensorData] = useState<SensorData[]>([]);
-
+    const [isLoading, setIsLoading] = useState(true);
     const [currentValues, setCurrentValues] = useState<SensorData>({});
     const [thresholds, setThresholds] = useState<Thresholds>(defaultThresholds);
 
@@ -197,6 +198,7 @@ export default function AdminSite({
             tiempoInyeccionMs: 6,
             tiempoEncendidoAvance: 25
         });
+        setIsLoading(false);
     }, []);
 
     const handleSaveConfiguration = () => {
@@ -216,9 +218,16 @@ export default function AdminSite({
         toast.info("Info", { description: "Configuración restablecida a valores predeterminados" })
         setIsRefresquin(false)
     };
+
+    if (isLoading) {
+        return (
+            <AnalisysSkeleton/>
+        );
+    }
+
     return (
-        <div className="container mx-auto">
-            <div className="flex flex-col space-y-4">
+        <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col w-full">
                 <Tabs defaultValue="data" className="bg-bg-inset">
                     <div className="pt-2 bg-bg-white">
                         <TabsList className="bg-bg-white">

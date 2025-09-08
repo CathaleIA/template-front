@@ -97,7 +97,6 @@ export default function AnalisisSite() {
         fetchData()
     }, [])
 
-
     const simulateNeuralAnalysis = (motorData: MotorData[]) => {
         setNeuralProcessing(true);
 
