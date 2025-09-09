@@ -1,71 +1,50 @@
-"use client"
 
-import { columns } from "../users/columns"
+import { columns } from "./columns"
+import { cookies } from "next/headers"
 import { UsersInfo } from "@/types"
-import { DataTable } from "@/components/ui/data-table"
-import React, { useEffect, useState } from "react"
+import { UsersActionsWrapper } from "@/components/wrappers/UsersActionsWrapper"
 import { PageHeader } from "@/components/page-header"
 
-import { useNotifications } from "@/context/notification-context"
-
-import { CreateUserDialog } from '@/components/create-user-dialog'
-import { CreateUserData } from "@/types"
-import { AppPageLoading } from "@/components/skeleton/app-page-loading"
-
-
-export default function DemoPage() {
-    const { addNotification } = useNotifications()
-
-    const [data, setData] = useState<UsersInfo[]>([])
-    const [loading, setLoading] = useState(false)
+export default async function UserPage() {
     const filters = [
         { column: "email", placeholder: "Filter by email..." },
         { column: "userName", placeholder: "Filter by user name..." }
     ]
+    const cookieStore = await cookies()
+    let mappedUsers : UsersInfo[] = []
 
-    useEffect(() => {
-        const getUsers = async () => {
-            try {
-                setLoading(true)
-                const response = await fetch("/api/users")
-                if (!response.ok) {
-                    throw new Error("Failed to fetch users")
-                }
-
-                const rawData = await response.json()
-                const mappedUsers: UsersInfo[] = rawData.map((data: any) => ({
-                    userName: data.user_name,
-                    userRole: data.user_role,
-                    email: data.email,
-                    statusState: data.status,
-                    isEnabled: data.enabled,
-                    createdDate: data.created,
-                    modifiedDate: data.modified,
-                }))
-
-                setData(mappedUsers)
-            } catch (error) {
-                console.error("Error fetching users:", error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        getUsers()
-    }, [])
-
-    // Callback para cuando se crea un nuevo usuario
-    const handleUserCreated = (user: CreateUserData) => {
-        addNotification({
-            type: "success",
-            title: "Usuario creado exitosamente",
-            message: `El nuevo usuario ${user.userName} ha sido agregado al sistema.`,
-        })
-        //window.location.reload() // O mejor aún, hacer fetch de nuevo
+    const token = cookieStore.get("cognito_id_token")?.value
+    if (!token) {
+        throw new Error("Error, token no encontrado!. Sesion no encontrada o token invalido")
     }
 
-    if (loading) {
-        return <AppPageLoading />
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_REG_API_GATEWAY_URL}/users`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            cache: 'force-cache'
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al obtener los usuarios.")
+        }
+
+        const rawData = await response.json();
+
+            mappedUsers = rawData.map((data: any) => ({
+            userName: data.user_name,
+            userRole: data.user_role,
+            email: data.email,
+            statusState: data.status,
+            isEnabled: data.enabled,
+            createdDate: data.created,
+            modifiedDate: data.modified,
+        }))
+
+    } catch (error) {
+        console.log("Error:", error)
     }
 
     return (
@@ -75,7 +54,7 @@ export default function DemoPage() {
                 description="Administra los usuarios de tu aplicación desde este panel de control."
             />
             <div className="flex-1">
-                <DataTable columns={columns} data={data} filters={filters} actions={<CreateUserDialog onUserCreated={handleUserCreated} />}/>
+                <UsersActionsWrapper columns={columns} data={mappedUsers} filters={filters} />
             </div>
         </div>
     )

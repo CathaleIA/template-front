@@ -18,7 +18,7 @@ import { Trash2, Save, X, User, Mail, ShieldUser } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { PageHeader } from "@/components/page-header"
-import { AppPageLoading } from "@/components/skeleton/app-page-loading"
+import { UserPageSkeleton } from "@/components/skeleton/user-skeleton"
 import { Separator } from "@/components/ui/separator"
 
 import { AnimatePresence } from "motion/react"
@@ -139,7 +139,7 @@ export default function UserPage() {
 
   if (loading) {
     return (
-      <AppPageLoading />
+      <UserPageSkeleton />
     )
   }
 

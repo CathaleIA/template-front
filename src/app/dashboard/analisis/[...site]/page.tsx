@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header"
 import { useNotifications } from "@/context/notification-context"
 import { columns } from "./columns"
 import { DataTable } from '@/components/ui/data-table';
-import { AppPageLoading } from '@/components/skeleton/app-page-loading';
+import { MotorAnalysisSkeleton } from '@/components/skeleton/analysis-skeleton';
 
 interface MotorData {
     id: string;
@@ -177,7 +177,7 @@ export default function AnalisisSite() {
 
     if (loading) {
         return (
-            <AppPageLoading />
+            <MotorAnalysisSkeleton />
         );
     }
     return (

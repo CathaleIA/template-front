@@ -26,7 +26,7 @@ import SystemComponent from "@/components/admin-navigation/SystemComponent";
 import ExportComponent from "@/components/admin-navigation/ExportComponent";
 
 import { toast } from "sonner";
-import AnalisysSkeleton from "@/components/skeleton/analysis-skeleton";
+import AnalisysSkeleton from "@/components/skeleton/admin-skeleton";
 
 // Configuración de métricas con metadatos
 const metricsConfig: MetricsConfig = {
