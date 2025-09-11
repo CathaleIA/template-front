@@ -11,47 +11,60 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { ResponseQueryReportsList } from "@/types"
 
-const lotes = [
-  {
-    job_id: "2d5a1571-30fd-4267-b53b-e7010882asdfb82a",
-    fecha_modificacion: "2025-08-01",
-    estado: "Pendiente",
-    activo_test: "CT",
-  },
-  {
-    job_id: "2d5a1571-30fd-4267-b53b-e70asdfa10882b82a",
-    fecha_modificacion: "2025-08-05",
-    estado: "En proceso",
-    activo_test: "Dinamicas",
-  },
-  {
-    job_id: "cc5e80d4-4ebc-4761-b815-90945038061c",
-    fecha_modificacion: "2025-08-10",
-    estado: "NORMALIZADO",
-    activo_test: "Estaticas",
-  },
-  {
-    job_id: "b43fc2c3-f4f8-4c8a-8a82-9483a5bc82ad",
-    fecha_modificacion: "2025-08-12",
-    estado: "NORMALIZADO",
-    activo_test: "CT",
-  },
-  {
-    job_id: "2d5a1571-30fd-4267-b53b-e7010882b82a",
-    fecha_modificacion: "2025-08-15",
-    estado: "Pendiente",
-    activo_test: "CT",
-  },
-]
+
+import { useEffect, useState } from "react"
 
 interface TableGestionLotesProps {
   onJobSelect?: (jobId: string) => void
   selectedJobId?: string
+  tenantName: string
+  status: string
+  userPoolId: string
 }
 
-export default function TableGestionLotes({ onJobSelect, selectedJobId }: TableGestionLotesProps) {
-    
+
+export default function TableGestionLotes({ onJobSelect, selectedJobId, tenantName, status, userPoolId }: TableGestionLotesProps) {
+  const [lotes, setLotes] = useState<ResponseQueryReportsList[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+
+  async function QueryReportsList(): Promise<void> {
+    try {
+      setIsLoading(true)
+      const response = await fetch("/api/query-report-list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tenantName,
+          userPoolId,
+          status,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Error fetching report list")
+      }
+
+      const data = await response.json()
+      setLotes(data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    QueryReportsList()
+  }, [tenantName, userPoolId, status])
+
+
+
+
   return (
     <div className="space-y-4">
       {selectedJobId && (
@@ -60,44 +73,45 @@ export default function TableGestionLotes({ onJobSelect, selectedJobId }: TableG
         </div>
       )}
 
-      <Table>
-        <TableCaption>Listado de lotes para gestionar.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[120px]">Job Id</TableHead>
-            <TableHead>Fecha modificación</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Activo test</TableHead>
-            <TableHead className="text-right">Acción</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {lotes.map((lote) => (
-
-            <TableRow key={lote.job_id}>
-              <TableCell className="font-medium">{lote.job_id}</TableCell>
-              <TableCell>{lote.fecha_modificacion}</TableCell>
-              <TableCell>{lote.estado}</TableCell>
-              <TableCell>{lote.activo_test}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant={selectedJobId === lote.job_id ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => onJobSelect?.(lote.job_id)}
-                >
-                  {selectedJobId === lote.job_id ? "Seleccionado" : "Seleccionar"}
-                </Button>
-              </TableCell>
+          <Table>
+          <TableCaption>Listado de lotes para gestionar.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[120px]">Job Id</TableHead>
+              <TableHead>Fecha modificación</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Activo test</TableHead>
+              <TableHead className="text-right">Acción</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={4}>Total de lotes</TableCell>
-            <TableCell className="text-right">{lotes.length}</TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {lotes.map((lote) => (
+
+              <TableRow key={lote.job_id}>
+                <TableCell className="font-medium">{lote.job_id}</TableCell>
+                <TableCell>{lote.fecha_creacion}</TableCell>
+                <TableCell>{lote.estado}</TableCell>
+                <TableCell>{lote.activo}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant={selectedJobId === lote.job_id ? "default" : "secondary"}
+                    size="sm"
+                    onClick={() => onJobSelect?.(lote.job_id)}
+                  >
+                    {selectedJobId === lote.job_id ? "Seleccionado" : "Seleccionar"}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={4}>Total de lotes</TableCell>
+              <TableCell className="text-right">{lotes.length}</TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+
     </div>
   )
 }

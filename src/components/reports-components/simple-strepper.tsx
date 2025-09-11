@@ -5,7 +5,9 @@ import { useState } from "react"
 import TableGestionLotes from "@/components/reports-components/lotes-gestionar-list"
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
 import ListadoAnexos from "@/components/reports-components/Listado-anexos"
-import { set } from "zod/v4-mini"
+import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
+import { ItemPremitive } from "@/types"
+import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
 
 
 export default function SimpleStepper() {
@@ -14,46 +16,25 @@ export default function SimpleStepper() {
         {
             id: 1,
             title: "Subir Archivo",
-            description: "Sube el grupo de archivos",
-            content: <ZipUploader />,
+            description: "Sube el grupo de archivos"
         },
         {
             id: 2,
             title: "Gestión Reportes",
             description: "Consulta por JOB ID",
-            content: (
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2">JOB ID</label>
-                        <input type="text" placeholder="Ingresa el JOB ID" className="w-full p-2 border rounded-lg" />
-                    </div>
-                    <button className="px-4 py-2 bg-green-600 text-white rounded">Consultar Reporte</button>
-                </div>
-            ),
         },
         {
             id: 3,
             title: "Gestiona Anexos",
-            description: "Procesa cada anexo",
-            content: (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="border rounded p-3">
-                            <h4 className="font-medium">Anexo 1</h4>
-                            <p className="text-sm text-gray-600">documento.pdf</p>
-                            <button className="mt-2 text-blue-600 text-sm">Procesar</button>
-                        </div>
-                        <div className="border rounded p-3">
-                            <h4 className="font-medium">Anexo 2</h4>
-                            <p className="text-sm text-gray-600">imagen.jpg</p>
-                            <button className="mt-2 text-blue-600 text-sm">Procesar</button>
-                        </div>
-                    </div>
-                </div>
-            ),
+            description: "Procesa cada anexo"
         },
         {
             id: 4,
+            title: "Gestionar Anexos",
+            description: "Anexos a procesar"
+        },
+        {
+            id: 5,
             title: "Generar Reporte",
             description: "Agrupa los anexos",
             content: (
@@ -67,7 +48,7 @@ export default function SimpleStepper() {
             ),
         },
         {
-            id: 5,
+            id: 6,
             title: "Listado Reportes",
             description: "Todos los reportes",
             content: (
@@ -96,10 +77,13 @@ export default function SimpleStepper() {
     const [selectedJobId, setSelectedJobId] = useState<string>("")
     const [tenantName] = useState<string>("TENANT_CATHALEIA") // Could be made dynamic later
     const [estado] = useState<string>("NORMALIZADO") // Could be made dynamic later
-
+    const [userPoolId] = useState<string>("USER_CATHALEIA") // Could be made dynamic later
+    const [estadoReportLis] = useState<string>("DESCOMPRIMIDO")
+    const [selectedAnexo, setSelectedAnexo] = useState<ItemPremitive | null>(null);
     console.log("Selected Job ID:", selectedJobId)
     console.log("Estado:", estado)
     console.log("Tenant Name:", tenantName)
+    console.log("User Pool ID:", userPoolId)
     // 3. Funciones de navegación
     const nextStep = () => {
         if (currentStep < steps.length) {
@@ -116,13 +100,18 @@ export default function SimpleStepper() {
     const goToStep = (stepNumber: number) => {
         setCurrentStep(stepNumber)
     }
+    const handleSelectAnexo = (anexo: ItemPremitive) => {
+        console.log("Anexo seleccionado:", anexo);
+        setSelectedAnexo(anexo);
+        setCurrentStep(4); // saltar al paso de conclusiones
+    };
 
     return (
         <div className="w-full min-h-[200px] mx-auto p-6">
             {/* 4. Header del stepper */}
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-2">Sistema de Gestión de Reportes</h1>
-                <p className="text-gray-600">Gestiona tus reportes a través de nuestro proceso de 5 fases</p>
+                <p className="text-gray-600">Gestiona tus reportes a través de nuestro proceso de 6 fases</p>
             </div>
 
             {/* 5. Indicadores de pasos - HORIZONTAL */}
@@ -149,10 +138,10 @@ export default function SimpleStepper() {
                             <div className="text-left">
                                 <div
                                     className={`text-xs font-bold ${currentStep === step.id
-                                            ? "text-blue-600"
-                                            : currentStep > step.id
-                                                ? "text-green-600"
-                                                : "text-gray-600"
+                                        ? "text-blue-600"
+                                        : currentStep > step.id
+                                            ? "text-green-600"
+                                            : "text-gray-600"
                                         }`}
                                 >
                                     {step.title}
@@ -171,48 +160,16 @@ export default function SimpleStepper() {
 
             {/* 6. Contenido del paso actual */}
             <div className="bg-white border rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-bold mb-2">{steps[currentStep - 1].title}</h2>
-                <p className="text-gray-600 mb-4">{steps[currentStep - 1].description}</p>
+                {/* <h2 className="text-xl font-bold mb-2">{steps[currentStep - 1].title}</h2>
+                <p className="text-gray-600 mb-4">{steps[currentStep - 1].description}</p> */}
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} />}
-                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} />}
+                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
+                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} />}
 
-                    {currentStep === 4 && (
-                        <div className="space-y-4">
-                            <div className="bg-blue-50 p-4 rounded">
-                                <h4 className="font-medium mb-2">Resumen del Reporte</h4>
-                                <p className="text-sm text-gray-600">Job ID: {selectedJobId || "No seleccionado"}</p>
-                                <p className="text-sm text-gray-600">Tenant: {tenantName}</p>
-                                <p className="text-sm text-gray-600">Fecha: {new Date().toLocaleDateString()}</p>
-                            </div>
-                            <button
-                                className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50"
-                                disabled={!selectedJobId}
-                            >
-                                Generar Reporte Final
-                            </button>
-                        </div>
-                    )}
-                    {currentStep === 5 && (
-                        <div className="space-y-3">
-                            <div className="border rounded p-3 flex justify-between items-center">
-                                <div>
-                                    <h4 className="font-medium">Reporte #001</h4>
-                                    <p className="text-sm text-gray-600">Generado: 15/01/2024</p>
-                                </div>
-                                <button className="text-blue-600 text-sm">Descargar</button>
-                            </div>
-                            <div className="border rounded p-3 flex justify-between items-center">
-                                <div>
-                                    <h4 className="font-medium">Reporte #002</h4>
-                                    <p className="text-sm text-gray-600">Generado: 14/01/2024</p>
-                                </div>
-                                <button className="text-blue-600 text-sm">Descargar</button>
-                            </div>
-                        </div>
-                    )}
+                    {currentStep === 4 && <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />}
+                    {currentStep === 5 && <ReportsGestion />}
                 </div>
             </div>
 

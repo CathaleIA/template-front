@@ -4,6 +4,7 @@ export * from "./user"
 export * from "./tokens"
 export * from "./consult-item"
 export * from "./item"
+export * from "./report-list"
 export * from "./zip-upload"
 export * from "./anomalies"
 export * from './paradas'
