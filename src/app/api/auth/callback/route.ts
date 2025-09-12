@@ -54,9 +54,10 @@ export async function GET(request: NextRequest) {
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
     //Redirección final
-    const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-      : "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback" 
+    // const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
+    //   ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+    //   : "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback" 
+    const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
     // const redirectUrl = "http://localhost:3000/dashboard"
 
     const redirectResponse = NextResponse.redirect(redirectUrl, {
