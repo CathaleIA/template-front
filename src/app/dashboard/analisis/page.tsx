@@ -183,7 +183,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Header */}
       <PageHeader
         title="Motor Analysis AI"
@@ -210,7 +210,7 @@ const Dashboard: React.FC = () => {
         }
       />
 
-      <div className="max-w-7xl p-5 bg-card">
+      <div className="p-5 bg-card">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-6">
           <div className="bg-background rounded-lg  p-6 border border-border">

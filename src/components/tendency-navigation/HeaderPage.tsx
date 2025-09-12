@@ -36,7 +36,7 @@ export default function HeaderPage({ site, tab }: HeaderProps) {
         default:
     }
     return (
-        <div className=" bg-green-gray h-(--header-h) flex flex-row items-center justify-center gap-2 outline-none border-none">
+        <div className=" dark:bg-green-tenue bg-green-gray h-(--header-h) flex flex-row items-center justify-center gap-2 outline-none border-none">
             <div
                 className="rounded-full bg-green-medium p-[4px] text-green-live"
             >
@@ -45,7 +45,7 @@ export default function HeaderPage({ site, tab }: HeaderProps) {
             <div className="font-bold text-green-dark uppercase text-md">
                 {site[0]} - {site[1]}
             </div>
-            <div className="uppercase text-primary">
+            <div className="uppercase text-primary dark:text-background">
                 {header.title}
             </div>
         </div>
