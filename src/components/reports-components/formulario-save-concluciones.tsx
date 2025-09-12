@@ -75,6 +75,8 @@ export default function ConclusionsFormSave() {
                         className="min-h-[100px] border rounded-sm"
                     />
                     <Button
+                        variant='custom'
+                        size='custom'
                         onClick={addConclusion}
                         disabled={!newConclusion.trim()}
                         className="mt-3 w-full rounded-sm bg-blue-600 text-white hover:bg-blue-700"
@@ -107,7 +109,8 @@ export default function ConclusionsFormSave() {
                                                 />
                                                 <div className="flex gap-2 mt-2">
                                                     <Button
-                                                        size="sm"
+                                                        variant='custom'
+                                                        size='custom'
                                                         onClick={saveEdit}
                                                         disabled={!editText.trim()}
                                                         className="rounded-sm bg-green-600 text-white hover:bg-green-700"
@@ -116,8 +119,8 @@ export default function ConclusionsFormSave() {
                                                         Guardar
                                                     </Button>
                                                     <Button
-                                                        size="sm"
-                                                        variant="outline"
+                                                        variant='custom'
+                                                        size="custom"
                                                         onClick={cancelEdit}
                                                         className="rounded-sm border"
                                                     >
@@ -131,8 +134,8 @@ export default function ConclusionsFormSave() {
                                                 <p className="text-sm leading-relaxed">{conclusion.text}</p>
                                                 <div className="flex gap-2 mt-2">
                                                     <Button
-                                                        size="sm"
-                                                        variant="outline"
+                                                        size='custom'
+                                                        variant="custom"
                                                         onClick={() => startEdit(conclusion)}
                                                         className="rounded-sm border"
                                                     >
@@ -140,8 +143,8 @@ export default function ConclusionsFormSave() {
                                                         Editar
                                                     </Button>
                                                     <Button
-                                                        size="sm"
-                                                        variant="destructive"
+                                                        size="custom"
+                                                        variant="custom"
                                                         onClick={() => deleteConclusion(conclusion.id)}
                                                         className="rounded-sm bg-red-600 text-white hover:bg-red-700"
                                                     >
@@ -161,6 +164,8 @@ export default function ConclusionsFormSave() {
                 {/* 🔹 Botón para cargar en el DOM */}
                 <div className="mt-6">
                     <Button
+                        variant='custom'
+                        size='custom'
                         onClick={loadConclusionsToDOM}
                         disabled={conclusions.length === 0}
                         className="w-full rounded-sm bg-purple-600 text-white hover:bg-purple-700"

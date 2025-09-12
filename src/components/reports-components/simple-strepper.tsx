@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import TableGestionLotes from "@/components/reports-components/colums-lotes-gestionar/lotes-gestionar-list"
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
-import ListadoAnexos from "@/components/reports-components/Listado-anexos"
+import ListadoAnexos from "@/components/reports-components/colums-anexos-gestionar/Listado-anexos"
 import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
 import { ItemPremitive } from "@/types"
 import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
