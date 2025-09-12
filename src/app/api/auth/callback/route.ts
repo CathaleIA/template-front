@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     // const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
     //   ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
     //   : "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback" 
-    const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com"
+    const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/dashboard"
     // const redirectUrl = "http://localhost:3000/dashboard"
 
     const redirectResponse = NextResponse.redirect(redirectUrl, {
