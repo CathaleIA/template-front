@@ -73,44 +73,44 @@ export default function TableGestionLotes({ onJobSelect, selectedJobId, tenantNa
         </div>
       )}
 
-          <Table>
-          <TableCaption>Listado de lotes para gestionar.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[120px]">Job Id</TableHead>
-              <TableHead>Fecha modificación</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Activo test</TableHead>
-              <TableHead className="text-right">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {lotes.map((lote) => (
+      <Table>
+        <TableCaption>Listado de lotes para gestionar.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[120px]">Job Id</TableHead>
+            <TableHead>Fecha modificación</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Activo test</TableHead>
+            <TableHead className="text-right">Acción</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {lotes.map((lote) => (
 
-              <TableRow key={lote.job_id}>
-                <TableCell className="font-medium">{lote.job_id}</TableCell>
-                <TableCell>{lote.fecha_creacion}</TableCell>
-                <TableCell>{lote.estado}</TableCell>
-                <TableCell>{lote.activo}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant={selectedJobId === lote.job_id ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => onJobSelect?.(lote.job_id)}
-                  >
-                    {selectedJobId === lote.job_id ? "Seleccionado" : "Seleccionar"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={4}>Total de lotes</TableCell>
-              <TableCell className="text-right">{lotes.length}</TableCell>
+            <TableRow key={lote.job_id}>
+              <TableCell className="font-medium">{lote.job_id}</TableCell>
+              <TableCell>{lote.fecha_creacion}</TableCell>
+              <TableCell>{lote.estado}</TableCell>
+              <TableCell>{lote.activo}</TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant={selectedJobId === lote.job_id ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => onJobSelect?.(lote.job_id)}
+                >
+                  {selectedJobId === lote.job_id ? "Seleccionado" : "Seleccionar"}
+                </Button>
+              </TableCell>
             </TableRow>
-          </TableFooter>
-        </Table>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={4}>Total de lotes</TableCell>
+            <TableCell className="text-right">{lotes.length}</TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
 
     </div>
   )

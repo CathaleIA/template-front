@@ -8,7 +8,7 @@ import ListadoAnexos from "@/components/reports-components/Listado-anexos"
 import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
 import { ItemPremitive } from "@/types"
 import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
-
+import Dashboard from "./graficas/charts"
 
 export default function SimpleStepper() {
     // 1. Define tus pasos
@@ -168,7 +168,10 @@ export default function SimpleStepper() {
                     {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
                     {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} />}
 
-                    {currentStep === 4 && <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />}
+                    {currentStep === 4 && <div>
+                        <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />
+                        <Dashboard s3KeyJson={selectedAnexo?.s3_json_path} />
+                    </div>}
                     {currentStep === 5 && <ReportsGestion />}
                 </div>
             </div>

@@ -22,7 +22,7 @@ interface CardProps {
     tenant_name: string;
     job_id: string;
     estado: string;
-    onSelectAnexo?:(item: ItemPremitive) => void;
+    onSelectAnexo?: (item: ItemPremitive) => void;
 }
 
 export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAnexo }: CardProps) {
@@ -75,35 +75,42 @@ export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAne
                 <p className="text-gray-500 text-sm">Selecciona un Job ID del paso anterior para cargar los anexos</p>
             )}
             <div className="h-[400px] overflow-y-auto space-y-2">
-                        <Table>
-                            <TableCaption>Listado anexos para gestionar.</TableCaption>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[120px]">Nombre Archivo</TableHead>
-                                    <TableHead>Fecha modificación</TableHead>
-                                    <TableHead>Estado</TableHead>
-                                    <TableHead>Activo - Dispositivo</TableHead>
-                                </TableRow>
-                            </TableHeader >
-                            <TableBody>
-                                {items.map((lote) => (
-                                    <TableRow key={lote.job_id}>
-                                        <TableCell>{lote.s3_json_path.split("/").pop() || "Desconocido"}</TableCell>
-                                        <TableCell>{lote.fecha_creacion}</TableCell>
-                                        <TableCell><Badge>{lote.estado}</Badge></TableCell>
-                                        <TableCell>{lote.pool_user_id}</TableCell>
-                                        <TableCell><Button onClick={() => onSelectAnexo?.(lote)}>Gestionar</Button></TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TableCell colSpan={4}>Total de lotes</TableCell>
-                                    <TableCell className="text-right">{items.length}</TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                    
+                <Table>
+                    <TableCaption>Listado anexos para gestionar.</TableCaption>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[120px]">Nombre Archivo</TableHead>
+                            <TableHead>Fecha modificación</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead>Activo - Dispositivo</TableHead>
+                        </TableRow>
+                    </TableHeader >
+                    <TableBody>
+                        {items.map((lote) => (
+                            <TableRow key={lote.job_id}>
+                                <TableCell>{lote.s3_json_path.split("/").pop() || "Desconocido"}</TableCell>
+                                <TableCell>{lote.fecha_creacion}</TableCell>
+                                <TableCell><Badge>{lote.estado}</Badge></TableCell>
+                                <TableCell>{lote.pool_user_id}</TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="custom"
+                                        size="custom"
+                                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                        onClick={() => onSelectAnexo?.(lote)}>Gestionar
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell colSpan={4}>Total de lotes</TableCell>
+                            <TableCell className="text-right">{items.length}</TableCell>
+                        </TableRow>
+                    </TableFooter>
+                </Table>
+
             </div>
         </div>
     )

@@ -48,6 +48,7 @@
     "aws-sdk": "^2.1692.0",
     "cathaleia-dashboard": "file:",
     "chart.js": "^4.5.0",
+    "chartjs": "^0.3.24",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^15.10.1",

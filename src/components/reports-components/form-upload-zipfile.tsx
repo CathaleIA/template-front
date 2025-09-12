@@ -5,8 +5,8 @@ import type React from "react"
 import { useState } from "react"
 import type { ZipUploadRequest, ZipUploadResponse } from "@/types" // Updated import to use correct interfaces
 import { Button } from "@/components/ui/button"
-import { Input } from  "@/components/ui/input" // Fixed import path
-import { Label } from  "@/components/ui/label" // Fixed import path
+import { Input } from "@/components/ui/input" // Fixed import path
+import { Label } from "@/components/ui/label" // Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { v4 as uuidv4 } from "uuid"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -112,6 +112,9 @@ export default function ZipUploader() {
             <p className="text-sm text-gray-600 mb-4">Nombre: {fileName}</p>
             <p className="text-sm font-medium text-blue-600 mb-4">Job ID: {uploadResult.messageResponse}</p>
             <Button
+
+              variant="custom"
+              size="custom"
               onClick={() => {
                 setUploadResult(null)
                 setZipFile(null)
@@ -147,13 +150,15 @@ export default function ZipUploader() {
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button
+          <Button
+            variant="custom"
+            size="custom"
             type="submit"
             disabled={isLoading || !zipFile || !activo}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {isLoading ? "Subiendo..." : "Subir Archivo"}
-          </button>
+          </Button>
 
           {(!zipFile || !activo) && (
             <p className="text-xs text-gray-500 text-center">
