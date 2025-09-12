@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 
-import TableGestionLotes from "@/components/reports-components/lotes-gestionar-list"
+import TableGestionLotes from "@/components/reports-components/colums-lotes-gestionar/lotes-gestionar-list"
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
 import ListadoAnexos from "@/components/reports-components/Listado-anexos"
 import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
 import { ItemPremitive } from "@/types"
 import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
 import Dashboard from "./graficas/charts"
+import { Button } from "../ui/button"
 
 export default function SimpleStepper() {
     // 1. Define tus pasos
@@ -178,25 +179,29 @@ export default function SimpleStepper() {
 
             {/* 7. Botones de navegación */}
             <div className="flex justify-between">
-                <button
+                <Button
+                    variant="custom"
+                    size="custom"
                     onClick={prevStep}
                     disabled={currentStep === 1}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Anterior
-                </button>
+                </Button>
 
                 <span className="text-sm text-gray-500">
                     Paso {currentStep} de {steps.length}
                 </span>
 
-                <button
+                <Button
+                    variant="custom"
+                    size="custom"
                     onClick={nextStep}
                     disabled={currentStep === steps.length}
                     className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Siguiente
-                </button>
+                </Button>
             </div>
         </div>
     )
