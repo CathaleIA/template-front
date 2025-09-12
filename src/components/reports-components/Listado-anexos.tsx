@@ -1,5 +1,5 @@
 import type { ItemPremitive, ItemQuery } from "@/types"
-import { useState } from "react"
+import {useEffect, useState } from "react"
 import {
     Table,
     TableBody,
@@ -59,6 +59,25 @@ export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAne
             setIsLoading(false)
         }
     }
+      useEffect(() => {
+        // Si faltan datos mínimos, no cargues nada
+        if (!tenant_name || !job_id || !estado) {
+            setItems([]) // limpiar si cambian props inválidos
+            setIsLoading(false)
+            return
+        }
+
+        const fetchItems = async () => {
+            try {
+                await handleLoadItems()
+            } catch (error) {
+                console.error("Error loading items:", error)
+                setIsLoading(false) // asegurar que no quede colgado
+            }
+        }
+
+        fetchItems()
+    }, [tenant_name, job_id, estado])
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">

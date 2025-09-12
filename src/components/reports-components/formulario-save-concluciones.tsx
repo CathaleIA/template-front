@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, Edit2, Save, X } from "lucide-react"
+import { Trash2, Edit2, Save, X, Upload } from "lucide-react"
 
 interface Conclusion {
     id: number
@@ -47,9 +47,21 @@ export default function ConclusionsFormSave() {
         setEditText("")
     }
 
+    // 🔹 Nueva función: insertar las conclusiones en el DOM externo
+    const loadConclusionsToDOM = () => {
+        const listElement = document.getElementById("finalConclusionsList")
+        if (listElement) {
+            listElement.innerHTML = "" // limpiar lista previa
+            conclusions.forEach((c) => {
+                const li = document.createElement("li")
+                li.textContent = c.text
+                listElement.appendChild(li)
+            })
+        }
+    }
+
     return (
         <div className="h-screen p-6">
-            {/* Contenedor principal */}
             <div className="max-w-4xl mx-auto h-full border p-6 bg-white">
                 <h2 className="text-lg font-semibold mb-4">Gestión de Conclusiones</h2>
 
@@ -87,7 +99,6 @@ export default function ConclusionsFormSave() {
                                 <Card key={conclusion.id} className="p-3 border rounded-sm">
                                     <CardContent className="p-0">
                                         {editingId === conclusion.id ? (
-                                            // Modo edición
                                             <div>
                                                 <Textarea
                                                     value={editText}
@@ -116,7 +127,6 @@ export default function ConclusionsFormSave() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            // Modo visualización
                                             <div>
                                                 <p className="text-sm leading-relaxed">{conclusion.text}</p>
                                                 <div className="flex gap-2 mt-2">
@@ -147,8 +157,19 @@ export default function ConclusionsFormSave() {
                         </div>
                     )}
                 </div>
+
+                {/* 🔹 Botón para cargar en el DOM */}
+                <div className="mt-6">
+                    <Button
+                        onClick={loadConclusionsToDOM}
+                        disabled={conclusions.length === 0}
+                        className="w-full rounded-sm bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                        <Upload className="w-4 h-4 mr-1" />
+                        Cargar Conclusiones en Documento
+                    </Button>
+                </div>
             </div>
         </div>
-
     )
 }
