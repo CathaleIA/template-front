@@ -1,4 +1,4 @@
-export function divToBase64(divId: string): string | null {
+export function divToHtml(divId: string): string | null {
   const div = document.getElementById(divId);
   if (!div) {
     console.warn(`No se encontró el div con id "${divId}"`);
@@ -10,7 +10,6 @@ export function divToBase64(divId: string): string | null {
   console.log("=============================== HTML TOMADO POR FRONT DIV ===============================")
   console.log(htmlContent)
   // Convierte a base64
-  const base64 = btoa(unescape(encodeURIComponent(htmlContent)));
-
-  return base64;
+  // const base64 = btoa(unescape(encodeURIComponent(htmlContent)));
+  return htmlContent;
 }

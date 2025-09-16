@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Button } from "../ui/button";
 import { reponse_consult_file } from "@/types/consult-item";
 import ConclusionsFormSave from "./formulario-save-concluciones";
+import createPdfAxeno from '@/utils/reports-utils/pdfmake'
 
 interface Conclusion {
     id: number
@@ -58,11 +60,13 @@ export default function ConclusionsForm({ s3Key }: ArchivoProps) {
         <div className="flex flex-row h-[90vh] overflow-y-auto border">
             <div className="basis-2/3 p-4">
                 <ConclusionsFormSave />
+                
             </div>
             <div
                 className="basis-1/3 p-4 border-l"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
+         
         </div>
 
     )

@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 import MenuBar from './menu-basr';
 import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
+
 export default function ReportsGestion() {
     const editor = useEditor({
         extensions: [
@@ -43,7 +44,8 @@ export default function ReportsGestion() {
     return (
         <div className='max-w-5xl mx-auto py-8'>
             <MenuBar editor={editor}  />
-            <EditorContent editor={editor} />
+  
+            <EditorContent editor={editor} id='Report_PDF_Component'/>
         </div>
     )
 }
