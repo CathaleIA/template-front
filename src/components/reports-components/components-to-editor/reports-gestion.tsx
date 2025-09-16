@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 import MenuBar from './menu-basr';
 import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
 
 export default function ReportsGestion() {
     const editor = useEditor({
@@ -17,6 +18,11 @@ export default function ReportsGestion() {
                     HTMLAttributes: {
                         class: "list-decimal ml-3"
                     }
+                },
+                blockquote: {
+                    HTMLAttributes: {
+                        class: 'border-l-4 border-blue-500 pl-4 my-6 italic text-gray-600',
+                    },
                 }
 
             }),
@@ -27,7 +33,8 @@ export default function ReportsGestion() {
                 HTMLAttributes: {
                     class: 'my-custom-class',
                 },
-            })
+            }),
+
 
 
         ],
@@ -36,16 +43,15 @@ export default function ReportsGestion() {
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: "min-h-[200px] border rounded-md bg-slate-50 py-2 px-3"
+                class: "tiptap min-h-[200px] border rounded-md bg-slate-50 py-2 px-3"
             }
         }
     })
 
     return (
         <div className='max-w-5xl mx-auto py-8'>
-            <MenuBar editor={editor}  />
-  
-            <EditorContent editor={editor} id='Report_PDF_Component'/>
+            <MenuBar editor={editor} />
+            <EditorContent editor={editor} id='Report_PDF_Component' className="tiptap"/>
         </div>
     )
 }

@@ -1,8 +1,7 @@
 import { Toggle } from "@/components/ui/toggle"
-import { AlignCenter, AlignLeft, AlignRight, Bold, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, TextQuote , Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
 import React from 'react'
 import { Editor } from '@tiptap/react'
-import { Button } from '@/components/ui/button'
 import createPdfAxeno from '@/utils/reports-utils/pdfmake'
 export default function MenuBar({ editor }: { editor: Editor | null }) {
     if (!editor) {
@@ -69,7 +68,17 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
             icon: <Highlighter className="size-4" />,
             onClick: () => editor.chain().focus().toggleHighlight().run(),
             pressed: () => editor.isActive('highlight')
-        }
+        },
+        {
+            icon:  <FlipHorizontal className="size-4"/> ,
+            onClick: () =>  editor.chain().focus().setHorizontalRule().run(),
+            pressed: () => false
+        },
+        {
+            icon: <TextQuote className="size-4"/>,
+            onClick: () => editor.chain().focus().toggleBlockquote().run(),
+            pressed: () => editor.isActive('blockquote')
+        }   
     ]
     return (
 
