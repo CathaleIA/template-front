@@ -95,7 +95,8 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #ffffff1a;
   --sidebar-ring: #8e8e8e;
-  --background-image: url('/assets/background.svg');
+  --background-image: url('/assets/background-grad.svg');
+  --background-vidrio: url('/assets/vidrio-form.svg');
 
   --plotly-1: #e5e5e5;
   --plotly-2: #a3a3a3;
@@ -156,7 +157,7 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a3a3a3;
-  --background-image: url('/assets/background-dark.svg');
+  --background-image: url('/assets/background-grad.svg');
 
   --plotly-5: #1f1f1f;
   --plotly-6: #595F634D;

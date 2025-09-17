@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
         grant_type: "authorization_code",
         client_id: clientId,
         code: code,
-        redirect_uri: "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",
-        // redirect_uri: "http://localhost:3000/api/auth/callback",
+        // redirect_uri: "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback",
+        redirect_uri: "http://localhost:3000/api/auth/callback",
       }),
     })
 
@@ -53,12 +53,9 @@ export async function GET(request: NextRequest) {
     //Calcular expiración
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
-    //Redirección final
-    // const redirectUrl = process.env.NEXT_PUBLIC_APP_URL
-    //   ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-    //   : "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback" 
-    const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/dashboard"
-    // const redirectUrl = "http://localhost:3000/dashboard"
+    //Redirección final 
+    // const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/dashboard"
+    const redirectUrl = "http://localhost:3000/dashboard"
 
     const redirectResponse = NextResponse.redirect(redirectUrl, {
       status: 302,

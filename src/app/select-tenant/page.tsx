@@ -1,4 +1,4 @@
-import { SelectTenant } from "@/components/select-tenant-form"
+import { SelectTenant } from "@/components/login/select-tenant-form"
 
 export default function LoginPage() {
   return (

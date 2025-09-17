@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="grad-fill" x1="0" y1="1" x2="1" y2="0">
+      <stop offset=".09" stop-color="#fff" stop-opacity=".14"/>
+      <stop offset=".16" stop-color="#f4f4f4" stop-opacity=".18"/>
+      <stop offset=".39" stop-color="#d9d9d9" stop-opacity=".3"/>
+      <stop offset=".69" stop-color="#fff" stop-opacity=".1"/>
+      <stop offset=".79" stop-color="#fff" stop-opacity=".11"/>
+      <stop offset=".82" stop-color="#fff" stop-opacity=".13"/>
+      <stop offset=".85" stop-color="#fff" stop-opacity=".18"/>
+      <stop offset=".87" stop-color="#fff" stop-opacity=".25"/>
+      <stop offset=".88" stop-color="#fff" stop-opacity=".3"/>
+    </linearGradient>
+    <linearGradient id="grad-stroke" x1="0" y1="1" x2="1" y2="0">
+      <stop offset=".09" stop-color="#fff" stop-opacity=".5"/>
+      <stop offset=".16" stop-color="#f4f4f4" stop-opacity=".39"/>
+      <stop offset=".31" stop-color="#e0e0e0" stop-opacity=".18"/>
+      <stop offset=".39" stop-color="#d9d9d9" stop-opacity=".1"/>
+      <stop offset=".69" stop-color="#fff" stop-opacity=".2"/>
+      <stop offset=".77" stop-color="#fff" stop-opacity=".21"/>
+      <stop offset=".79" stop-color="#fff" stop-opacity=".23"/>
+      <stop offset=".82" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset=".83" stop-color="#fff" stop-opacity=".35"/>
+      <stop offset=".85" stop-color="#fff" stop-opacity=".43"/>
+      <stop offset=".86" stop-color="#fff" stop-opacity=".54"/>
+      <stop offset=".87" stop-color="#fff" stop-opacity=".66"/>
+      <stop offset=".88" stop-color="#fff" stop-opacity=".8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo semitransparente con degradado -->
+  <rect x="0" y="0" width="1" height="1" rx=".05" ry=".05" fill="url(#grad-fill)" opacity=".78" />
+
+  <!-- Borde con degradado (simulando vidrio) -->
+  <rect x="0" y="0" width="1" height="1" rx=".05" ry=".05"
+        fill="none"
+        stroke="url(#grad-stroke)"
+        stroke-width=".006"
+        stroke-miterlimit="10" />
+</svg>
