@@ -44,6 +44,7 @@ export function SelectTenant() {
     setLoading(true)
     setError(null)
     setProgress(0)
+
     if (!values.tenant.trim()) {
       setError("Por favor ingresa el nombre de tu empresa")
       setLoading(false)
@@ -51,46 +52,35 @@ export function SelectTenant() {
     }
 
     try {
-      // Etapa 1: Validando empresa
+      // Etapa 1: Validando empresa (inmediato, no requiere espera)
       setLoadingStage("Validando empresa...")
-      setProgress(25)
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      setProgress(10) // Pequeño avance visual mientras se prepara
 
-      // Etapa 2: Configurando tenant
+      // Etapa 2: Configurando tenant → ESTA ES LA OPERACIÓN REAL
       setLoadingStage("Configurando acceso...")
-      setProgress(50)
-      await setTenantConfig(values.tenant.trim())
-      await new Promise((resolve) => setTimeout(resolve, 600))
+      setProgress(30)
+      await setTenantConfig(values.tenant.trim()) // ← Esto toma el tiempo que tome
 
-      // Etapa 3: Preparando autenticación
-      setLoadingStage("Preparando autenticación...")
-      setProgress(75)
-      await new Promise((resolve) => setTimeout(resolve, 400))
-
-      // Llamada al endpoint para obtener cookies seguras
+      // Etapa 3: Obteniendo datos del tenant → OTRA OPERACIÓN REAL
+      setLoadingStage("Obteniendo configuración...")
+      setProgress(60)
       const infoRes = await fetch("/api/auth/tenantget")
       if (!infoRes.ok) throw new Error("No se pudieron obtener los datos del tenant")
 
       const { userPoolId, appClientId: clientId, userPoolDomain } = await infoRes.json()
-
       if (!userPoolId || !clientId || !userPoolDomain) {
         throw new Error("Faltan datos después de configurar el tenant")
       }
 
+      // Etapa 4: Preparando redirección
+      setLoadingStage("Preparando redirección...")
       setProgress(90)
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      // const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
       const redirectUri = "http://localhost:3000/api/auth/callback"
-
       const scope = "email+openid+profile"
-
       const state = encodeURIComponent(
-        JSON.stringify({
-          userPoolId,
-          appClientId: clientId,
-          userPoolDomain,
-        }),
+        JSON.stringify({ userPoolId, appClientId: clientId, userPoolDomain })
       )
 
       const cognitoLoginUrl = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`
@@ -98,7 +88,9 @@ export function SelectTenant() {
       setProgress(100)
       setLoadingStage("Redirigiendo...")
 
+      // Redirige inmediatamente
       window.location.href = cognitoLoginUrl
+
     } catch (err: any) {
       console.error("Error seleccionando empresa:", err)
       setError("Empresa no encontrada. Verifica el nombre e inténtalo nuevamente.")
