@@ -78,7 +78,8 @@ export function SelectTenant() {
       setProgress(90)
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      const redirectUri = "http://localhost:3000/api/auth/callback"
+      const redirectUri = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
+      // const redirectUri = "http://localhost:3000/api/auth/callback"
       const scope = "email+openid+profile"
       const state = encodeURIComponent(
         JSON.stringify({ userPoolId, appClientId: clientId, userPoolDomain })
@@ -134,7 +135,7 @@ export function SelectTenant() {
                   <div className="">
                     <div className="flex flex-col pt-5 gap-8">
                       <div className="flex flex-col items-center text-center">
-                        <h1 className="text-2xl font-bold">Procesando</h1>
+                        <h1 className="text-2xl font-bold text-white">Procesando</h1>
                         <p className="text-md text-white">
                           Configurando tu acceso empresarial
                         </p>
@@ -142,7 +143,7 @@ export function SelectTenant() {
 
                       <div className="flex items-center justify-center space-x-3">
                         <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm font-medium">{loadingStage}</span>
+                        <span className="text-sm font-medium text-white">{loadingStage}</span>
                       </div>
 
                       <Progress value={progress} className="w-full" />
