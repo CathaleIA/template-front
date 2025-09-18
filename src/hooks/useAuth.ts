@@ -1,3 +1,5 @@
+/*Funciones finales disponibles en los componentes del lado del cliente, gracias al contextp "UserProvider"*/
+
 import { useUser } from '@/context/UserContext';
 
 export function useAuth() {

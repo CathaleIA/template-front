@@ -7,7 +7,6 @@ import { SearchForm } from "@/components/navegation/search-form"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
-
 import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 
 import { ThemeToggle } from "@/utils/theme-toggle"
@@ -28,7 +27,6 @@ export function SiteHeader() {
         </Button>
         <Separator orientation="vertical" className="mr-2 h-4" />
         <DynamicBreadcrumb/>
-        
         <SearchForm className="w-full sm:ml-auto sm:w-auto" />
         <ThemeToggle/>
       </div>

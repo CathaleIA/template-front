@@ -1,4 +1,5 @@
-// contexts/UserContext.tsx
+/*Envoltura "context" usado en el layout principal para dar contexto del usuario
+en toda la aplicacion */
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';

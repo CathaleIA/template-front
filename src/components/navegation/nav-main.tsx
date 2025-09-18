@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
 import {
   Collapsible,
@@ -14,46 +14,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
+import {NavItemMain} from "@/types"
+
 import Link from "next/link"
 
-type NavItem = {
-  title: string
-  url: string
-  icon?: LucideIcon
-  isActive?: boolean
-  items?: {
-    title: string
-    url: string
-  }[]
-  sites?: {
-    title: string
-    url: string
-    sistemas: {
-      title: string
-      url: string
-      items: {
-        title: string
-        url: string
-      }[]
-    }[]
-  }[]
-}
-
-function getSiteLinks(item: NavItem): { title: string; url: string }[] {
+function getSiteLinks(item: NavItemMain): { title: string; url: string }[] {
   return item.sites?.map(site => ({
     title: site.title,
     url: site.url,
   })) ?? []
 }
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavMain({ items }: { items: NavItemMain[] }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Servicios</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const hasSubItems = !!(item.items?.length || item.sites?.length)

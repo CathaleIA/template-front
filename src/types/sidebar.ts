@@ -48,5 +48,28 @@ export interface TreeItem {
   url: string
 }
 
+export type NavItemMain = {
+  title: string
+  url: string
+  icon?: LucideIcon
+  isActive?: boolean
+  items?: {
+    title: string
+    url: string
+  }[]
+  sites?: {
+    title: string
+    url: string
+    sistemas: {
+      title: string
+      url: string
+      items: {
+        title: string
+        url: string
+      }[]
+    }[]
+  }[]
+}
+
 // Tipo que permite arrays mixtos con TreeItems y otros arrays
 export type TreeNode = TreeItem | Array<TreeItem | TreeNode>

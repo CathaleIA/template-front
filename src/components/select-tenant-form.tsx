@@ -77,8 +77,10 @@ export function SelectTenant() {
       setProgress(90)
 
       const region = userPoolId.split("_")[0] || "us-east-1"
-      const redirectUri = "https://appui.d1ajb21hsxi2dm.amplifyapp.com/api/auth/callback"
-      // const redirectUri = "http://localhost:3000/api/auth/callback"
+      const redirectUri = process.env.NEXT_PUBLIC_APP_URL
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`
+        : "http://localhost:3000/api/auth/callback"
+
       const scope = "email+openid+profile"
       const state = encodeURIComponent(
         JSON.stringify({ userPoolId, appClientId: clientId, userPoolDomain })

@@ -1,3 +1,8 @@
+/*Los wrapper son usados para separar funcionalidad del lado del cliente y del servidor
+En este caso este se usa para la pagina de "users"
+Las consultas se hacen en la pagina principal "server side"
+y las otras funcionalidades se hacen en el wrapper "client side"*/
+
 "use client"
 
 import { DataTable } from "@/components/ui/data-table"
@@ -20,7 +25,6 @@ export function UsersActionsWrapper({ columns, data, filters }: Props) {
       title: "Usuario creado exitosamente",
       message: `El nuevo usuario ${user.userName} ha sido agregado al sistema.`,
     })
-    // Podrías usar un estado global o un refresh para actualizar la lista
   }
 
   return (

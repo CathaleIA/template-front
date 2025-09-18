@@ -36,7 +36,6 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validación básica
     if (!formData.userName || !formData.userEmail || !formData.userRole) {
       toast(
         "Error",
@@ -47,7 +46,6 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       return
     }
 
-    // Validación de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.userEmail)) {
       toast(
@@ -61,7 +59,6 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
 
     setLoading(true)
     try {
-      // Aquí harías la llamada a tu API
       const response = await fetch("/api/user", {
         method: "POST",
         headers: {

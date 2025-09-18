@@ -14,8 +14,6 @@ export default function UsersSkeleton() {
         { name: "Creado" },
         { name: "Acciones" },
     ]
-
-    // Simula filas
     const rows = 6
 
     return (

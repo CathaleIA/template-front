@@ -4,8 +4,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 // import { AppSidebar } from "@/components/navegation/app-sidebar"
-import { AppSidebar } from "@/components/navegation2/app-sidebar"
-import { SiteHeader } from "@/components/navegation2/site-header"
+import { AppSidebar } from "@/components/navegation/app-sidebar"
+import { SiteHeader } from "@/components/navegation/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import { Toaster } from "@/components/ui/sonner"

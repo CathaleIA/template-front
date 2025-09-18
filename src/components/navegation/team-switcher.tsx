@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronsUpDown } from "lucide-react"
 import Image from 'next/image'
 import {
   DropdownMenu,
@@ -26,8 +26,6 @@ import {
 
 import { UserInfo } from "@/types/user"
 
-
-import AppSidebarSkeleton from "@/components/skeleton/app-sidebar-skeleton"
 import { Separator } from "../ui/separator"
 
 export function TeamSwitcher({
@@ -36,10 +34,7 @@ export function TeamSwitcher({
   user: UserInfo | null
 }) {
   const { isMobile } = useSidebar()
-
-
   const tenantLogo = user?.tenantName ? `/logos/${user?.tenantName}.svg` : "/logos/cathaleia.svg"
-
 
   return (
     <SidebarMenu>

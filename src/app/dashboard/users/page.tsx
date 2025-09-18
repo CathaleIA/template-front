@@ -5,13 +5,24 @@ import { UsersInfo } from "@/types"
 import { UsersActionsWrapper } from "@/components/wrappers/UsersActionsWrapper"
 import { PageHeader } from "@/components/page-header"
 
+import { getUserFromToken } from "@/lib/auth-service-server"
+import { redirect } from "next/navigation"
+
+
 export default async function UserPage() {
+
+    const payload = await getUserFromToken()
+
+    if (!payload || payload.userRole !== "TenantAdmin") {
+        redirect("/dashboard")
+    }
+
     const filters = [
         { column: "email", placeholder: "Filter by email..." },
         { column: "userName", placeholder: "Filter by user name..." }
     ]
     const cookieStore = await cookies()
-    let mappedUsers : UsersInfo[] = []
+    let mappedUsers: UsersInfo[] = []
 
     const token = cookieStore.get("cognito_id_token")?.value
     if (!token) {
@@ -33,7 +44,7 @@ export default async function UserPage() {
 
         const rawData = await response.json();
 
-            mappedUsers = rawData.map((data: any) => ({
+        mappedUsers = rawData.map((data: any) => ({
             userName: data.user_name,
             userRole: data.user_role,
             email: data.email,

@@ -15,7 +15,7 @@ export default function MyPlot() {
       <div className="3d-model-section w-[80vw] h-[80vh]">
         <h3 className='bg-blue-hover'>Data mediante eventBridge, frecuencia minima 1minuto (FUNCIONAL, pero no tenemos data)</h3>
         <StatusComponent assetId='GEN-02' />
-        {/* <UpdateSubscription /> */}
+        <UpdateSubscription />
         <TodayDataComponent />
       </div>
 

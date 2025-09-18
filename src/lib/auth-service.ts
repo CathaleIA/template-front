@@ -1,3 +1,7 @@
+/*Funciones del lado del cliente (llamada a endpoints propios de nextjs) 
+Son usadas por el Context del usuario "UserContext.tsx"
+Si es necesario alguna otra informacion, actualizar aca, e implementar en el Context*/
+
 import { UserInfo } from "@/types/user"
 import { CognitoTokens} from "@/types/tokens";
 
