@@ -94,7 +94,6 @@ export const tenantConfigs: Record<string, TenantConfig> = {
     ],
   },
 
-  // 👇 Ejemplo: otro tenant con servicios diferentes
   pruebaselectricas: {
     navMain: [
       {
@@ -111,7 +110,25 @@ export const tenantConfigs: Record<string, TenantConfig> = {
     ]
   },
 
-  // 👇 Tenant por defecto (fallback)
+  dautom: {
+    navMain: [
+      {
+        title: "Servicio de Reportes",
+        url: "#",
+        icon: ClipboardMinus,
+        isActive: false,
+        items: [
+          { title: "Crear", url: "/dashboard/reports" },
+          { title: "Listar", url: "#" },
+          { title: "Configurar", url: "#" },
+        ],
+      },
+    ],
+    settings: [
+      { name: "Users Managment", url: "/dashboard/users", icon: Users },
+    ],
+  },
+
   default: {
     navMain: [
       {

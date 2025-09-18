@@ -29,16 +29,7 @@ export function ThemeToggle() {
 
   return (
     <div className="flex items-center space-x-0.5">
-      <div className="flex items-center space-x-1">
-        <Sun className={`h-4 w-4 ${isDark ? "text-muted-foreground" : "text-foreground"}`} />
-      </div>
-
       <Switch id="theme-toggle" checked={isDark} onCheckedChange={handleToggle} aria-label="Toggle theme" />
-
-      <div className="flex items-center space-x-1">
-        <Moon className={`h-4 w-4 ${isDark ? "text-foreground" : "text-muted-foreground"}`} />
-      </div>
-
       <Label htmlFor="theme-toggle" className="sr-only">
         Toggle between light and dark theme
       </Label>

@@ -40,7 +40,6 @@ export function NavMain({ items }: { items: NavItemMain[] }) {
             <SidebarMenuItem key={item.title}>
               {hasSubItems ? (
                 <Collapsible defaultOpen={item.isActive} className="group/collapsible">
-                  {/* ❌ NO envolver el trigger en SidebarMenuItem */}
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="cursor-pointer" subItems={[...(item.items ?? []), ...getSiteLinks(item)]}>
                       {item.icon && <item.icon className="w-12 h-12 text-white" />}

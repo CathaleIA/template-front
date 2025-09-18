@@ -34,7 +34,7 @@ export function TeamSwitcher({
   user: UserInfo | null
 }) {
   const { isMobile } = useSidebar()
-  const tenantLogo = user?.tenantName ? `/logos/${user?.tenantName}.svg` : "/logos/cathaleia.svg"
+  const tenantLogo = user?.tenantName ? `/logos/${user?.tenantName}.svg` : "/logos/copower.svg"
 
   return (
     <SidebarMenu>
@@ -43,7 +43,7 @@ export function TeamSwitcher({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent dark:data-[state=open]:bg-background data-[state=open]:text-blue-primary"
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src="/logos/cathaleia.png" alt="empresa" />
