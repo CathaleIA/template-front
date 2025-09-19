@@ -66,7 +66,7 @@ export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAne
         columns={getAnexoColumns(onSelectAnexo)}
         data={data}
         filters={[
-          { column: "job_id", placeholder: "Buscar por Job ID..." },
+          { column: "s3_html_path", placeholder: "Buscar por nombre..." },
           { column: "activo", placeholder: "Buscar por dispositivo..." },
         ]}
       />

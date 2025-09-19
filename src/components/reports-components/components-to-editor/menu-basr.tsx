@@ -1,8 +1,8 @@
 import { Toggle } from "@/components/ui/toggle"
-import { AlignCenter, AlignLeft, AlignRight, TextQuote , Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
+import { AlignCenter, AlignLeft, Download, AlignRight, TextQuote, Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
 import React from 'react'
 import { Editor } from '@tiptap/react'
-import createPdfAxeno from '@/utils/reports-utils/pdfmake'
+import { divToHtml } from "@/utils/reports-utils/dicToHtml"
 export default function MenuBar({ editor }: { editor: Editor | null }) {
     if (!editor) {
         return null
@@ -70,15 +70,45 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
             pressed: () => editor.isActive('highlight')
         },
         {
-            icon:  <FlipHorizontal className="size-4"/> ,
-            onClick: () =>  editor.chain().focus().setHorizontalRule().run(),
+            icon: <FlipHorizontal className="size-4" />,
+            onClick: () => editor.chain().focus().setHorizontalRule().run(),
             pressed: () => false
         },
         {
-            icon: <TextQuote className="size-4"/>,
+            icon: <TextQuote className="size-4" />,
             onClick: () => editor.chain().focus().toggleBlockquote().run(),
             pressed: () => editor.isActive('blockquote')
-        }   
+        },
+        {
+            icon: <Download className="size-4" />,
+            onClick:async () => {
+                                const html = divToHtml("Report_PDF_Component");
+                                if (!html) return;
+            
+                                const res = await fetch("/api/pdf-generate", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ html }),
+                                });
+            
+                                if (!res.ok) {
+                                    console.error("Error generando PDF");
+                                    return;
+                                }
+            
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+            
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = "reporte.pdf";
+                                a.click();
+            
+                                window.URL.revokeObjectURL(url);
+            },
+            pressed: () => false
+        }
+
     ]
     return (
 
@@ -88,14 +118,11 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
                     key={index}
                     pressed={option.pressed()}
                     onPressedChange={option.onClick}
-                
+
                 >
                     {option.icon}
                 </Toggle>
             ))}
-            <Toggle onClick={() => {
-                createPdfAxeno()
-            }}>Creacion</Toggle>
 
         </div>
     )

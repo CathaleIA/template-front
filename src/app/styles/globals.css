@@ -49,7 +49,7 @@
   --color-blue-link: var(--blue-link);
   --color-blue-hover: var(--blue-hover);
   --color-blue-linkactive: var(--blue-linkactive);
-  --color-third-bg-blue: var(--third-bg-blue);
+  --color-third-bg-blue: var(--third-bg-blue)
   --color-third-paper: var(--third-paper);
   --color-third-plot: var(--third-plot);
   --color-third-text: var(--third-text);
@@ -102,7 +102,7 @@
   --plotly-4: #262626;
   --plotly-5: #e0f2fe;
   --plotly-6: #bae6fd;
-  --plotly-range: #f5f5f5;
+  --plotly-range : #f5f5f5;
 
   --third-paper: #ffffff;
   --third-plot: #f5f5f5;
@@ -159,7 +159,7 @@
 
   --plotly-5: #1f1f1f;
   --plotly-6: #595F634D;
-  --plotly-rangeselector: #171717;
+  --plotly-rangeselector : #171717;
 
   --third-paper: #0a0a0a;
   --third-plot: #171717;
@@ -183,19 +183,16 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  h1 {
+  
+  h1{
     @apply text-2xl font-bold;
   }
-
-  h2 {
+  h2{
     @apply text-xl font-bold;
   }
-
-  h3 {
+  h3{
     @apply text-lg font-bold;
   }
-
 }
 
 
@@ -203,7 +200,6 @@
   from {
     height: 0;
   }
-
   to {
     height: var(--radix-accordion-content-height);
   }
@@ -213,7 +209,6 @@
   from {
     height: var(--radix-accordion-content-height);
   }
-
   to {
     height: 0;
   }
@@ -225,7 +220,6 @@
     color: var(--primary);
     font-style: italic;
   }
-
   .animate-fade-particle {
     animation: fade-particle 0.8s ease-out forwards;
   }
@@ -246,15 +240,15 @@
   }
 
   .cards-plotly {
-    @apply rounded-sm shadow-[0px_4px_5px_rgba(0, 0, 0, 0.1)]
+    @apply rounded-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
   }
 
   .card-plotly2 {
-    @apply rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0, 0, 0, 0.1)]
+    @apply rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
   }
 
   .card-plotly3 {
-    @apply rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0, 0, 0, 0.1)]
+    @apply  rounded-bl-sm rounded-br-sm rounded-tr-sm shadow-[0px_4px_5px_rgba(0,0,0,0.1)]
   }
 
   .card-generic {
@@ -265,19 +259,19 @@
 
 /* A4 Page layout */
 .a4-page {
-  width: 190mm;
-  min-height: 257mm;
-  padding: 10mm;
-  margin: auto;
-  background: rgb(255, 255, 255);
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-  font-size: 9pt;
+    width: 190mm;
+    min-height: 257mm;
+    padding: 10mm;
+    margin: auto;
+    background: rgb(255, 255, 255);
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
 }
 
 @page {
-  size: A4;
-  margin: 5mm;
+    size: A4;
+    margin: 5mm;
 }
 
 /* Table styles */
@@ -288,69 +282,67 @@
 }
 
 .th-style {
-  border: 1px solid black;
-  background-color: #ffffff;
-  text-align: center;
-  font-weight: bold;
-  padding: 1px 5px;
-  vertical-align: top;
-  white-space: nowrap;
+    border: 1px solid black;
+    background-color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    padding: 1px 5px;
+    vertical-align: top;
+    white-space: nowrap;
 }
 
 .td-style {
-  border: 1px solid black;
-  padding: 1px 5px;
-  vertical-align: top;
-  white-space: nowrap;
+    border: 1px solid black;
+    padding: 1px 5px;
+    vertical-align: top;
+    white-space: nowrap;
 }
 
 /* Misc utility styles */
 .header-table td {
-  border: none;
-  padding: 2px 5px;
+    border: none;
+    padding: 2px 5px;
 }
 
 .section-title {
-  background-color: #00076d;
-  text-align: center;
-  color: white;
-  font-weight: bold;
-  padding: 7px;
-  margin-top: 15px;
-  margin-bottom: 5px;
+    background-color: #00076d;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    padding: 7px;
+    margin-top: 15px;
+    margin-bottom: 5px;
 }
 
 .logo {
-  width: 80px;
-  height: auto;
-  float: left;
-  margin-right: 10px;
+    width: 80px;
+    height: auto;
+    float: left;
+    margin-right: 10px;
 }
 
 .clear {
-  clear: both;
+    clear: both;
 }
 
 .text-center {
-  padding-top: 3%;
-  text-align: center;
-  font-weight: bold;
+    padding-top: 3%;
+    text-align: center;
+    font-weight: bold;
 }
 
 .box {
-  border: 1px solid black;
-  padding: 5px;
+    border: 1px solid black;
+    padding: 5px;
 }
 
 .forTable {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .page-break {
-  page-break-before: always;
+    page-break-before: always;
 }
-
-
 
 /*Clase agregada al layout de dashboard para ocultar herramienta de desplazamiento vertical*/
 .scroll-container::-webkit-scrollbar {
@@ -361,10 +353,10 @@
 .modebar-container .modebar {
   /* position: relative !important; */
   right: 0 !important;
-  /* display: flex !important;
+    /* display: flex !important;
     flex-direction: row !important; */
-  /* flex-wrap: nowrap !important; */
-  /* border : 0px !important;
+    /* flex-wrap: nowrap !important; */
+    /* border : 0px !important;
     border : none !important;
      */
 }

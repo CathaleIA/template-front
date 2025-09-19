@@ -6,7 +6,9 @@ import Highlight from '@tiptap/extension-highlight'
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 
 export default function ReportsGestion() {
+    
     const editor = useEditor({
+        
         extensions: [
             StarterKit.configure({
                 bulletList: {
@@ -22,6 +24,11 @@ export default function ReportsGestion() {
                 blockquote: {
                     HTMLAttributes: {
                         class: 'border-l-4 border-blue-500 pl-4 my-6 italic text-gray-600',
+                    },
+                },
+                horizontalRule: {
+                    HTMLAttributes : {
+                        class: 'my-8 border-t border-gray-200'
                     },
                 }
 
@@ -48,6 +55,9 @@ export default function ReportsGestion() {
         }
     })
 
+    const json = editor?.getJSON()
+    console.log(json)
+  
     return (
         <div className='max-w-5xl mx-auto py-8'>
             <MenuBar editor={editor} />

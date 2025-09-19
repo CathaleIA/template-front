@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { Button } from "../ui/button";
 import { reponse_consult_file } from "@/types/consult-item";
 import ConclusionsFormSave from "./formulario-save-concluciones";
-import createPdfAxeno from '@/utils/reports-utils/pdfmake'
+import { divToHtml } from "@/utils/reports-utils/dicToHtml";
+
 
 interface Conclusion {
     id: number
@@ -60,13 +61,38 @@ export default function ConclusionsForm({ s3Key }: ArchivoProps) {
         <div className="flex flex-row h-[90vh] overflow-y-auto border">
             <div className="basis-2/3 p-4">
                 <ConclusionsFormSave />
-                
+                <Button onClick={async () => {
+                    const html = divToHtml("Report_PDF_Component");
+                    if (!html) return;
+
+                    const res = await fetch("/api/pdf-generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ html }),
+                    });
+
+                    if (!res.ok) {
+                        console.error("Error generando PDF");
+                        return;
+                    }
+
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "reporte.pdf";
+                    a.click();
+
+                    window.URL.revokeObjectURL(url);
+
+                }}>Creacion de documento</Button>
             </div>
             <div
                 className="basis-1/3 p-4 border-l"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
-         
+
         </div>
 
     )

@@ -13,10 +13,13 @@ export function getAnexoColumns<TData extends ItemPremitive = ItemPremitive>(
 ): ColumnDef<TData>[] {
   return [
     {
-      accessorKey: "job_id",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Job ID" />
-      ),
+      accessorKey: "s3_html_path",
+      header: "Nombre archivo",
+      cell: ({ row }) => {
+        const path = row.getValue("s3_html_path") as string
+        const fileName = path.split("/").pop() || ""
+        return fileName.replace(/\.html$/i, ".pdf") // 👈 cambia .html → .pdf
+      },
     },
     {
       accessorKey: "fecha_creacion",
