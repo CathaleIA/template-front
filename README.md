@@ -5,27 +5,15 @@
 -> Documentacion TOKEN : https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html
 -> SVG FORMS: https://www.fffuel.co/ccchaos/
 
--> Colores para PLotly:
-#be123c
-#be185d
-#a21caf
-#7e22ce
-#6d28d9
-#4338ca
-#1d4ed8
-#0369a1
-#0e7490
-#0f766e
-#047857
-#15803d
-#4d7c0f
-#c2410c
-#a16207
-#b91c1c
-
 -> Credicts for de 3D Motor Author: `"Motor" (https://skfb.ly/68vGM) by Zuncho Multimedia is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).`
 
-1. Borde encabezado de tarjetas de plotly
-```html
-border-b-6 border-r-6 border-transparent
-```
+# Generalidades de diseño: 
+1. estilo de botones (CARBON Design) -> https://carbondesignsystem.com/components/button/usage/
+1. estilos componentes (slider) -> https://carbondesignsystem.com/components/slider/usage/
+
+# Tablero de EXCALIDRAW
+Arquitectura generalm explicacion de sistema de autentificacion, autorizacion, api de administracion e ingesta de data.
+
+[Tablero de excalidraw](https://excalidraw.com/#json=RIK8p6KIwOL9rmFcnlLjQ,9JKqS56dO2HlwPhs0YQOJA)
+
+> En la carpeta de "Recursos" esta el archivo para abrir en la aplicacion excalidraw.
