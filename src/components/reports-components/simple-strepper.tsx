@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import TableGestionLotes from "@/components/reports-components/colums-lotes-gestionar/lotes-gestionar-list"
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
@@ -76,15 +76,30 @@ export default function SimpleStepper() {
     // 2. Estado para controlar el paso actual
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedJobId, setSelectedJobId] = useState<string>("")
-    const [tenantName] = useState<string>("TENANT_CATHALEIA") // Could be made dynamic later
-    const [estado] = useState<string>("NORMALIZADO") // Could be made dynamic later
-    const [userPoolId] = useState<string>("USER_CATHALEIA") // Could be made dynamic later
-    const [estadoReportLis] = useState<string>("DESCOMPRIMIDO")
+    const [tenantName,setTenantName ] = useState<string>("") // Could be made dynamic later
+    const [estado, setEstado] = useState<string>("NORMALIZADO") // Could be made dynamic later
+    const [userPoolId, setUserPoolId] = useState<string>("") // Could be made dynamic later
+    const [estadoReportLis, setEstadoReportLis] = useState<string>("DESCOMPRIMIDO")
     const [selectedAnexo, setSelectedAnexo] = useState<ItemPremitive | null>(null);
     console.log("Selected Job ID:", selectedJobId)
     console.log("Estado:", estado)
     console.log("Tenant Name:", tenantName)
     console.log("User Pool ID:", userPoolId)
+
+      useEffect(() => {
+        async function fetchTenantInfo() {
+          try {
+            const res = await fetch("/api/auth/status", { cache: "no-store" })
+            const data = await res.json()
+            setTenantName(data.userPoolDomain || "")
+            setUserPoolId(data.userPoolId || "")
+          } catch (err) {
+            console.error("Error obteniendo tenant info:", err)
+          }
+        }
+        fetchTenantInfo()
+      }, [])
+    
     // 3. Funciones de navegación
     const nextStep = () => {
         if (currentStep < steps.length) {
@@ -166,8 +181,8 @@ export default function SimpleStepper() {
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
-                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} />}
+                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId}/>}
+                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO"/>}
 
                     {currentStep === 4 && <div>
                         <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />

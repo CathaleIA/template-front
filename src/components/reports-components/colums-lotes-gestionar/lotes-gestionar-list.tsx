@@ -1,5 +1,5 @@
 import { DataTable } from "@/components/ui/data-table";
-import { ResponseQueryReportsList } from "@/types";
+import { ResponseQueryReportsList} from "@/types";
 import { getColumns } from "@/components/reports-components/colums-lotes-gestionar/colums";
 import { useEffect, useState } from "react";
 
@@ -8,6 +8,7 @@ interface TableGestionLotesProps {
   selectedJobId?: string;
   tenantName: string;
   status: string;
+
   userPoolId: string;
 }
 
@@ -32,12 +33,12 @@ export default function TableGestionLotes({
       const response = await fetch("/api/query-report-list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantName, userPoolId, status }),
+        body: JSON.stringify({ tenantName, userPoolId, status}),
       });
       if (!response.ok) throw new Error("Error fetching report list");
       const rowData = await response.json();
       const mapperData: ResponseQueryReportsList[] = rowData.map((d: any) => ({
-        codigo: d.job_id,
+        codigo: d.lote_job_id,
         activo: d.activo,
         statusLote: d.estado,
         fechaUpdate: d.fecha_creacion

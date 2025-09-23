@@ -7,15 +7,16 @@ interface CardProps {
   tenant_name: string;
   job_id: string;
   estado: string;
+  type: string;
   onSelectAnexo?: (item: ItemPremitive) => void;
 }
 
-export default function ListadoAnexos({ tenant_name, job_id, estado, onSelectAnexo }: CardProps) {
+export default function ListadoAnexos({ tenant_name, job_id, estado, type, onSelectAnexo}: CardProps) {
   const [data, setData] = useState<ItemPremitive[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   async function getItems(): Promise<ItemPremitive[]> {
-    const bodyConsult: ItemQuery = { tenant_name, job_id, estado }
+    const bodyConsult: ItemQuery = { tenant_name, job_id, estado, type }
 
     const res = await fetch("/api/item-consult", {
       method: "POST",

@@ -8,7 +8,7 @@ export async function POST(req: Request) {
         const body: ItemQuery = await req.json();
 
         // Validar que todos los campos requeridos estén presentes
-        if (!body.tenant_name || !body.job_id || !body.estado) {
+        if (!body.tenant_name || !body.job_id || !body.estado  || !body.type) {
             return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
         }
 

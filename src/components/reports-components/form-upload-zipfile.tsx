@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect,useState } from "react"
 import type { ZipUploadRequest, ZipUploadResponse } from "@/types" // Updated import to use correct interfaces
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input" // Fixed import path
@@ -13,13 +13,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function ZipUploader() {
   const [zipFile, setZipFile] = useState<File | null>(null)
-  const [tenantName, setTenantName] = useState<string>("TENANT_CATHALEIA")
-  const [userPoolId, setUserPoolId] = useState<string>("USER_CATHALEIA")
+  const [tenantName, setTenantName] = useState<string>("")
+  const [userPoolId, setUserPoolId] = useState<string>("")
   const [activo, setActivo] = useState<string>("")
   const [fileName, setFileName] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [uploadResult, setUploadResult] = useState<ZipUploadResponse | null>(null)
+  
   const [error, setError] = useState<string>("")
+  useEffect(() => {
+    async function fetchTenantInfo() {
+      try {
+        const res = await fetch("/api/auth/status", { cache: "no-store" })
+        const data = await res.json()
+        setTenantName(data.userPoolDomain || "")
+        setUserPoolId(data.userPoolId || "")
+      } catch (err) {
+        console.error("Error obteniendo tenant info:", err)
+      }
+    }
+    fetchTenantInfo()
+  }, [])
+
 
   async function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {

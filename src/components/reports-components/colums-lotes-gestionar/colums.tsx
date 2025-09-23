@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { ResponseQueryReportsList } from "@/types";
+import { ItemPremitive, ResponseQueryReportsList } from "@/types";
 import { Button } from "@/components/ui/button";
 
 type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
@@ -76,7 +76,7 @@ export function getColumns<TData extends ResponseQueryReportsList = ResponseQuer
       header: "Acciones",
       cell: ({ row }) => {
         // row.original está tipado como TData (ResponseQueryReportsList)
-        const jobId = (row.original as unknown as ResponseQueryReportsList).job_id || (row.getValue("codigo") as string);
+        const jobId = (row.original as unknown as ResponseQueryReportsList).lote_job_id || (row.getValue("codigo") as string);
         return (
           <Button
             variant={selectedJobId === jobId ? "custom" : "secondary"}
