@@ -58,29 +58,36 @@ export default function AnexosToAddEditor({ tenant_name, job_id, estado, type, e
         return res.json();
     }
 
-    const fetchFileBase64 = async (s3Key: string) => {
+    const fetchFileBase64 = async (s3Key: string): Promise<string | null> => {
         setIsLoading(true);
         try {
             const data = await FileAbstract(s3Key);
-            setArchivoBase64(data.message); // guardamos solo el base64
-
             if (data.message) {
                 const binaryString = atob(data.message);
                 const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
                 const decodedHtml = new TextDecoder("utf-8").decode(bytes);
-                setHtmlContent(decodedHtml);
+                return decodedHtml;
             }
-
-                if (editor) {
-                editor.commands.insertContent(htmlContent);
-        }
+            return null;
         } catch (error) {
-            console.error("Error loading items:", error)
+            console.error("Error loading items:", error);
+            return null;
         } finally {
             setIsLoading(false);
         }
-    }
+    };
+    function insertHtmlAtEnd(editor: Editor | null, html: string) {
+        if (!editor) return;
 
+        // Mover cursor al final
+        const endPosition = editor.state.doc.content.size;
+
+        editor
+            .chain()
+            .setTextSelection(endPosition)
+            .insertContent(html)
+            .run();
+    }
 
     useEffect(() => {
         getItems().then(setAnexosList)
@@ -106,10 +113,27 @@ export default function AnexosToAddEditor({ tenant_name, job_id, estado, type, e
                                 <td className="border px-4 py-2">{anexo.s3_html_path?.split("/").pop()}</td>
                                 <td className="border px-4 py-2">
                                     <Button
-                                        variant='custom'
-                                        size='custom'
+                                        variant="custom"
+                                        size="custom"
                                         color="primary"
-                                        onClick={() => fetchFileBase64(anexo.s3_html_path || "")}>Agregar</Button>
+                                        onClick={async () => {
+                                            const html = await fetchFileBase64(anexo.s3_html_path || "");
+                                            if (html && editor) {
+                                                // 📍 Mueve el cursor al final antes de insertar
+                                                const endPosition = editor.state.doc.content.size;
+                                                editor
+                                                    .chain()
+                                                    .setTextSelection(endPosition)
+                                                    .insertContent({
+                                                        type: "rawHTMLBlock",
+                                                        attrs: { html },
+                                                    })
+                                                    .run();
+                                            }
+                                        }}
+                                    >
+                                        Agregar
+                                    </Button>
                                 </td>
                             </tr>
                         ))}

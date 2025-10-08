@@ -3,9 +3,8 @@ import StarterKit from '@tiptap/starter-kit';
 import MenuBar from './menu-basr';
 import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
-import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import AnexosToAddEditor from './table-editor-anexos-add/anexos-to-add-editor';
-import { teardownTraceSubscriber } from 'next/dist/build/swc/generated-native';
+import {RawHTMLBlock} from '@/components/reports-components/components-to-editor/table-editor-anexos-add/extention';
 
 
 interface TableGestionAnexoToRichText {
@@ -51,6 +50,8 @@ export default function ReportsGestion({ tenant_name, job_id, estado, type }: Ta
                     class: 'my-custom-class',
                 },
             }),
+
+            RawHTMLBlock
 
 
 
