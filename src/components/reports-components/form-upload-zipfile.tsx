@@ -19,22 +19,26 @@ export default function ZipUploader() {
   const [fileName, setFileName] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [uploadResult, setUploadResult] = useState<ZipUploadResponse | null>(null)
-  
+
   const [error, setError] = useState<string>("")
   useEffect(() => {
-    async function fetchTenantInfo() {
+    async function fetchTenant() {
       try {
-        const res = await fetch("/api/auth/status", { cache: "no-store" })
+        const res = await fetch("/api/auth/tenantget")
         const data = await res.json()
-        setTenantName(data.userPoolDomain || "")
-        setUserPoolId(data.userPoolId || "")
+        if (data?.userPoolId && data?.userPoolDomain) {
+          setTenantName(data.userPoolDomain)
+          setUserPoolId(data.userPoolId)
+        } else {
+          setError("No se encontraron datos de tenant en cookies")
+        }
       } catch (err) {
-        console.error("Error obteniendo tenant info:", err)
+        console.error("Error obteniendo tenant:", err)
+        setError("Error al cargar tenant")
       }
     }
-    fetchTenantInfo()
+    fetchTenant()
   }, [])
-
 
   async function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {

@@ -1,8 +1,11 @@
 import { Toggle } from "@/components/ui/toggle"
-import { AlignCenter, AlignLeft, Download, AlignRight, TextQuote, Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
+import { AlignCenter, AlignLeft, Download, AlignRight,
+     TextQuote,Axe, Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
 import React from 'react'
 import { Editor } from '@tiptap/react'
 import { divToHtml } from "@/utils/reports-utils/dicToHtml"
+
+
 export default function MenuBar({ editor }: { editor: Editor | null }) {
     if (!editor) {
         return null
@@ -107,6 +110,14 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
                                 window.URL.revokeObjectURL(url);
             },
             pressed: () => false
+        },{
+             icon: <Axe className="size-4" />,
+            onClick: () => {
+              
+                const html =editor.getJSON();
+                console.log(html);
+            },
+            pressed: () => editor.isActive('blockquote')
         }
 
     ]
@@ -123,6 +134,7 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
                     {option.icon}
                 </Toggle>
             ))}
+
 
         </div>
     )

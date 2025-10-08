@@ -5,13 +5,20 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Trash2, Edit2, Save, X, Upload } from "lucide-react"
+import ButtonEventUploadHtmlFile from "@/components/reports-components/button-upload-html-file/button-event-upload-html-file";
 
 interface Conclusion {
     id: number
     text: string
 }
-
-export default function ConclusionsFormSave() {
+interface ArchivoProps {
+    reportId?: string | undefined;
+    tenantId?: string | undefined;
+    poolUserId?: string | undefined;
+    fileName?: string | undefined;
+    activo?: string | undefined;
+}
+export default function ConclusionsFormSave({ reportId, tenantId, poolUserId, fileName, activo }: ArchivoProps) {
     const [conclusions, setConclusions] = useState<Conclusion[]>([])
     const [newConclusion, setNewConclusion] = useState("")
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -173,6 +180,13 @@ export default function ConclusionsFormSave() {
                         <Upload className="w-4 h-4 mr-1" />
                         Cargar Conclusiones en Documento
                     </Button>
+                    <ButtonEventUploadHtmlFile
+                        reportId={reportId ?? ""}
+                        tenantId={tenantId ?? ""}
+                        poolUserId={poolUserId ?? ""}
+                        fileName={fileName ?? ""}
+                        activo={activo ?? ""}
+                    />
                 </div>
             </div>
         </div>

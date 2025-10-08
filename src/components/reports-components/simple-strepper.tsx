@@ -38,15 +38,7 @@ export default function SimpleStepper() {
             id: 5,
             title: "Generar Reporte",
             description: "Agrupa los anexos",
-            content: (
-                <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded">
-                        <h4 className="font-medium mb-2">Resumen del Reporte</h4>
-                        <p className="text-sm text-gray-600">Fecha: {new Date().toLocaleDateString()}</p>
-                    </div>
-                    <button className="px-4 py-2 bg-purple-600 text-white rounded">Generar Reporte Final</button>
-                </div>
-            ),
+            
         },
         {
             id: 6,
@@ -76,7 +68,7 @@ export default function SimpleStepper() {
     // 2. Estado para controlar el paso actual
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedJobId, setSelectedJobId] = useState<string>("")
-    const [tenantName,setTenantName ] = useState<string>("") // Could be made dynamic later
+    const [tenantName, setTenantName] = useState<string>("") // Could be made dynamic later
     const [estado, setEstado] = useState<string>("NORMALIZADO") // Could be made dynamic later
     const [userPoolId, setUserPoolId] = useState<string>("") // Could be made dynamic later
     const [estadoReportLis, setEstadoReportLis] = useState<string>("DESCOMPRIMIDO")
@@ -85,21 +77,26 @@ export default function SimpleStepper() {
     console.log("Estado:", estado)
     console.log("Tenant Name:", tenantName)
     console.log("User Pool ID:", userPoolId)
-
-      useEffect(() => {
-        async function fetchTenantInfo() {
-          try {
-            const res = await fetch("/api/auth/status", { cache: "no-store" })
-            const data = await res.json()
-            setTenantName(data.userPoolDomain || "")
-            setUserPoolId(data.userPoolId || "")
-          } catch (err) {
-            console.error("Error obteniendo tenant info:", err)
-          }
+    const [error, setError] = useState<string>("")
+    useEffect(() => {
+        async function fetchTenant() {
+            try {
+                const res = await fetch("/api/auth/tenantget")
+                const data = await res.json()
+                if (data?.userPoolId && data?.userPoolDomain) {
+                    setTenantName(data.userPoolDomain)
+                    setUserPoolId(data.userPoolId)
+                } else {
+                    setError("No se encontraron datos de tenant en cookies")
+                }
+            } catch (err) {
+                console.error("Error obteniendo tenant:", err)
+                setError("Error al cargar tenant")
+            }
         }
-        fetchTenantInfo()
-      }, [])
-    
+        fetchTenant()
+    }, [])
+
     // 3. Funciones de navegación
     const nextStep = () => {
         if (currentStep < steps.length) {
@@ -181,14 +178,14 @@ export default function SimpleStepper() {
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId}/>}
-                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO"/>}
+                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
+                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO" />}
 
                     {currentStep === 4 && <div>
-                        <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />
+                        <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} reportId={selectedJobId} tenantId={tenantName} poolUserId={userPoolId} fileName={selectedAnexo?.s3_html_path ? selectedAnexo.s3_html_path.split("/").pop() ?? "" : ""} activo={selectedAnexo?.activo} />
                         <Dashboard s3KeyJson={selectedAnexo?.s3_json_path} />
                     </div>}
-                    {currentStep === 5 && <ReportsGestion />}
+                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} job_id={selectedJobId} estado={estado} type="ANEXO" />}
                 </div>
             </div>
 

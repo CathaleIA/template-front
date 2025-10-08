@@ -4,8 +4,18 @@ import MenuBar from './menu-basr';
 import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import AnexosToAddEditor from './table-editor-anexos-add/anexos-to-add-editor';
+import { teardownTraceSubscriber } from 'next/dist/build/swc/generated-native';
 
-export default function ReportsGestion() {
+
+interface TableGestionAnexoToRichText {
+    // parametros para cargar los anexos
+    tenant_name: string;
+    job_id: string;
+    estado: string;
+    type: string;
+}
+export default function ReportsGestion({ tenant_name, job_id, estado, type }: TableGestionAnexoToRichText) {
     
     const editor = useEditor({
         
@@ -23,7 +33,7 @@ export default function ReportsGestion() {
                 },
                 blockquote: {
                     HTMLAttributes: {
-                        class: 'border-l-4 border-blue-500 pl-4 my-6 italic text-gray-600',
+                        class: 'border-l-4 border-black pl-4 my-6 italic text-gray-600',
                     },
                 },
                 horizontalRule: {
@@ -55,13 +65,19 @@ export default function ReportsGestion() {
         }
     })
 
-    const json = editor?.getJSON()
-    console.log(json)
-  
+   
+
+    // Esta comentado el componente para efectos precticos
+
     return (
-        <div className='max-w-5xl mx-auto py-8'>
+        <div className='flex'>
+            <div className='w-6/5 p-2'>
             <MenuBar editor={editor} />
             <EditorContent editor={editor} id='Report_PDF_Component' className="tiptap"/>
+            </div>
+            <div className='w-2/5 p-4'>
+                <AnexosToAddEditor tenant_name={tenant_name} job_id={job_id} estado={estado} type={type} editor={editor} />
+            </div>
         </div>
     )
 }
