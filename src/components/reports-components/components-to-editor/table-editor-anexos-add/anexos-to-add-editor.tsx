@@ -119,7 +119,7 @@ export default function AnexosToAddEditor({ tenant_name, job_id, estado, type, e
                                         onClick={async () => {
                                             const html = await fetchFileBase64(anexo.s3_html_path || "");
                                             if (html && editor) {
-                                                // 📍 Mueve el cursor al final antes de insertar
+                                                // cursor al final antes de insertar
                                                 const endPosition = editor.state.doc.content.size;
                                                 editor
                                                     .chain()

@@ -1,12 +1,24 @@
 import { Toggle } from "@/components/ui/toggle"
-import { AlignCenter, AlignLeft, Download, AlignRight,
-     TextQuote,Axe, Bold, FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough } from 'lucide-react'
+import {
+    AlignCenter, AlignLeft, Download, AlignRight,
+    TextQuote, BetweenHorizontalStart,BetweenVerticalEnd ,Tablets, 
+    Columns3Cog,Grid2x2X, BetweenHorizontalEnd ,Table, BetweenVerticalStart 
+    , Bold, 
+    FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough
+} from 'lucide-react'
 import React from 'react'
 import { Editor } from '@tiptap/react'
-import { divToHtml } from "@/utils/reports-utils/dicToHtml"
+interface MenuBarProps {
+    editor: Editor | null
+    tenant_name?: string;
+    userPoolId?: string;
+    job_id?: string;
+    activo?: string;
+    fileName: string
+}
 
 
-export default function MenuBar({ editor }: { editor: Editor | null }) {
+export default function MenuBar({ editor, tenant_name, userPoolId, job_id, activo, fileName}: MenuBarProps) {
     if (!editor) {
         return null
     }
@@ -84,41 +96,69 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
         },
         {
             icon: <Download className="size-4" />,
-            onClick:async () => {
-                                const html = divToHtml("Report_PDF_Component");
-                                if (!html) return;
-            
-                                const res = await fetch("/api/pdf-generate", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ html }),
-                                });
-            
-                                if (!res.ok) {
-                                    console.error("Error generando PDF");
-                                    return;
-                                }
-            
-                                const blob = await res.blob();
-                                const url = window.URL.createObjectURL(blob);
-            
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = "reporte.pdf";
-                                a.click();
-            
-                                window.URL.revokeObjectURL(url);
+            onClick: async () => {
+                try {
+
+                    const html = editor.getHTML();
+                    const s3KeyFolder = `FINALREPORTS/${tenant_name}/${userPoolId}/${job_id}/${activo}/${fileName}.html`;
+              
+                    const base64Html = btoa(unescape(encodeURIComponent(html)));
+
+                    const res = await fetch("/api/upload-final-report", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            s3key: s3KeyFolder,
+                            archivoHtml: base64Html,
+                        }),
+                    });
+
+                    if (!res.ok) throw new Error("Error al subir el archivo");
+
+                    const data = await res.json();
+                    console.log("✅ Archivo subido con éxito:", data);
+                } catch (error) {
+                    console.error("❌ Error en la subida:", error);
+                }
             },
             pressed: () => false
         },{
-             icon: <Axe className="size-4" />,
-            onClick: () => {
-              
-                const html =editor.getJSON();
-                console.log(html);
-            },
-            pressed: () => editor.isActive('blockquote')
+            icon: <Table className="size-4" />,
+            onClick: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+            pressed: () => false
+        },{
+            icon: <BetweenVerticalStart className="size-4" />,
+            onClick: () => editor.chain().focus().addColumnBefore().run(),
+            pressed: () => false
+        },
+        {
+            icon: <BetweenVerticalEnd  className="size-4" />,
+            onClick: () => editor.chain().focus().addColumnAfter().run(),
+            pressed: () => false
+        },{
+            icon: <Columns3Cog className="size-4" />,
+            onClick: () => editor.chain().focus().deleteColumn().run(),
+            pressed: () => false
+        },{
+            icon: <BetweenHorizontalEnd className="size-4" />,
+            onClick: () => editor.chain().focus().addRowBefore().run(),
+            pressed: () => false
+        },{
+            icon: <BetweenHorizontalStart className="size-4" />,
+            onClick: () => editor.chain().focus().addRowAfter().run(),
+            pressed: () => false
+        },{
+            icon: <Grid2x2X className="size-4" />,
+            onClick: () => editor.chain().focus().deleteRow().run(),
+            pressed: () => false   
+        },{
+            icon: <Tablets className="size-4" />,
+            onClick: () => editor.chain().focus().deleteTable().run(),
+            pressed: () => false
         }
+
 
     ]
     return (

@@ -1,30 +1,28 @@
 import { DataTable } from "@/components/ui/data-table";
-import { ResponseQueryReportsList} from "@/types";
-import { getColumns } from "@/components/reports-components/colums-lotes-gestionar/colums";
+import {  ResponseQueryReportsList} from "@/types";
+import { getColumns } from "@/components/reports-components/columns-final-reports/columns";
 import { useEffect, useState } from "react";
 
-interface TableGestionLotesProps {
-  onJobSelect?: (jobId: string) => void;
-  selectedJobId?: string;
+interface TableGestionReportsFileProps {
+
+  selectedFinalReport?: string | null
   tenantName: string;
   status: string;
-  onActivoSelect?: (activo: string) => void;
   userPoolId: string;
 }
 
-export default function TableGestionLotes({
-  onActivoSelect,
-  onJobSelect,
-  selectedJobId,
+export default function TableGestionReportsFile({
+
+  selectedFinalReport,
   tenantName,
   status,
   userPoolId,
-}: TableGestionLotesProps) {
+}: TableGestionReportsFileProps) {
   const [data, setData] = useState<ResponseQueryReportsList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const filters = [
-    { column: "codigo", placeholder: "Filter by codigo..." },
+    { column: "codigo", placeholder: "Filter by Nombre..." },
     { column: "activo", placeholder: "Filter by dispositivo..." },
   ];
 
@@ -58,17 +56,9 @@ export default function TableGestionLotes({
 
   return (
     <div className="space-y-4">
-      {selectedJobId && (
-        <div className="bg-blue-50 p-3 rounded">
-          <p className="text-sm font-medium text-blue-800">
-            Job ID seleccionado: {selectedJobId}
-          </p>
-        </div>
-      )}
-
       <div>
         <DataTable
-          columns={getColumns(onJobSelect, onActivoSelect, selectedJobId, )}
+          columns={getColumns( selectedFinalReport)}
           data={data}
           filters={filters}
           // isLoading={isLoading} // si tu DataTable admite este prop

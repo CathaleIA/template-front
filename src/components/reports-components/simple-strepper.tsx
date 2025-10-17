@@ -6,8 +6,9 @@ import TableGestionLotes from "@/components/reports-components/colums-lotes-gest
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
 import ListadoAnexos from "@/components/reports-components/colums-anexos-gestionar/Listado-anexos"
 import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
-import { ItemPremitive } from "@/types"
+import { ItemPremitive, ResponseQueryReportsList } from "@/types"
 import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
+import TableGestionReportsFile from "@/components/reports-components/columns-final-reports/listado-final-reports"
 import Dashboard from "./graficas/charts"
 import { Button } from "../ui/button"
 
@@ -43,40 +44,20 @@ export default function SimpleStepper() {
         {
             id: 6,
             title: "Listado Reportes",
-            description: "Todos los reportes",
-            content: (
-                <div className="space-y-3">
-                    <div className="border rounded p-3 flex justify-between items-center">
-                        <div>
-                            <h4 className="font-medium">Reporte #001</h4>
-                            <p className="text-sm text-gray-600">Generado: 15/01/2024</p>
-                        </div>
-                        <button className="text-blue-600 text-sm">Descargar</button>
-                    </div>
-                    <div className="border rounded p-3 flex justify-between items-center">
-                        <div>
-                            <h4 className="font-medium">Reporte #002</h4>
-                            <p className="text-sm text-gray-600">Generado: 14/01/2024</p>
-                        </div>
-                        <button className="text-blue-600 text-sm">Descargar</button>
-                    </div>
-                </div>
-            ),
+            description: "Descargar Reportes"
         },
     ]
 
     // 2. Estado para controlar el paso actual
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedJobId, setSelectedJobId] = useState<string>("")
+    const [activo, setActivo] = useState<string>("");
     const [tenantName, setTenantName] = useState<string>("") // Could be made dynamic later
     const [estado, setEstado] = useState<string>("NORMALIZADO") // Could be made dynamic later
     const [userPoolId, setUserPoolId] = useState<string>("") // Could be made dynamic later
     const [estadoReportLis, setEstadoReportLis] = useState<string>("DESCOMPRIMIDO")
     const [selectedAnexo, setSelectedAnexo] = useState<ItemPremitive | null>(null);
-    console.log("Selected Job ID:", selectedJobId)
-    console.log("Estado:", estado)
-    console.log("Tenant Name:", tenantName)
-    console.log("User Pool ID:", userPoolId)
+    const [selectedFinalReport, setSelectedFinalReport] = useState<string | null>(null);
     const [error, setError] = useState<string>("")
     useEffect(() => {
         async function fetchTenant() {
@@ -119,6 +100,22 @@ export default function SimpleStepper() {
         setCurrentStep(4); // saltar al paso de conclusiones
     };
 
+    const handleSelectActivo = (activo: string)=>{
+        console.log("Activo Generelado")
+        setActivo(activo);
+
+    }
+
+    // const handleSelectFinalReport = (lote_job_id: string) => {
+    //     console.log("Final Report seleccionado:", lote_job_id);
+    //     setSelectedFinalReport(lote_job_id);
+ 
+    //     // Crear una ruta dinamica para descargar el reporte final
+    //     // cramos la tura dinamica y consutlamo sla descarga la descarga del reporte final toca cuadrar la ruta dinamica
+    //     // /api/reports-download?tenantName=xxx&jobId=xxxx&poolUserId=xxxx
+    //     const downloadUrl = `/api/reports?lote_anexo=${lote_job_id}`;
+    //     window.open(downloadUrl, "_blank");
+    // }
     return (
         <div className="w-full min-h-[200px] mx-auto p-6">
             {/* 4. Header del stepper */}
@@ -178,14 +175,15 @@ export default function SimpleStepper() {
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
+                    {currentStep === 2 && <TableGestionLotes onActivoSelect={setActivo}onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
                     {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO" />}
 
                     {currentStep === 4 && <div>
                         <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} reportId={selectedJobId} tenantId={tenantName} poolUserId={userPoolId} fileName={selectedAnexo?.s3_html_path ? selectedAnexo.s3_html_path.split("/").pop() ?? "" : ""} activo={selectedAnexo?.activo} />
                         <Dashboard s3KeyJson={selectedAnexo?.s3_json_path} />
                     </div>}
-                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} job_id={selectedJobId} estado={estado} type="ANEXO" />}
+                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} userPoolId={userPoolId} job_id={selectedJobId} estado={estado} type="ANEXO" activo={activo} />}
+                    {currentStep === 6 && <TableGestionReportsFile  tenantName={tenantName} status="GESTIONADO" userPoolId={userPoolId} selectedFinalReport={selectedFinalReport} />}
                 </div>
             </div>
 

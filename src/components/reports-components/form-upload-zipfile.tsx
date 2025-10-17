@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { v4 as uuidv4 } from "uuid"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+
 export default function ZipUploader() {
   const [zipFile, setZipFile] = useState<File | null>(null)
   const [tenantName, setTenantName] = useState<string>("")
@@ -70,7 +71,7 @@ export default function ZipUploader() {
         fileName: generatedFileName,
         file: base64File,
       }
-
+      
       const res = await fetch("/api/upload-zipfile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

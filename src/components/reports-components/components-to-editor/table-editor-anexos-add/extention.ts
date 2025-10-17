@@ -18,11 +18,11 @@ export const RawHTMLBlock = Node.create({
         return [{ tag: "div[data-raw-html]" }]
     },
 
-    renderHTML({ HTMLAttributes }) {
+    renderHTML({ node }) {
         return [
             "div",
             { "data-raw-html": "", class: "raw-html-block" },
-            0,
+              node.attrs.html || "",
         ]
     },
 
@@ -33,8 +33,8 @@ export const RawHTMLBlock = Node.create({
 
             setTimeout(() => {
                 container.innerHTML = node.attrs.html;
-            }, 1000); // 🔥 asegura que el render del editor se complete
-            
+            }, 3000); //asegura que el render del editor se complete
+
             return {
                 dom: container,
             }

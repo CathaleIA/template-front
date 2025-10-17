@@ -12,6 +12,7 @@ type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 // Exporta una función que devuelve el array de ColumnDef
 export function getColumns<TData extends ResponseQueryReportsList = ResponseQueryReportsList>(
   onJobSelect?: (jobId: string) => void,
+   onActivoSelect?: (activo: string) => void,
   selectedJobId?: string
 ): ColumnDef<TData>[] {
   return [
@@ -81,7 +82,10 @@ export function getColumns<TData extends ResponseQueryReportsList = ResponseQuer
           <Button
             variant={selectedJobId === jobId ? "custom" : "secondary"}
             size="custom"
-            onClick={() => onJobSelect?.(jobId)}
+            onClick={() => {onJobSelect?.(jobId);
+              onActivoSelect?.(row.getValue("activo"))
+            } }
+            
           >
             {selectedJobId === jobId ? "Seleccionado" : "Seleccionar"}
           </Button>

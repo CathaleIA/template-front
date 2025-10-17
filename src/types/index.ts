@@ -11,3 +11,4 @@ export * from './paradas'
 export * from "./adminpage"
 export * from "./itmenStatusObject"
 export * from "./UpdateFileHTML"
+export * from "./uploadFinalReport"

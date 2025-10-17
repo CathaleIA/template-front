@@ -193,8 +193,59 @@
   h3{
     @apply text-lg font-bold;
   }
+
+}
+/* --- TipTap Table Fix --- */
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1rem 0;
+  border: 1px solid #d1d5db; /* gris suave */
 }
 
+.tiptap th,
+.tiptap td {
+  border: 1px solid #363636;
+  padding: 6px 8px;
+  vertical-align: top;
+  text-align: left;
+  background-color: #ffffff;
+  color: #111827; /* texto oscuro */
+  white-space: normal !important; /* ✅ permite salto de línea */
+}
+
+.tiptap th {
+  background-color: #f3f4f6; /* gris claro para cabecera */
+  font-weight: bold;
+}
+
+.tiptap .selectedCell {
+  background-color: rgba(147, 197, 253, 0.3); /* azul suave */
+}
+
+.tiptap .column-resize-handle {
+  background-color: #3b82f6; /* azul */
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+}
+.tiptap img{
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+}
+.prose {
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #111827;
+}
 
 @keyframes accordion-down {
   from {
