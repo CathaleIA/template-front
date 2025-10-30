@@ -18,8 +18,9 @@ interface TableGestionAnexoToRichText {
     estado: string;
     type: string;
     activo?: string;
+    templateForm?: string;
 }
-export default function ReportsGestion({ tenant_name, userPoolId, job_id, estado, type, activo }: TableGestionAnexoToRichText) {
+export default function ReportsGestion({ tenant_name, userPoolId, job_id, estado, type, activo, templateForm }: TableGestionAnexoToRichText) {
 
     const editor = useEditor({
 
@@ -86,7 +87,7 @@ export default function ReportsGestion({ tenant_name, userPoolId, job_id, estado
 
 
         ],
-        content: 'Crea ahora el reporte y adjunta los archivos necesarios.',
+         content: templateForm ? templateForm : "Crea ahora el reporte y adjunta los archivos necesarios.",
         // Don't render immediately on the server to avoid SSR issues
         immediatelyRender: false,
         editorProps: {

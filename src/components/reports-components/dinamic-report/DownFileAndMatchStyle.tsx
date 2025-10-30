@@ -3,6 +3,7 @@
 import { reponse_consult_file } from "@/types";
 import { useState, useEffect } from "react";
 import estilosA4 from "@/components/reports-components/dinamic-report/estilos"
+import tiptapTableStyles from "@/components/reports-components/dinamic-report/StyleTableTipTap"
 import { Button } from "@/components/ui/button";
 //Aca esta la logica trae el archivo de s3
 // Limpia y formatea el archivo internamente para los estilos
@@ -22,6 +23,21 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
     const [isLoading, setIsLoading] = useState(false)
     const [htmlContent, setHtmlContent] = useState("")
 
+    // 🔹 Función auxiliar: decodifica los bloques de anexos
+    const decodeRawHtmlBlocks = (html: string) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        doc.querySelectorAll("div[data-raw-html]").forEach((div) => {
+            const encoded = div.getAttribute("data-raw-html");
+            if (encoded) {
+                const decoded = decodeURIComponent(encoded);
+                div.outerHTML = decoded; // Reemplaza el div por el HTML real
+            }
+        });
+
+        return doc.documentElement.outerHTML;
+    };
 
     // traemos los datos de las Cookis osea Tennant y UserPoolId
     useEffect(() => {
@@ -43,13 +59,7 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
         fetchTenant()
     }, [])
 
-    function limpiarFragmento(html: string) {
-        return html
-            .replace(/<!DOCTYPE[^>]*>/gi, "")
-            .replace(/<\/?html[^>]*>/gi, "")
-            .replace(/<\/?head[^>]*>/gi, "")
-            .replace(/<\/?body[^>]*>/gi, "");
-    }
+
     // Constula y Limpieza de Archivo de S3
 
     const archivoHtml = async () => {
@@ -74,15 +84,16 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
             const decodedHtml = new TextDecoder("utf-8").decode(bytes);
             setHtmlContent(decodedHtml);
 
+            const cleanedHtml = decodeRawHtmlBlocks(decodedHtml);
 
-            const contenidoLimpio = limpiarFragmento(decodedHtml)
+            const combinedStyles = `${estilosA4}\n${tiptapTableStyles}`;
 
             const pdfResponse = await fetch("/api/pdf-generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    html: contenidoLimpio,
-                    styles: estilosA4,
+                    html: cleanedHtml,
+                    styles: combinedStyles,
                 }),
             });
 

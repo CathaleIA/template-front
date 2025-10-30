@@ -1,6 +1,5 @@
  const  estilosA4= `
  
- 
 
 .a4-page {
     width: 190mm;

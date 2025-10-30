@@ -11,6 +11,8 @@ import ReportsGestion from "@/components/reports-components/components-to-editor
 import TableGestionReportsFile from "@/components/reports-components/columns-final-reports/listado-final-reports"
 import Dashboard from "./graficas/charts"
 import { Button } from "../ui/button"
+import FormReportFinal from "@/components/reports-components/formulario-cap-datos-report-final/formulario-report-final"
+import { buildReportTemplate } from "./formulario-cap-datos-report-final/Data-Formulario-template"
 
 export default function SimpleStepper() {
     // 1. Define tus pasos
@@ -36,10 +38,15 @@ export default function SimpleStepper() {
             description: "Anexos a procesar"
         },
         {
+            id: 4.1,
+            title: "Conclusiones",
+            description: "Genera conclusiones a partir de los anexos"
+        },
+        {
             id: 5,
             title: "Generar Reporte",
             description: "Agrupa los anexos",
-            
+
         },
         {
             id: 6,
@@ -58,7 +65,9 @@ export default function SimpleStepper() {
     const [estadoReportLis, setEstadoReportLis] = useState<string>("DESCOMPRIMIDO")
     const [selectedAnexo, setSelectedAnexo] = useState<ItemPremitive | null>(null);
     const [selectedFinalReport, setSelectedFinalReport] = useState<string | null>(null);
+    const [formData, setFormData] = useState<Record<string, any>>({});
     const [error, setError] = useState<string>("")
+    const [templateForm, setTemplateForm] = useState<string>("");
     useEffect(() => {
         async function fetchTenant() {
             try {
@@ -100,16 +109,20 @@ export default function SimpleStepper() {
         setCurrentStep(4); // saltar al paso de conclusiones
     };
 
-    const handleSelectActivo = (activo: string)=>{
-        console.log("Activo Generelado")
-        setActivo(activo);
-
+    const handleFormReportFinal = (data: Record<string, any>) => {
+        // Actualiza el estado con los datos recibidos
+        setFormData(data);
+        // Genera la plantilla con los datos nuevos (no uses el estado viejo)
+        const reportTemplate = buildReportTemplate(data);
+        setTemplateForm(reportTemplate);
+        console.log("Template Generado:", reportTemplate);
+        setCurrentStep(5);
     }
 
     // const handleSelectFinalReport = (lote_job_id: string) => {
     //     console.log("Final Report seleccionado:", lote_job_id);
     //     setSelectedFinalReport(lote_job_id);
- 
+
     //     // Crear una ruta dinamica para descargar el reporte final
     //     // cramos la tura dinamica y consutlamo sla descarga la descarga del reporte final toca cuadrar la ruta dinamica
     //     // /api/reports-download?tenantName=xxx&jobId=xxxx&poolUserId=xxxx
@@ -175,15 +188,16 @@ export default function SimpleStepper() {
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onActivoSelect={setActivo}onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
+                    {currentStep === 2 && <TableGestionLotes onActivoSelect={setActivo} onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
                     {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO" />}
 
                     {currentStep === 4 && <div>
                         <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} reportId={selectedJobId} tenantId={tenantName} poolUserId={userPoolId} fileName={selectedAnexo?.s3_html_path ? selectedAnexo.s3_html_path.split("/").pop() ?? "" : ""} activo={selectedAnexo?.activo} />
                         <Dashboard s3KeyJson={selectedAnexo?.s3_json_path} />
                     </div>}
-                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} userPoolId={userPoolId} job_id={selectedJobId} estado={estado} type="ANEXO" activo={activo} />}
-                    {currentStep === 6 && <TableGestionReportsFile  tenantName={tenantName} status="GESTIONADO" userPoolId={userPoolId} selectedFinalReport={selectedFinalReport} />}
+                    {currentStep === 4.1 && <FormReportFinal onFormSubmit={handleFormReportFinal} />}
+                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} userPoolId={userPoolId} job_id={selectedJobId} estado={estado} type="ANEXO" activo={activo} templateForm={templateForm} />}
+                    {currentStep === 6 && <TableGestionReportsFile tenantName={tenantName} status="GESTIONADO" userPoolId={userPoolId} selectedFinalReport={selectedFinalReport} />}
                 </div>
             </div>
 

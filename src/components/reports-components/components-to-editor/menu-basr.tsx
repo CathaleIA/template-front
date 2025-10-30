@@ -1,13 +1,14 @@
 import { Toggle } from "@/components/ui/toggle"
 import {
     AlignCenter, AlignLeft, Download, AlignRight,
-    TextQuote, BetweenHorizontalStart,BetweenVerticalEnd ,Tablets, 
-    Columns3Cog,Grid2x2X, BetweenHorizontalEnd ,Table, BetweenVerticalStart 
-    , Bold, 
+    TextQuote, BetweenHorizontalStart, BetweenVerticalEnd, Tablets,
+    Columns3Cog, Grid2x2X, BetweenHorizontalEnd, Table, BetweenVerticalStart
+    , Bold,
     FlipHorizontal, Heading1, Heading2, Heading3, Highlighter, Italic, List, ListOrdered, Strikethrough
 } from 'lucide-react'
 import React from 'react'
 import { Editor } from '@tiptap/react'
+import estilosA4 from "../dinamic-report/estilos"
 interface MenuBarProps {
     editor: Editor | null
     tenant_name?: string;
@@ -18,7 +19,7 @@ interface MenuBarProps {
 }
 
 
-export default function MenuBar({ editor, tenant_name, userPoolId, job_id, activo, fileName}: MenuBarProps) {
+export default function MenuBar({ editor, tenant_name, userPoolId, job_id, activo, fileName }: MenuBarProps) {
     if (!editor) {
         return null
     }
@@ -100,9 +101,26 @@ export default function MenuBar({ editor, tenant_name, userPoolId, job_id, activ
                 try {
 
                     const html = editor.getHTML();
+                    // 2️⃣ Envuélvelo en documento HTML completo
+                    const fullHTML = `
+                            <!DOCTYPE html>
+                            <html lang="es">
+                            <head>
+                                <meta charset="UTF-8">
+                                <title>${fileName}</title>
+                                <style>
+                                        ${estilosA4}
+                                </style>
+                            </head>
+                            <body>
+                                ${html}
+                            </body>
+                            </html>
+                        `;
+
                     const s3KeyFolder = `FINALREPORTS/${tenant_name}/${userPoolId}/${job_id}/${activo}/${fileName}.html`;
-              
-                    const base64Html = btoa(unescape(encodeURIComponent(html)));
+
+                    const base64Html = btoa(unescape(encodeURIComponent(fullHTML)));
 
                     const res = await fetch("/api/upload-final-report", {
                         method: "POST",
@@ -124,36 +142,36 @@ export default function MenuBar({ editor, tenant_name, userPoolId, job_id, activ
                 }
             },
             pressed: () => false
-        },{
+        }, {
             icon: <Table className="size-4" />,
             onClick: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
             pressed: () => false
-        },{
+        }, {
             icon: <BetweenVerticalStart className="size-4" />,
             onClick: () => editor.chain().focus().addColumnBefore().run(),
             pressed: () => false
         },
         {
-            icon: <BetweenVerticalEnd  className="size-4" />,
+            icon: <BetweenVerticalEnd className="size-4" />,
             onClick: () => editor.chain().focus().addColumnAfter().run(),
             pressed: () => false
-        },{
+        }, {
             icon: <Columns3Cog className="size-4" />,
             onClick: () => editor.chain().focus().deleteColumn().run(),
             pressed: () => false
-        },{
+        }, {
             icon: <BetweenHorizontalEnd className="size-4" />,
             onClick: () => editor.chain().focus().addRowBefore().run(),
             pressed: () => false
-        },{
+        }, {
             icon: <BetweenHorizontalStart className="size-4" />,
             onClick: () => editor.chain().focus().addRowAfter().run(),
             pressed: () => false
-        },{
+        }, {
             icon: <Grid2x2X className="size-4" />,
             onClick: () => editor.chain().focus().deleteRow().run(),
-            pressed: () => false   
-        },{
+            pressed: () => false
+        }, {
             icon: <Tablets className="size-4" />,
             onClick: () => editor.chain().focus().deleteTable().run(),
             pressed: () => false

@@ -76,6 +76,13 @@ export default function AnexosToAddEditor({ tenant_name, job_id, estado, type, e
             setIsLoading(false);
         }
     };
+
+    function extractBodyContent(html: string): string {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        return doc.body.innerHTML || html;
+    }
+
     function insertHtmlAtEnd(editor: Editor | null, html: string) {
         if (!editor) return;
 
@@ -119,14 +126,14 @@ export default function AnexosToAddEditor({ tenant_name, job_id, estado, type, e
                                         onClick={async () => {
                                             const html = await fetchFileBase64(anexo.s3_html_path || "");
                                             if (html && editor) {
-                                                // cursor al final antes de insertar
+                                                const cleanHtml = extractBodyContent(html);
                                                 const endPosition = editor.state.doc.content.size;
                                                 editor
                                                     .chain()
                                                     .setTextSelection(endPosition)
                                                     .insertContent({
                                                         type: "rawHTMLBlock",
-                                                        attrs: { html },
+                                                        attrs: { html: cleanHtml },
                                                     })
                                                     .run();
                                             }
