@@ -207,7 +207,7 @@
 .tiptap th,
 .tiptap td {
   border: 1px solid #363636;
-  padding: 6px 8px;
+  padding: 4px 4px;
   vertical-align: top;
   text-align: left;
   background-color: #ffffff;
@@ -312,7 +312,7 @@
 .a4-page {
     width: 190mm;
     min-height: 257mm;
-    padding: 10mm;
+
     margin: auto;
     background: rgb(255, 255, 255);
     box-sizing: border-box;
@@ -320,10 +320,6 @@
     font-size: 9pt;
 }
 
-@page {
-    size: A4;
-    margin: 5mm;
-}
 
 /* Table styles */
 .table-style {
@@ -497,8 +493,3 @@
 .raw-html-block .forTable {
     font-weight: bold;
 }
-
-.raw-html-block .page-break {
-    page-break-before: always;
-}
-

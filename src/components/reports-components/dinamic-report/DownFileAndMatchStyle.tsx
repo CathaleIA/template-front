@@ -3,6 +3,7 @@
 import { reponse_consult_file } from "@/types";
 import { useState, useEffect } from "react";
 import estilosA4 from "@/components/reports-components/dinamic-report/estilos"
+import estiloForm from "@/components/reports-components/dinamic-report/EstilosFormFinal"
 import tiptapTableStyles from "@/components/reports-components/dinamic-report/StyleTableTipTap"
 import { Button } from "@/components/ui/button";
 //Aca esta la logica trae el archivo de s3
@@ -86,7 +87,7 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
 
             const cleanedHtml = decodeRawHtmlBlocks(decodedHtml);
 
-            const combinedStyles = `${estilosA4}\n${tiptapTableStyles}`;
+            const combinedStyles = `\n${tiptapTableStyles}\n${estilosA4}`;
 
             const pdfResponse = await fetch("/api/pdf-generate", {
                 method: "POST",

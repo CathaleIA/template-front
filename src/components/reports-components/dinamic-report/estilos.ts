@@ -1,21 +1,8 @@
- const  estilosA4= `
+import background from "./piepagina";
+
+const estilosA4 = `
  
 
-.a4-page {
-    width: 190mm;
-    min-height: 257mm;
-    padding: 10mm;
-    margin: auto;
-    background: rgb(255, 255, 255);
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-    font-size: 9pt;
-}
-
-@page {
-    size: A4;
-    margin: 5mm;
-}
 
 
 .table-style {

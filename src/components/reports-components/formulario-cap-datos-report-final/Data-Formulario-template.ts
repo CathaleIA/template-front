@@ -1,37 +1,31 @@
 export function buildReportTemplate(formData: Record<string, any>): string {
-  /**
-   * Limpia el HTML completo y devuelve solo el contenido del <body>,
-   * ya que TipTap solo entiende nodos HTML del body.
-   */
   function extractBodyContent(html: string): string {
-    if (typeof window === "undefined") return html; // SSR-safe
+    if (typeof window === "undefined") return html;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     return doc.body.innerHTML || html;
   }
 
-  // Plantilla base
   const html = `
-  <div style="font-family: Arial; color: #000; line-height: 1.4;">
-    <h1 style="text-align:center; font-weight:bold; font-size:12pt; text-decoration:underline;">
-      INFORME DE PRUEBAS ELÉCTRICAS A ACTIVO INTERVENIDO
-    </h1>
+  <div class="report-container">
 
-    <p><b>CLIENTE:</b> ${formData.cliente?.toUpperCase() || ""}</p>
-    <p><b>MUNICIPIO, DEPARTAMENTO:</b> ${formData.municipio?.toUpperCase() || ""}, ${formData.departamento?.toUpperCase() || ""}</p>
+    <h1>Informe de Pruebas Eléctricas a Activo Intervenido</h1>
 
-    <p style="margin-top:10px; font-weight:bold;">ELABORADO POR: COPOWER LTDA., DPTO. PRUEBAS ELÉCTRICAS</p>
+    <p><b>Cliente:</b> ${formData.cliente?.toUpperCase() || ""}</p>
+    <p><b>Municipio, Departamento:</b> ${formData.municipio?.toUpperCase() || ""}, ${formData.departamento?.toUpperCase() || ""}</p>
 
-    <table border="1" cellspacing="0" cellpadding="5" style="width:100%; border-collapse:collapse; margin-top:10px; font-size:10pt;">
+    <p><b>Elaborado por:</b> COPOWER LTDA., DPTO. PRUEBAS ELÉCTRICAS</p>
+
+    <table>
       <tr>
         <td><b>Código:</b></td>
-        <td colspan="3">INF-${formData.codigo || ""}</td>
+        <td colspan="3">INF-${formData.codigo || "GA######"}</td>
       </tr>
       <tr>
-        <td><b>Versión</b></td>
-        <td><b>Elaborado por</b></td>
-        <td><b>Revisado por</b></td>
-        <td><b>Aprobado por</b></td>
+        <th>Versión</th>
+        <th>Elaborado por</th>
+        <th>Revisado por</th>
+        <th>Aprobado por</th>
       </tr>
       <tr>
         <td>1</td>
@@ -40,81 +34,74 @@ export function buildReportTemplate(formData: Record<string, any>): string {
         <td>${formData.aprobadoPor?.join(", ") || ""}</td>
       </tr>
       <tr>
-        <td colspan="4"><b>Etapa</b></td>
+        <th>Etapa</th>
+        <th colspan="2">Descripción</th>
+        <th>Fecha</th>
       </tr>
       <tr>
         <td>0</td>
         <td colspan="2">Ejecución de pruebas en campo</td>
-        <td>${formData.fechaEjecucion || "Día/Mes/Año"}</td>
+        <td>${formData.fechaEjecucion || "Día/mes/año"}</td>
       </tr>
       <tr>
         <td>1</td>
         <td colspan="2">Emisión de informe</td>
-        <td>${formData.fechaEmision || "Día/Mes/Año"}</td>
+        <td>${formData.fechaEmision || "Día/mes/año"}</td>
       </tr>
     </table>
 
-    <br/>
+    <h2>1. Objetivo</h2>
+    <p>${formData.objetivo || "Realizar pruebas eléctricas a activo/s perteneciente a la subestación o localidad del cliente."}</p>
 
-    <h2 style="font-size:11pt; font-weight:bold;">1. OBJETIVO</h2>
-    <p style="text-align:justify;">${formData.objetivo || ""}</p>
+    <h2>2. Personal Presente</h2>
+    <p><b>COPOWER LTDA</b></p>
+    <table>
+      <tr><th>Nombre</th><th>Cargo</th></tr>
+      ${(formData.personalPresente || []).map((p: string) => `<tr><td>${p}</td><td></td></tr>`).join("")}
+    </table>
 
-    <h2 style="font-size:11pt; font-weight:bold;">2. PERSONAL PRESENTE</h2>
+    <p><b>Cliente</b></p>
+    <table>
+      <tr><th>Nombre</th><th>Cargo</th></tr>
+      <tr><td>${formData.primerNombre || ""} ${formData.segundoNombre || ""}</td><td>${formData.cargo || ""}</td></tr>
+    </table>
+
+    <h2>3. Alcance</h2>
+    <p>Se realizaron las siguientes pruebas eléctricas:</p>
+    ${(formData.activo || []).map(
+      (act: string, i: number) => `
+      <p><b>Activo ${i + 1}:</b> ${act}</p>
+      <ul>
+        ${(formData.prueba || []).map((pr: string) => `<li>${pr}</li>`).join("")}
+      </ul>`
+    ).join("")}
+
+    <h2>4. Documentación de Referencia</h2>
     <ul>
-      ${(formData.personalPresente || [])
-        .map((p: string) => `<li>${p}</li>`)
-        .join("")}
+      <li><b>${formData.nombreDoc?.toUpperCase() || "NOMBRE ABREVIADO DEL DOCUMENTO"}</b>. ${formData.desDoc || "Nombre completo del documento."}</li>
+      <li>IEC 60034-27-3:2016. Dielectric dissipation factor measurement on stator winding insulation of rotating electrical machines.</li>
     </ul>
 
-    <h2 style="font-size:11pt; font-weight:bold;">3. ALCANCE</h2>
-    <p>${formData.alcance || ""}</p>
-
+    <h2>5. Equipos Utilizados</h2>
     <ul>
-      ${(formData.activo || [])
-        .map(
-          (act: string, i: number) => `
-        <li><b>ACTIVO ${i + 1}:</b> ${act}
-          <ul>
-            ${(formData.prueba || [])
-              .map((pr: string) => `<li>${pr}</li>`)
-              .join("")}
-          </ul>
-        </li>`
-        )
-        .join("")}
+      <li>${formData.nombreEquipo?.toUpperCase() || "OMICRON, CPC100, S/N: #####"}</li>
     </ul>
 
-    <h2 style="font-size:11pt; font-weight:bold;">4. DOCUMENTACIÓN DE REFERENCIA</h2>
+    <h2>6. Resultados</h2>
+    <p>Los resultados obtenidos en las diferentes pruebas se muestran en el ANEXO correspondiente.</p>
+
+    <h2>7. Observaciones</h2>
     <ul>
-      <li><b>${formData.nombreDoc?.toUpperCase() || ""}</b>. ${
-    formData.desDoc || ""
-  }</li>
+      ${(formData.observaciones || []).map((obs: string) => `<li>${obs}</li>`).join("")}
     </ul>
 
-    <h2 style="font-size:11pt; font-weight:bold;">5. EQUIPOS UTILIZADOS</h2>
+    <h2>8. Conclusiones y Recomendaciones</h2>
     <ul>
-      <li>${formData.nombreEquipo || ""}</li>
+      ${(formData.conclucionesRecomendaciones || []).map((c: string) => `<li>${c}</li>`).join("")}
     </ul>
 
-    <h2 style="font-size:11pt; font-weight:bold;">6. RESULTADOS</h2>
-    <p>Los resultados obtenidos se muestran en el ANEXO correspondiente.</p>
-
-    <h2 style="font-size:11pt; font-weight:bold;">7. OBSERVACIONES</h2>
-    <ul>
-      ${(formData.observaciones || [])
-        .map((obs: string) => `<li>${obs}</li>`)
-        .join("")}
-    </ul>
-
-    <h2 style="font-size:11pt; font-weight:bold;">8. CONCLUSIONES Y RECOMENDACIONES</h2>
-    <ul>
-      ${(formData.conclucionesRecomendaciones || [])
-        .map((c: string) => `<li>${c}</li>`)
-        .join("")}
-    </ul>
   </div>
   `;
 
-  // Retorna solo el contenido del body (limpio y listo para TipTap)
-  return extractBodyContent(html);
+  return html;
 }

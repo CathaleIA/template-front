@@ -1,3 +1,7 @@
+
+import cabeceraPagina from "@/components/reports-components/dinamic-report/cabecera-pagina";
+import piePagina from "@/components/reports-components/dinamic-report/piepagina";
+
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer";
 
@@ -18,7 +22,9 @@ export async function POST(req: Request) {
       <html>
         <head>
           <meta charset="utf-8" />
-          <style>${styles}</style>
+          <style>
+
+          ${styles}</style>
         </head>
         <body>${html}</body>
       </html>
@@ -26,13 +32,31 @@ export async function POST(req: Request) {
 
     await page.setContent(finalHTML, { waitUntil: "networkidle0" });
 
+    const headerTemplate = `
+     
+        <img src="data:image/png;base64,${cabeceraPagina}" style="width: 100%; padding-top: 0%; object-fit: contain; display: block;" />
+      
+    `;
+
+    const footerTemplate = `
+
+        <img src="data:image/png;base64,${piePagina}" style="width: 100%; padding-bottom: 0%; object-fit: contain; display: block;" />
+
+    `;
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      preferCSSPageSize: true,
-      margin: { top: "1cm", bottom: "1cm" },
+      displayHeaderFooter: true,
+      headerTemplate: headerTemplate,
+      footerTemplate: footerTemplate,
+      margin: {
+        top: "190px",    // 170px de imagen + 20px de buffer
+        bottom: "150px", // 170px de imagen + 20px de buffer
+        left: "96px",
+        right: "96px"
+      },
+  
     });
-
     await browser.close();
 
     return new Response(new Uint8Array(pdfBuffer), {
