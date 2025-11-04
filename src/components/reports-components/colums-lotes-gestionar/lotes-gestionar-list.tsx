@@ -68,7 +68,7 @@ export default function TableGestionLotes({
 
       <div>
         <DataTable
-          columns={getColumns(onJobSelect, onActivoSelect, selectedJobId, )}
+          columns={getColumns(onJobSelect, onActivoSelect, selectedJobId, tenantName)}
           data={data}
           filters={filters}
           // isLoading={isLoading} // si tu DataTable admite este prop

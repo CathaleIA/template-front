@@ -39,8 +39,8 @@ export default function SimpleStepper() {
         },
         {
             id: 4.1,
-            title: "Conclusiones",
-            description: "Genera conclusiones a partir de los anexos"
+            title: "Formulario",
+            description: "Llena el formulario del reporte"
         },
         {
             id: 5,

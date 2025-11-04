@@ -58,7 +58,7 @@ export default function TableGestionReportsFile({
     <div className="space-y-4">
       <div>
         <DataTable
-          columns={getColumns( selectedFinalReport)}
+          columns={getColumns(selectedFinalReport)}
           data={data}
           filters={filters}
           // isLoading={isLoading} // si tu DataTable admite este prop

@@ -1,7 +1,7 @@
 import type { ItemPremitive, ItemQuery } from "@/types"
 import { useEffect, useState } from "react"
 import { DataTable } from "@/components/ui/data-table"
-import { getAnexoColumns } from "@/components/reports-components/colums-anexos-gestionar/colums" // 👈 columnas específicas
+import { getAnexoColumns } from "@/components/reports-components/colums-anexos-gestionar/colums"
 
 interface CardProps {
   tenant_name: string;

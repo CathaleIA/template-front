@@ -4,17 +4,36 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { ItemPremitive, ResponseQueryReportsList } from "@/types";
+import { ResponseQueryReportsList } from "@/types";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useState } from "react";
+import ButtonUploadDBStatus from "@/components/reports-components/button-upload-report-db/button-upload-db-status";
 
 type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 // Exporta una función que devuelve el array de ColumnDef
 export function getColumns<TData extends ResponseQueryReportsList = ResponseQueryReportsList>(
   onJobSelect?: (jobId: string) => void,
-   onActivoSelect?: (activo: string) => void,
-  selectedJobId?: string
+  onActivoSelect?: (activo: string) => void,
+  selectedJobId?: string,
+  tenantName?: string
 ): ColumnDef<TData>[] {
+  const [message, setMessage] = useState<string>("");
+  const [isError, setIsError] = useState<boolean>(false);
+
+  const handleSuccess = (response: any) => {
+    setMessage(response.message || "Actualización exitosa");
+    setIsError(false);
+    toast.success( response.message);
+  };
+
+  const handleError = (error: Error) => {
+    setMessage(error.message || "Error en la actualización");
+    setIsError(true);
+    toast.error(error.message);
+  };
+
   return [
     {
       id: "select",
@@ -79,16 +98,29 @@ export function getColumns<TData extends ResponseQueryReportsList = ResponseQuer
         // row.original está tipado como TData (ResponseQueryReportsList)
         const jobId = (row.original as unknown as ResponseQueryReportsList).lote_job_id || (row.getValue("codigo") as string);
         return (
-          <Button
-            variant={selectedJobId === jobId ? "custom" : "secondary"}
-            size="custom"
-            onClick={() => {onJobSelect?.(jobId);
-              onActivoSelect?.(row.getValue("activo"))
-            } }
-            
-          >
-            {selectedJobId === jobId ? "Seleccionado" : "Seleccionar"}
-          </Button>
+          <div>
+
+            <Button
+              variant={selectedJobId === jobId ? "custom" : "secondary"}
+              className="bg-green-500 text-white hover:bg-green-900"
+              size="custom"
+              onClick={() => {
+                onJobSelect?.(jobId);
+                onActivoSelect?.(row.getValue("activo"))
+              }}
+
+            >
+              {selectedJobId === jobId ? "Seleccionado" : "Seleccionar"}
+            </Button>
+            <ButtonUploadDBStatus 
+              tenantName={tenantName || ""}
+              sortKey={row.getValue("codigo")}
+              statusValue={"GESTIONADO"}
+              onSuccess={handleSuccess}
+              onError={handleError}
+            />
+          </div>
+
         );
       },
     },

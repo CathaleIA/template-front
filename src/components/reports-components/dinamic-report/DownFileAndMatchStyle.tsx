@@ -87,7 +87,7 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
 
             const cleanedHtml = decodeRawHtmlBlocks(decodedHtml);
 
-            const combinedStyles = `\n${tiptapTableStyles}\n${estilosA4}`;
+            const combinedStyles = `\n${tiptapTableStyles}\n${estilosA4}\n${estiloForm}\n`;
 
             const pdfResponse = await fetch("/api/pdf-generate", {
                 method: "POST",

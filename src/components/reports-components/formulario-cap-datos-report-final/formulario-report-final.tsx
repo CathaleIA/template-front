@@ -20,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 interface FormReportFinalProps {
-  onFormSubmit?: (data: Record<string, any>) => void;
+    onFormSubmit?: (data: Record<string, any>) => void;
 }
 const schema = z.object({
     reportTitle: z.string().min(2, { message: "El título es obligatorio" }),
@@ -38,9 +38,16 @@ const schema = z.object({
     segundoNombre: z.string().min(2, { message: "El segundo nombre es obligatorio" }),
     cargo: z.string().min(2, { message: "El campo es obligatorio" }),
     alcance: z.string().min(2, { message: "El alcance es obligatorio" }),
-    activo: z.array(z.string().min(2, { message: "El activo es obligatorio" })).min(1, "Debe haber al menos un activo"),
-    prueba: z.array(z.string().min(2, "Campo obligatorio")).min(1, "Debe haber al menos una prueba"),
-    nombreDoc: z.string().min(2, { message: "Referencia de documentacion obligatorio" }),
+    activos: z.array(
+        z.object({
+            nombre: z.string().min(2, { message: "El activo es obligatorio" }),
+            pruebas: z.array(
+                z.string().min(2, { message: "La prueba es obligatoria" })
+            ).min(1, "Debe haber al menos una prueba")
+        })
+    ).min(1, "Debe haber al menos un activo"),
+    nombreDoc: z.string().min(2, { message: "Referencia de documentación obligatoria" }),
+
     desDoc: z.string().min(2, { message: "Descripcion de documentacion obligatorio" }),
     nombreEquipo: z.string().min(2, { message: "El nombre del equipo es obligatorio" }),
     observaciones: z.array(z.string().min(2, "Campo obligatorio")).min(1, "Debe haber al menos una observación"),
@@ -68,8 +75,9 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
             cargo: '',
             alcance: '',
             objetivo: '',
-            activo: [] as string[],
-            prueba: [] as string[],
+            activos: [
+                { nombre: '', pruebas: [''] }
+            ],
             personalPresente: [] as string[],
             nombreDoc: '',
             desDoc: '',
@@ -91,12 +99,12 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                         label: 'Cerrar',
                         onClick: () => toast.dismiss(),
                     }
-                    
+
                 });
                 return;
             }
 
-            toast.info('✅ Formulario válido! Valores:'+ validation.data);
+            toast.info('✅ Formulario válido! Valores:' + validation.data);
             setSavedValues(validation.data);
 
             toast.success('¡Formulario guardado exitosamente!');
@@ -513,99 +521,112 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                                         </Field>
                                     )
                                 }} />
+                                <form.Field name="activos" mode="array">
+                                    {(activosField) => (
+                                        <div className="space-y-4">
+                                            <FieldLabel>Activos *</FieldLabel>
 
-                                <form.Field name="activo" mode="array">
-                                    {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <div className="space-y-3">
-                                                <FieldLabel>Activo *</FieldLabel>
-                                                <FieldDescription>Activos en lo que se realizaron las pruebas</FieldDescription>
-                                                {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`activo[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Nombre ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
-                                                                </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
+                                            {activosField.state.value.map((_, activoIndex) => (
+                                                <form.Field key={activoIndex} name={`activos[${activoIndex}]`}>
+                                                    {(activoField) => (
+                                                        <div className="p-4 border rounded-lg space-y-3 bg-slate-50">
+
+                                                            {/* Campo: Nombre del Activo */}
+                                                            <form.Field name={`activos[${activoIndex}].nombre`}>
+                                                                {(nombreField) => (
+                                                                    <div className="space-y-1">
+                                                                        <FieldLabel>Nombre del activo</FieldLabel>
+                                                                        <Input
+                                                                            value={nombreField.state.value ?? ""}
+                                                                            onChange={(e) => nombreField.handleChange(e.target.value)}
+                                                                            onBlur={nombreField.handleBlur}
+                                                                            placeholder={`Activo ${activoIndex + 1}`}
+                                                                        />
+                                                                        {nombreField.state.meta.errors.length > 0 && (
+                                                                            <FieldError>
+                                                                                {nombreField.state.meta.errors.join(", ")}
+                                                                            </FieldError>
+                                                                        )}
+                                                                    </div>
                                                                 )}
-                                                            </div>
-                                                        )
-                                                    }} />
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
-                                                    + Agregar Activo
-                                                </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
-                                            </div>
-                                        )
-                                    }}
+                                                            </form.Field>
+
+                                                            {/* Campo: Pruebas asociadas a este activo */}
+                                                            <form.Field name={`activos[${activoIndex}].pruebas`} mode="array">
+                                                                {(pruebasField) => (
+                                                                    <div className="pl-4 border-l-2 border-gray-200 space-y-2">
+                                                                        <FieldLabel>Pruebas del activo</FieldLabel>
+                                                                        {pruebasField.state.value.map((_, pruebaIndex) => (
+                                                                            <form.Field
+                                                                                key={pruebaIndex}
+                                                                                name={`activos[${activoIndex}].pruebas[${pruebaIndex}]`}
+                                                                            >
+                                                                                {(pruebaField) => (
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <Input
+                                                                                            value={pruebaField.state.value ?? ""}
+                                                                                            onChange={(e) => pruebaField.handleChange(e.target.value)}
+                                                                                            onBlur={pruebaField.handleBlur}
+                                                                                            placeholder={`Prueba ${pruebaIndex + 1}`}
+                                                                                            className="flex-1"
+                                                                                        />
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => pruebasField.removeValue(pruebaIndex)}
+                                                                                            className="p-2 border rounded hover:bg-red-50"
+                                                                                        >
+                                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                                        </button>
+                                                                                    </div>
+                                                                                )}
+                                                                            </form.Field>
+                                                                        ))}
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => pruebasField.pushValue("")}
+                                                                        >
+                                                                            + Agregar Prueba
+                                                                        </Button>
+                                                                        {pruebasField.state.meta.errors.length > 0 && (
+                                                                            <FieldError>{pruebasField.state.meta.errors.join(", ")}</FieldError>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </form.Field>
+
+                                                            {/* Botón eliminar activo */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => activosField.removeValue(activoIndex)}
+                                                                className="text-red-600 text-sm mt-2"
+                                                            >
+                                                                Eliminar Activo
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </form.Field>
+                                            ))}
+
+                                            {/* Botón agregar activo */}
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => activosField.pushValue({ nombre: "", pruebas: [""] })}
+                                            >
+                                                + Agregar Activo
+                                            </Button>
+
+                                            {activosField.state.meta.errors.length > 0 && (
+                                                <FieldError>{activosField.state.meta.errors.join(", ")}</FieldError>
+                                            )}
+                                        </div>
+                                    )}
                                 </form.Field>
 
-                                {/* Pruebas */}
-                                <form.Field name="prueba" mode="array">
-                                    {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <div className="space-y-3">
-                                                <FieldLabel>Pruebas Realizadas *</FieldLabel>
-                                                <FieldDescription>Listado de pruebas realizadas</FieldDescription>
-                                                {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`prueba[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Prueba ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
-                                                                </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
-                                                    + Agregar Prueba
-                                                </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
-                                            </div>
-                                        )
-                                    }}
-                                </form.Field>
+
                             </FieldGroup>
                         </FieldSet>
                         <FieldSet>

@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { ResponseQueryReportsList } from "@/types"
 import { Button } from "@/components/ui/button"
 import CreateFinalReportFile from "@/components/reports-components/dinamic-report/DownFileAndMatchStyle"
-import Link from "next/link"
+
 
 type BadgeVariant = "default" | "secondary" | "outline" | "destructive"
 

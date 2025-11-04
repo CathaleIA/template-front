@@ -10,6 +10,7 @@ type BadgeVariant = "default" | "secondary" | "outline" | "destructive"
 
 export function getAnexoColumns<TData extends ItemPremitive = ItemPremitive>(
   onSelectAnexo?: (item: ItemPremitive) => void
+
 ): ColumnDef<TData>[] {
   return [
     {
@@ -53,8 +54,9 @@ export function getAnexoColumns<TData extends ItemPremitive = ItemPremitive>(
         const anexo = row.original as ItemPremitive
         return (
           <Button
-            variant="secondary"
-            size="sm"
+            variant="custom"
+            className="bg-green-500 text-white hover:bg-green-900"
+            size="custom"
             onClick={() => onSelectAnexo?.(anexo)}
           >
             Seleccionar

@@ -1,106 +1,164 @@
+// lib/buildReportTemplate.ts
+
 export function buildReportTemplate(formData: Record<string, any>): string {
-  function extractBodyContent(html: string): string {
-    if (typeof window === "undefined") return html;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    return doc.body.innerHTML || html;
-  }
-
   const html = `
-  <div class="report-container">
+    <div class="report-container">
+      <!-- Título principal -->
+      <h1 class="report-title">Informe de Pruebas Eléctricas a Activo Intervenido</h1>
 
-    <h1>Informe de Pruebas Eléctricas a Activo Intervenido</h1>
+      <!-- Información general -->
+      <div class="info-section">
+        <p class="info-item"><span class="label">Cliente:</span> ${formData.cliente?.toUpperCase() || ""}</p>
+        <p class="info-item"><span class="label">Municipio, Departamento:</span> ${formData.municipio?.toUpperCase() || ""}, ${formData.departamento?.toUpperCase() || ""}</p>
+        <p class="info-item"><span class="label">Elaborado por:</span> COPOWER LTDA., DPTO. PRUEBAS ELÉCTRICAS</p>
+      </div>
 
-    <p><b>Cliente:</b> ${formData.cliente?.toUpperCase() || ""}</p>
-    <p><b>Municipio, Departamento:</b> ${formData.municipio?.toUpperCase() || ""}, ${formData.departamento?.toUpperCase() || ""}</p>
+      <!-- Tabla de control de versiones -->
+      <table class="control-table">
+        <tbody>
+          <tr>
+            <td class="table-label">Código:</td>
+            <td colspan="3" class="table-value">INF-${formData.codigo || "GA######"}</td>
+          </tr>
+          <tr class="table-header">
+            <th>Versión</th>
+            <th>Elaborado por</th>
+            <th>Revisado por</th>
+            <th>Aprobado por</th>
+          </tr>
+          <tr>
+            <td class="center-text">1</td>
+            <td>${formData.elaboradoPor?.join(", ") || ""}</td>
+            <td>${formData.revisadoPor?.join(", ") || ""}</td>
+            <td>${formData.aprobadoPor?.join(", ") || ""}</td>
+          </tr>
+          <tr class="table-header">
+            <th>Etapa</th>
+            <th colspan="2">Descripción</th>
+            <th>Fecha</th>
+          </tr>
+          <tr>
+            <td class="center-text">0</td>
+            <td colspan="2">Ejecución de pruebas en campo</td>
+            <td class="center-text">${formData.fechaEjecucion || "Día/mes/año"}</td>
+          </tr>
+          <tr>
+            <td class="center-text">1</td>
+            <td colspan="2">Emisión de informe</td>
+            <td class="center-text">${formData.fechaEmision || "Día/mes/año"}</td>
+          </tr>
+        </tbody>
+      </table>
 
-    <p><b>Elaborado por:</b> COPOWER LTDA., DPTO. PRUEBAS ELÉCTRICAS</p>
+      <!-- Sección 1: Objetivo -->
+      <section class="report-section">
+        <h2 class="section-title">1. Objetivo</h2>
+        <p class="section-content">${formData.objetivo || "Realizar pruebas eléctricas a activo/s perteneciente a la subestación o localidad del cliente."}</p>
+      </section>
 
-    <table>
-      <tr>
-        <td><b>Código:</b></td>
-        <td colspan="3">INF-${formData.codigo || "GA######"}</td>
-      </tr>
-      <tr>
-        <th>Versión</th>
-        <th>Elaborado por</th>
-        <th>Revisado por</th>
-        <th>Aprobado por</th>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>${formData.elaboradoPor?.join(", ") || ""}</td>
-        <td>${formData.revisadoPor?.join(", ") || ""}</td>
-        <td>${formData.aprobadoPor?.join(", ") || ""}</td>
-      </tr>
-      <tr>
-        <th>Etapa</th>
-        <th colspan="2">Descripción</th>
-        <th>Fecha</th>
-      </tr>
-      <tr>
-        <td>0</td>
-        <td colspan="2">Ejecución de pruebas en campo</td>
-        <td>${formData.fechaEjecucion || "Día/mes/año"}</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td colspan="2">Emisión de informe</td>
-        <td>${formData.fechaEmision || "Día/mes/año"}</td>
-      </tr>
-    </table>
+      <!-- Sección 2: Personal Presente -->
+      <section class="report-section">
+        <h2 class="section-title">2. Personal Presente</h2>
+        
+        <div class="subsection">
+          <p class="subsection-title">COPOWER LTDA</p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cargo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(formData.personalPresente || []).map((p: string) => `
+                <tr>
+                  <td>${p}</td>
+                  <td></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
 
-    <h2>1. Objetivo</h2>
-    <p>${formData.objetivo || "Realizar pruebas eléctricas a activo/s perteneciente a la subestación o localidad del cliente."}</p>
+        <div class="subsection">
+          <p class="subsection-title">Cliente</p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cargo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${formData.primerNombre || ""} ${formData.segundoNombre || ""}</td>
+                <td>${formData.cargo || ""}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-    <h2>2. Personal Presente</h2>
-    <p><b>COPOWER LTDA</b></p>
-    <table>
-      <tr><th>Nombre</th><th>Cargo</th></tr>
-      ${(formData.personalPresente || []).map((p: string) => `<tr><td>${p}</td><td></td></tr>`).join("")}
-    </table>
+      <!-- Sección 3: Alcance -->
+      <section class="report-section">
+        <h2 class="section-title">3. Alcance</h2>
+        <p class="section-content">Se realizaron las siguientes pruebas eléctricas:</p>
+        
+        ${(formData.activos || []).map((activo: any, i: number) => `
+          <div class="activo-block">
+            <p class="activo-title"><span class="label">Activo ${i + 1}:</span> ${activo.nombre}</p>
+            <ul class="pruebas-list">
+              ${(activo.pruebas || []).map((prueba: string) => `<li>${prueba}</li>`).join("")}
+            </ul>
+          </div>
+        `).join("")}
+      </section>
 
-    <p><b>Cliente</b></p>
-    <table>
-      <tr><th>Nombre</th><th>Cargo</th></tr>
-      <tr><td>${formData.primerNombre || ""} ${formData.segundoNombre || ""}</td><td>${formData.cargo || ""}</td></tr>
-    </table>
+      <!-- Sección 4: Documentación de Referencia -->
+      <section class="report-section">
+        <h2 class="section-title">4. Documentación de Referencia</h2>
+        <ul class="reference-list">
+          <li>
+            <span class="doc-abbrev">${formData.nombreDoc?.toUpperCase() || "NOMBRE ABREVIADO DEL DOCUMENTO"}</span>. 
+            ${formData.desDoc || "Nombre completo del documento."}
+          </li>
+          <li>
+            <span class="doc-abbrev">IEC 60034-27-3:2016</span>. 
+            Dielectric dissipation factor measurement on stator winding insulation of rotating electrical machines.
+          </li>
+        </ul>
+      </section>
 
-    <h2>3. Alcance</h2>
-    <p>Se realizaron las siguientes pruebas eléctricas:</p>
-    ${(formData.activo || []).map(
-      (act: string, i: number) => `
-      <p><b>Activo ${i + 1}:</b> ${act}</p>
-      <ul>
-        ${(formData.prueba || []).map((pr: string) => `<li>${pr}</li>`).join("")}
-      </ul>`
-    ).join("")}
+      <!-- Sección 5: Equipos Utilizados -->
+      <section class="report-section">
+        <h2 class="section-title">5. Equipos Utilizados</h2>
+        <ul class="equipment-list">
+          <li>${formData.nombreEquipo?.toUpperCase() || "OMICRON, CPC100, S/N: #####"}</li>
+        </ul>
+      </section>
 
-    <h2>4. Documentación de Referencia</h2>
-    <ul>
-      <li><b>${formData.nombreDoc?.toUpperCase() || "NOMBRE ABREVIADO DEL DOCUMENTO"}</b>. ${formData.desDoc || "Nombre completo del documento."}</li>
-      <li>IEC 60034-27-3:2016. Dielectric dissipation factor measurement on stator winding insulation of rotating electrical machines.</li>
-    </ul>
+      <!-- Sección 6: Resultados -->
+      <section class="report-section">
+        <h2 class="section-title">6. Resultados</h2>
+        <p class="section-content">Los resultados obtenidos en las diferentes pruebas se muestran en el ANEXO correspondiente.</p>
+      </section>
 
-    <h2>5. Equipos Utilizados</h2>
-    <ul>
-      <li>${formData.nombreEquipo?.toUpperCase() || "OMICRON, CPC100, S/N: #####"}</li>
-    </ul>
+      <!-- Sección 7: Observaciones -->
+      <section class="report-section">
+        <h2 class="section-title">7. Observaciones</h2>
+        <ul class="observations-list">
+          ${(formData.observaciones || []).map((obs: string) => `<li>${obs}</li>`).join("")}
+        </ul>
+      </section>
 
-    <h2>6. Resultados</h2>
-    <p>Los resultados obtenidos en las diferentes pruebas se muestran en el ANEXO correspondiente.</p>
-
-    <h2>7. Observaciones</h2>
-    <ul>
-      ${(formData.observaciones || []).map((obs: string) => `<li>${obs}</li>`).join("")}
-    </ul>
-
-    <h2>8. Conclusiones y Recomendaciones</h2>
-    <ul>
-      ${(formData.conclucionesRecomendaciones || []).map((c: string) => `<li>${c}</li>`).join("")}
-    </ul>
-
-  </div>
+      <!-- Sección 8: Conclusiones y Recomendaciones -->
+      <section class="report-section">
+        <h2 class="section-title">8. Conclusiones y Recomendaciones</h2>
+        <ul class="conclusions-list">
+          ${(formData.conclucionesRecomendaciones || []).map((c: string) => `<li>${c}</li>`).join("")}
+        </ul>
+      </section>
+    </div>
   `;
 
   return html;
