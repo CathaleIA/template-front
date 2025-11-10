@@ -222,25 +222,64 @@ export default function GPC300Dashboard() {
     addLog('info', `📍 Endpoint: /api/iot/stream`);
     addLog('info', `🌍 Environment: ${process.env.NODE_ENV || 'unknown'}`);
     
+    // Primero verificar el endpoint con fetch para obtener más detalles del error
+    fetch('/api/iot/stream', { 
+      method: 'HEAD',
+      credentials: 'include' 
+    })
+      .then(res => {
+        addLog('info', `🔍 HEAD request status: ${res.status} ${res.statusText}`);
+        if (!res.ok) {
+          addLog('error', `❌ Endpoint no disponible: ${res.status}`);
+        }
+      })
+      .catch(err => {
+        addLog('error', `❌ Error en HEAD request: ${err.message}`);
+      });
+    
     const es = new EventSource("/api/iot/stream");
     
     es.onopen = () => {
       setConnected(true);
       setError(null);
       addLog('success', '✅ EventSource conectado correctamente');
+      addLog('info', `📊 ReadyState: ${es.readyState} (1=OPEN)`);
     };
     
     es.onerror = (e) => {
       setConnected(false);
       setError("Error de conexión");
-      addLog('error', `❌ Error EventSource: ${JSON.stringify(e)}`);
+      
+      // Log detallado del error
+      addLog('error', `❌ Error EventSource - ReadyState: ${es.readyState}`);
+      addLog('error', `❌ Event details: ${JSON.stringify({
+        type: e.type,
+        target: e.target?.constructor?.name,
+        readyState: es.readyState
+      })}`);
       
       // Información adicional del error
       if (es.readyState === EventSource.CLOSED) {
-        addLog('error', '🔌 Conexión cerrada por el servidor');
+        addLog('error', '🔌 Conexión CERRADA por el servidor');
+        addLog('error', '💡 Posibles causas: 401 Auth, 500 Server Error, Timeout');
       } else if (es.readyState === EventSource.CONNECTING) {
-        addLog('warning', '⏳ Intentando reconectar...');
+        addLog('warning', '⏳ Estado: CONNECTING (intentando reconectar...)');
+      } else if (es.readyState === EventSource.OPEN) {
+        addLog('warning', '⚠️ Estado: OPEN pero con error');
       }
+      
+      // Intentar hacer fetch para obtener el error real
+      fetch('/api/iot/stream', { credentials: 'include' })
+        .then(res => {
+          addLog('error', `🔍 Fetch test - Status: ${res.status} ${res.statusText}`);
+          return res.text();
+        })
+        .then(text => {
+          addLog('error', `📄 Response body: ${text.substring(0, 200)}`);
+        })
+        .catch(err => {
+          addLog('error', `❌ Fetch error: ${err.message}`);
+        });
     };
     
     es.onmessage = (e) => {
