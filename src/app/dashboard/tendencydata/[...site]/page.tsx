@@ -29,9 +29,9 @@ export default function TendencySite({
         <div className="[--tablist-height:89px] flex flex-col pt-2">
             <Tabs defaultValue="motor" onValueChange={setactiveTab}>
                 <TabsList>
-                    <TabsTrigger value="generator">Generator</TabsTrigger>
+                    <TabsTrigger value="generator">Generador</TabsTrigger>
                     <TabsTrigger value="motor">Motor</TabsTrigger>
-                    <TabsTrigger value="termo">Termodinamic</TabsTrigger>
+                    <TabsTrigger value="termo">Termodinamica</TabsTrigger>
                     <TabsTrigger value="active">Activo</TabsTrigger>
                 </TabsList>
                 <HeaderPage site={site} tab={activeTab} />

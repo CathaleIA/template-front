@@ -1,11 +1,34 @@
+import { useState } from 'react';
 import Gauge from "@/components/plotly/Gauge";
 import Tendency from "@/components/plotly/Tendency";
-import PolarPhaseAnglePlot from '@/components/plotly/Polar'
+import PolarPhaseAnglePlot from '@/components/plotly/Polar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { PowerFactorData } from '@/utils/generatedata/gauge'
-import { EnergyPowerData, PowerData } from "@/utils/generatedata/tendency";
+import { PowerFactorData } from '@/utils/generatedata/gauge';
+import { 
+    EnergyPowerData, 
+    PotenciaActivaData, 
+    PotenciaReactivaData, 
+    PotenciaAparenteData 
+} from "@/utils/generatedata/tendency";
 
 const GeneratorComponent = () => {
+    const [selectPotencia, setSelectPotencia] = useState("activa");
+
+    // Obtener los datos según la selección
+    const getPotenciaData = () => {
+        switch(selectPotencia) {
+            case "activa":
+                return PotenciaActivaData;
+            case "reactiva":
+                return PotenciaReactivaData;
+            case "aparente":
+                return PotenciaAparenteData;
+            default:
+                return PotenciaActivaData;
+        }
+    };
+
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-4 gap-4 h-[calc(100svh-var(--header-height)-var(--tablist-height)-var(--header-h))]!">
 
@@ -13,13 +36,14 @@ const GeneratorComponent = () => {
                 <div className='flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
                     <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
                         <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
-                            ENERGIA</h1>
+                            CORRIENTE</h1>
                     </div>
                     <div className="flex-1 min-h-0">
                         <Tendency {...EnergyPowerData} />
                     </div>
                 </div>
             </div>
+
             <div className="col-span-1 row-span-1">
                 <div className='flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-sm rounded-br-sm rounded-bl-sm'>
                     <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
@@ -29,33 +53,32 @@ const GeneratorComponent = () => {
                     <div className="flex-1 min-h-0 text-primary px-2">
                         <div className="flex flex-row justify-between items-center h-full gap-2 pb-3">
                             {[
-                                { name: "L1L2", voltage: "350" },
-                                { name: "L2L3", voltage: "380" },
-                                { name: "L3L1", voltage: "360" },
+                                { name: "L1L2", voltage: "4159" },
+                                { name: "L2L3", voltage: "4160" },
+                                { name: "L3L1", voltage: "4161" },
                             ].map((dev, index) => (
                                 <div key={index} className="flex flex-col text-center w-full">
-                                    <span className="text-[0.6rem]">Max: 500</span>
+                                    <span className="text-[0.6rem]"></span>
                                     <div
                                         key={dev.name}
                                         className="rounded-lg p-3 border-t-4 border-b-4 border-border flex flex-col items-center text-center justify-center px-0"
                                     >
                                         <h4 className="text-sm md:text-base font-medium mb-1">Fase {dev.name}</h4>
-                                        <p className="text-md md:text-lg font-bold">{dev.voltage}°V</p>
-                                        {/* <p className="text-xs md:text-sm text-muted-foreground"></p> */}
+                                        <p className="text-md md:text-lg font-bold">{dev.voltage}V</p>
                                     </div>
-                                    <span className="text-[0.6rem]">Min: 3200</span>
+                                    <span className="text-[0.6rem]"></span>
                                 </div>
-
                             ))}
                         </div>
                     </div>
                 </div>
             </div>
+
             <div className="col-span-1 row-span-3">
                 <div className='flex flex-col bg-background  h-full w-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
                     <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
                         <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
-                            ANGULOS</h1>
+                            ANGULOS V</h1>
                     </div>
                     <div className="flex-1 min-h-0">
                         <PolarPhaseAnglePlot
@@ -66,6 +89,7 @@ const GeneratorComponent = () => {
                     </div>
                 </div>
             </div>
+
             <div className="col-span-1 row-span-2">
                 <div className='flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
                     <div className='flex justify-center items-center w-[55%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
@@ -77,17 +101,30 @@ const GeneratorComponent = () => {
                     </div>
                 </div>
             </div>
+
             <div className="col-span-2 row-span-2">
-                <div className='flex flex-col bg-background  h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
-                    <div className='flex justify-center items-center w-[35%] h-[35px] pr-2 bg-green-medium rounded-br-full text-primary border-b-6 border-r-6 border-green-gray'>
-                        <h1 className="text-xs font-semibold leading-none tracking-tight text-green-gray uppercase">
-                            POTENCIA</h1>
-                    </div>
+                <div className='flex flex-col bg-background h-full shadow-[8px_8px_15px_0px_rgba(0,0,0,0.5)] rounded-tr-4xl rounded-bl-4xl'>
+                    <Select
+                        defaultValue="activa"
+                        onValueChange={(value) => setSelectPotencia(value)}
+                    >
+                        <SelectTrigger
+                            className="bg-green-medium text-green-gray border-b-6 border-r-6 border-green-gray rounded-br-full pr-2 w-[35%] flex items-center justify-center focus:ring-0 focus:ring-offset-0 font-bold text-xs"
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="w-auto">
+                            <SelectItem value="activa">POTENCIA ACTIVA</SelectItem>
+                            <SelectItem value="reactiva">POTENCIA REACTIVA</SelectItem>
+                            <SelectItem value="aparente">POTENCIA APARENTE</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <div className="flex-1 min-h-0">
-                        <Tendency {...PowerData} />
+                        <Tendency {...getPotenciaData()} />
                     </div>
                 </div>
             </div>
+
         </div>
     )
 }

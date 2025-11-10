@@ -19,6 +19,7 @@ interface TendencyChartProps {
   traces: TraceData[];
   tittle?: string;
   yAxisTitle: string;
+  showOperatingZones?: boolean; // Nueva prop para activar/desactivar zonas
 }
 
 
@@ -28,6 +29,7 @@ export default function FrequencyTrendChart({
   traces = [],
   tittle = "Grafica de tendencia",
   yAxisTitle = "Eje Y",
+  showOperatingZones = false, // Por defecto desactivado
 }: TendencyChartProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,16 +75,60 @@ export default function FrequencyTrendChart({
           blueTenue: style.getPropertyValue('--third-bg-blue').trim(),
         };
 
-        const variablesMaximazed = isMaximized
-          ? {
-            titleAxisYOne: { text: 'Velocidad [rpm]', font: { color: colors.textColor, size: 16, weight: 900 } },
-            titleAxisYTwo: { text: 'Frecuencia [Hz]', font: { color: colors.textColor, size: 16, weight: 900 } }
+        const variablesMaximazed = {
+          titleAxisYOne: {
+            text: 'Velocidad [rpm]',
+            font: { color: colors.textColor, size: isMaximized ? 16 : 12, weight: 900 }
+          },
+          titleAxisYTwo: {
+            text: yAxisTitle + (yAxisTitle.includes('[') ? '' : ' [Hz]'),
+            font: { color: colors.textColor, size: isMaximized ? 16 : 12, weight: 900 }
+          },
+          anguleTicks: isMaximized ? 0 : 90
+        };
+
+        // Configuración de shapes (zonas de colores)
+        const operatingZones = showOperatingZones ? [
+          // Zona verde (0-40) 🟢
+          {
+            type: 'rect' as const,
+            xref: 'paper' as const,
+            yref: 'y' as const,
+            x0: 0,
+            x1: 1,
+            y0: 0,
+            y1: 40,
+            fillcolor: 'rgba(34, 197, 94, 0.15)', // verde suave
+            line: { width: 0 },
+            layer: 'below' as const
+          },
+          // Zona amarilla (40-80) 🟡
+          {
+            type: 'rect' as const,
+            xref: 'paper' as const,
+            yref: 'y' as const,
+            x0: 0,
+            x1: 1,
+            y0: 40,
+            y1: 80,
+            fillcolor: 'rgba(234, 179, 8, 0.15)', // amarillo suave
+            line: { width: 0 },
+            layer: 'below' as const
+          },
+          // Zona roja (80-100) 🔴
+          {
+            type: 'rect' as const,
+            xref: 'paper' as const,
+            yref: 'y' as const,
+            x0: 0,
+            x1: 1,
+            y0: 80,
+            y1: 100,
+            fillcolor: 'rgba(239, 68, 68, 0.15)', // rojo suave
+            line: { width: 0 },
+            layer: 'below' as const
           }
-          : {
-            titleAxisYOne: { text: undefined, font: { color: colors.textColor } },
-            titleAxisYTwo: { text: undefined, font: { color: colors.textColor } },
-            anguleTicks: 90
-          }
+        ] : [];
 
         // Configuración completa del layout
         const layout: Partial<Plotly.Layout> = {
@@ -96,6 +142,7 @@ export default function FrequencyTrendChart({
           paper_bgcolor: colors.paperColor,
           plot_bgcolor: colors.plotColor,
           font: { color: colors.textColor },
+          shapes: operatingZones, // Agregar zonas de colores
           xaxis: {
             type: 'date',
             autorange: true,
@@ -242,7 +289,7 @@ export default function FrequencyTrendChart({
         Plotly.purge(containerRef.current);
       }
     };
-  }, [themeVersion, minPF, maxPF, isMaximized]);
+  }, [themeVersion, minPF, maxPF, isMaximized, showOperatingZones]);
 
   useEffect(() => {
     if (!containerRef.current) return;

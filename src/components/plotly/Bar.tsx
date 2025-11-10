@@ -12,9 +12,9 @@ interface PressureData {
 
 const pressureValues: PressureData[] = [
     { label: 'Refri. PRE', value: 50, min: 30, max: 60 },
-    { label: 'Refri. POS', value: 50, min: 35, max: 65 },
+    { label: 'Refri. POS', value: 21, min: 18, max: 40 },
     { label: 'Pre. GAS', value: 30, min: 15, max: 40 },
-    { label: 'Pre. TURBO', value: 80, min: 60, max: 90 },
+    { label: 'Pre. TURBO', value: 29, min: 20, max: 40 },
 ];
 
 const PressureGroupedBarChart = () => {

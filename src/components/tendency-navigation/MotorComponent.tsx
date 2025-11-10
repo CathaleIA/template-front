@@ -24,7 +24,7 @@ const MotorGridComponent = () => {
                                 <p className="text-xs text-muted-foreground">Trifásico</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-2xl font-bold text-foreground">400</p>
+                                <p className="text-2xl font-bold text-foreground">4160</p>
                                 <p className="text-xs text-muted-foreground">V</p>
                             </div>
                         </div>
@@ -34,13 +34,13 @@ const MotorGridComponent = () => {
                                 <p className="text-xs text-muted-foreground">Carga</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-2xl font-bold text-foreground">0.87</p>
+                                <p className="text-2xl font-bold text-foreground">0.9</p>
                                 <p className="text-xs text-muted-foreground">FP</p>
                             </div>
                         </div>
                     </div>
                     <div className="col-span-1  row-span-2 rounded-2xl flex flex-col items-center justify-center text-center">
-                        <h3 className="text-lg font-medium text-foreground mb-4">Potencia Mecánica</h3>
+                        <h3 className="text-lg font-medium text-foreground mb-4">Potencia Eléctrica</h3>
                         <p className="text-5xl font-bold text-foreground mb-2">840</p>
                         <p className="text-base text-muted-foreground">kW</p>
                     </div>
@@ -59,7 +59,7 @@ const MotorGridComponent = () => {
                         {[
                             { label: "RPM", value: "1800 ±5", status: "✅" },
                             { label: "Frecuencia", value: "60 Hz", status: "✅" },
-                            { label: "Presión Turbo", value: "80 psi", status: "⚠️" },
+                            { label: "Presión Turbo", value: "29 psi", status: "✅" },
                             { label: "Refrigerante", value: "OK", status: "✅" },
                         ].map((item, idx) => (
                             <div key={idx} className="flex justify-between items-center border-b border-muted pb-1">
@@ -97,7 +97,7 @@ const MotorGridComponent = () => {
                         </SelectTrigger>
                         <SelectContent className="w-auto">
                             <SelectItem value="temperatura">CILINDROS TEMPERATURA</SelectItem>
-                            <SelectItem value="frecuencia">CLINDROS FRECUENCIA</SelectItem>
+                            <SelectItem value="frecuencia">VIBRACIONES CILINDROS</SelectItem>
                         </SelectContent>
                     </Select>
                     <div className=' flex-1 min-h-0'>
@@ -105,7 +105,7 @@ const MotorGridComponent = () => {
                             // <BarPlotly /> // Componente para
                             <CylinderTemperatureChart {...generateSimulatedData({})} />
                         ) : selectTendency === 'frecuencia' ? (
-                            <Tendency {...FrecuencyCilindersData} /> // Componente para frecuencia (o el que necesites)
+                            <Tendency {...FrecuencyCilindersData} showOperatingZones={true} /> // Componente para frecuencia
                         ) : null}
                     </div>
                 </div>

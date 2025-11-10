@@ -48,8 +48,8 @@ const HealhtlyComponent = () => {
                         {[
                             { label: "Temp. Devanado U", value: "62 °C", status: "✅" },
                             { label: "Temp. Devanado V", value: "65 °C", status: "✅" },
-                            { label: "Temp. Devanado W", value: "70 °C", status: "⚠️" },
-                            { label: "Temp. Rodamiento Acople", value: "Casi OK", status: "⚠️" },
+                            { label: "Temp. Devanado W", value: "70 °C", status: "✅" },
+                            { label: "Temp. Rodamiento Acople", value: " OK", status: "✅" },
                             { label: "Temp. Rodamiento Libre", value: "OK", status: "✅" },
                         ].map((item, idx) => (
                             <div key={idx} className="flex justify-between items-center border-b border-muted pb-1">

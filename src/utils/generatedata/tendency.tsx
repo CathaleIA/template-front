@@ -1,26 +1,33 @@
 import { Variable } from "lucide-react";
 
+/// DATOS SIMULADOS DE TENDENCIAS 
 // TENDENCIES
 interface TraceData {
   x: Date[];
   y: number[];
   name: string;
   mode?: 'lines' | 'markers' | 'lines+markers';
+  lineColor?: string;
 }
+
+// MODIFICADO: Datos entre 20-30 Hz (siempre positivos)
 const generateData = (
   points: number,
   timeRange: number // en milisegundos
 ) => {
-  const baseValue = 40 + Math.random() * 20; // 40–60
+  const baseValue = 25; // Centro del rango 20-30
   const x = Array.from({ length: points }, (_, i) => {
     const step = timeRange / points;
     return new Date(Date.now() - timeRange + step * i);
   });
-  const y = Array.from({ length: points }, () =>
-    baseValue + (Math.random() * 2 - 1) * 0.5 // variación de ±0.5Hz
-  );
+  const y = Array.from({ length: points }, () => {
+    // Variación de ±2.5 para mantener el rango 20-30
+    const variation = (Math.random() * 2 - 1) * 2.5;
+    return Math.max(20, Math.min(30, baseValue + variation));
+  });
   return { x, y };
 };
+
 const FrecuencyCilinder1: TraceData = {
   x: generateData(1000, 3600000).x,
   y: generateData(1000, 3600000).y,
@@ -94,11 +101,6 @@ const data = [
   FrecuencyCilinder10,
 ];
 
-
-
-
-
-
 //power
 const generateEnergyData = (
   days: number, // número de días a mostrar (1-30)
@@ -121,6 +123,31 @@ const generateEnergyData = (
   });
   return { x, y };
 };
+
+// Función para generar datos con valores constantes en un rango específico
+const generatePowerData = (
+  days: number,
+  baseValue: number,
+  maxVariation: number
+): { x: Date[], y: number[] } => {
+  const points = 24 * days;
+  const now = Date.now();
+  const timeRange = days * 24 * 60 * 60 * 1000;
+  
+  const x = Array.from({ length: points }, (_, i) => {
+    const date = new Date(now - timeRange + (i * (timeRange / points)));
+    date.setMinutes(0, 0, 0);
+    return date;
+  });
+  
+  const y = Array.from({ length: points }, () => {
+    const randomVariation = (Math.random() * 2 - 1) * maxVariation;
+    return baseValue + randomVariation;
+  });
+  
+  return { x, y };
+};
+
 const EnergyConsumed: TraceData = {
   ...generateEnergyData(30, 150, 20, 14),
   name: 'Energía Consumida (kWh)',
@@ -141,30 +168,27 @@ const energyTraces = [
   EnergyGenerated,
   ReactiveEnergyGenerated
 ];
-const ActivePower: TraceData = {
-  ...generateEnergyData(30, 1250, 100, 14), // Base de 1250 kW con variación de 100
-  name: 'Potencia Activa (kW)',
+
+// Potencia Activa (820 ±1.5 kW)
+const PotenciaActiva: TraceData = {
+  ...generatePowerData(30, 820, 1.5), // baseValue=820, variación=±1.5
+  name: 'Potencia Activa',
   mode: 'lines'
 };
-const ReactivePower: TraceData = {
-  ...generateEnergyData(30, 600, 50, 10), // Base de 600 kVAR con variación de 50
-  name: 'Potencia Reactiva (kVAR)',
+
+// Potencia Reactiva (275 ±1.5 kVAr)
+const PotenciaReactiva: TraceData = {
+  ...generatePowerData(30, 275, 1.5), // baseValue=275, variación=±1.5
+  name: 'Potencia Reactiva',
   mode: 'lines'
 };
-const ApparentPower: TraceData = {
-  ...generateEnergyData(30, 1400, 120, 14), // Base de 1400 kVA con variación de 120
-  name: 'Potencia Aparente (kVA)',
+
+// Potencia Aparente (875 ±1.5 kVA)
+const PotenciaAparente: TraceData = {
+  ...generatePowerData(30, 875, 1.5), // baseValue=875, variación=±1.5
+  name: 'Potencia Aparente',
   mode: 'lines'
 };
-const powerTraces = [
-  ActivePower,
-  ReactivePower,
-  ApparentPower
-];
-
-
-
-
 
 //VELOCIDAD|FRECUENCIA
 function generarVelocidadMotor(puntos: number = 100): TraceData {
@@ -212,7 +236,6 @@ const rpmTraces: TraceData[] = [
   generarVelocidadMotor(),
 ];
 
-
 // Temperatura Devanados
 function generateWindingTemperatureTraces(days: number = 7): TraceData[] {
   const now = new Date();
@@ -233,11 +256,12 @@ function generateWindingTemperatureTraces(days: number = 7): TraceData[] {
       timestamp.setHours(now.getHours() - (totalPoints - i));
       x.push(timestamp);
 
-      // Simulación: base + fluctuación + offset por fase
-      const baseTemp = 60 + Math.random() * 10;
-      const fluctuation = Math.sin((i / 24) * 2 * Math.PI) * 5;
-      const offset = index * 2; // U=0, V=2, W=4
-      y.push(Math.round(baseTemp + fluctuation + offset));
+      // Base entre 65 y 70 con fluctuación mínima
+      const baseTemp = 67; // punto medio
+      const randomFluctuation = (Math.random() * 2 - 1) * 1.5; // ±1.5 °C
+      const offset = index * 0.5; // pequeñas diferencias entre fases
+
+      y.push(Math.round(baseTemp + randomFluctuation + offset));
     }
 
     return {
@@ -252,10 +276,7 @@ function generateWindingTemperatureTraces(days: number = 7): TraceData[] {
   return traces;
 }
 
-
-
 //SALIDAS
-
 const DevanadosData = {
   minPF: 50,
   maxPF: 85,
@@ -263,17 +284,10 @@ const DevanadosData = {
   tittle: 'Temperatura devanados',
   yAxisTitle: 'Temperatura [°C]'
 }
-const PowerData = {
-  minPF: 1000,
-  maxPF: 1480,
-  traces: powerTraces,
-  tittle: 'Potencias del generador',
-  yAxisTitle: 'Potencia',
-}
 
 const FrecuencyCilindersData = {
-  minPF: 30,
-  maxPF: 65,
+  minPF: 0,
+  maxPF: 100,
   traces: data,
   tittle: 'Grafica de frecuencias',
   yAxisTitle: 'Frecuencia [Hz]',
@@ -295,13 +309,38 @@ const VelocidadFrecuencyData = {
   yAxisTitle: 'Frecuency vs rpm'
 };
 
+// Configuraciones individuales para cada tipo de potencia
+const PotenciaActivaData = {
+  minPF: 818,
+  maxPF: 822,
+  traces: [PotenciaActiva],
+  tittle: 'Potencia Activa',
+  yAxisTitle: 'Potencia [kW]',
+};
 
+const PotenciaReactivaData = {
+  minPF: 250,
+  maxPF: 300,
+  traces: [PotenciaReactiva],
+  tittle: 'Potencia Reactiva',
+  yAxisTitle: 'Potencia [kVAr]',
+};
+
+const PotenciaAparenteData = {
+  minPF: 850,
+  maxPF: 900,
+  traces: [PotenciaAparente],
+  tittle: 'Potencia Aparente',
+  yAxisTitle: 'Potencia [kVA]',
+};
 
 //OUTPUTS
 export {
   FrecuencyCilindersData,
   EnergyPowerData,
-  PowerData,
+  PotenciaActivaData,
+  PotenciaReactivaData,
+  PotenciaAparenteData,
   VelocidadFrecuencyData,
   DevanadosData,
 }
