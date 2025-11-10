@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Activity } from "lucide-react";
+import { Activity, Terminal, X } from "lucide-react";
 import { getNumericValue, getBooleanValue } from "@/types/iot.types";
 
 import HeaderStatus from "./HeaderStatus";
@@ -53,6 +53,13 @@ interface IoTData {
   };
 }
 
+/* ============ LOG ENTRY ============ */
+interface LogEntry {
+  time: string;
+  type: 'info' | 'success' | 'error' | 'warning';
+  message: string;
+}
+
 /* ============ BUFFER ============ */
 const BUFFER_SIZE = 80;
 
@@ -63,7 +70,57 @@ interface BufferPoint {
 
 type Row = { idx: number; ts: number } & Record<string, number>;
 
-/* ============ Card con “base” ancha y píldora verde ============ */
+/* ============ DEBUG CONSOLE COMPONENT ============ */
+function DebugConsole({ 
+  logs, 
+  onClose 
+}: { 
+  logs: LogEntry[]; 
+  onClose: () => void;
+}) {
+  const logColors = {
+    info: 'text-blue-400',
+    success: 'text-green-400',
+    error: 'text-red-400',
+    warning: 'text-yellow-400'
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 w-96 max-h-96 bg-gray-900 rounded-lg shadow-2xl border border-gray-700 overflow-hidden z-50">
+      {/* Header */}
+      <div className="flex items-center justify-between bg-gray-800 px-4 py-2 border-b border-gray-700">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-4 h-4 text-green-400" />
+          <span className="text-sm font-semibold text-white">Debug Console</span>
+        </div>
+        <button 
+          onClick={onClose}
+          className="text-gray-400 hover:text-white transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Logs */}
+      <div className="overflow-y-auto max-h-80 p-3 space-y-1 font-mono text-xs">
+        {logs.length === 0 ? (
+          <div className="text-gray-500 text-center py-4">
+            Esperando logs...
+          </div>
+        ) : (
+          logs.map((log, idx) => (
+            <div key={idx} className="flex gap-2">
+              <span className="text-gray-500">{log.time}</span>
+              <span className={logColors[log.type]}>{log.message}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============ Card con "base" ancha y píldora verde ============ */
 function Card({
   title,
   children,
@@ -76,20 +133,16 @@ function Card({
   return (
     <div
       className={[
-        // Fondo menos brillante (gris suave, como la imagen)
         "relative rounded-2xl bg-[var(--gray-soft)]",
         "border border-[var(--color-panel-border)] shadow-lg",
-        // sutil separación interna
         "px-3 pb-3 pt-6",
         className,
       ].join(" ")}
     >
-      {/* BASE amplia (pestaña gris) */}
       <div className="absolute -top-4 left-5">
         <div
           className={[
             "h-8 rounded-full",
-            // gris clarito, ancho mayor para parecerse al ejemplo
             "bg-[rgba(0,0,0,0.06)]",
             "backdrop-blur-[1px]",
             "px-6",
@@ -97,14 +150,12 @@ function Card({
           ].join(" ")}
           style={{ minWidth: 160 }}
         >
-          {/* PÍLDORA verde encima */}
           <div className="inline-flex items-center rounded-full bg-[var(--green-medium)] text-white px-4 py-1 font-semibold uppercase tracking-wide text-[11px] relative -top-[2px] shadow">
             {title}
           </div>
         </div>
       </div>
 
-      {/* Contenido */}
       <div className="mt-2 rounded-xl bg-white/70 p-3">
         {children}
       </div>
@@ -122,6 +173,22 @@ export default function GPC300Dashboard() {
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 🆕 Estado para logs
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [showDebug, setShowDebug] = useState(true);
+
+  // 🆕 Función para añadir logs
+  const addLog = useCallback((type: LogEntry['type'], message: string) => {
+    const time = new Date().toLocaleTimeString('es-CO', { 
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    
+    setLogs(prev => [...prev, { time, type, message }].slice(-50)); // Últimos 50 logs
+  }, []);
 
   /* ============ ACTUALIZAR BUFFER ============ */
   const updateBuffer = useCallback((msg: IoTData) => {
@@ -149,33 +216,71 @@ export default function GPC300Dashboard() {
     });
   }, []);
 
-  /* ============ SSE ============ */
+  /* ============ SSE CON LOGS ============ */
   useEffect(() => {
+    addLog('info', '🔄 Iniciando conexión EventSource...');
+    addLog('info', `📍 Endpoint: /api/iot/stream`);
+    addLog('info', `🌍 Environment: ${process.env.NODE_ENV || 'unknown'}`);
+    
     const es = new EventSource("/api/iot/stream");
+    
     es.onopen = () => {
       setConnected(true);
       setError(null);
+      addLog('success', '✅ EventSource conectado correctamente');
     };
-    es.onerror = () => {
+    
+    es.onerror = (e) => {
       setConnected(false);
       setError("Error de conexión");
+      addLog('error', `❌ Error EventSource: ${JSON.stringify(e)}`);
+      
+      // Información adicional del error
+      if (es.readyState === EventSource.CLOSED) {
+        addLog('error', '🔌 Conexión cerrada por el servidor');
+      } else if (es.readyState === EventSource.CONNECTING) {
+        addLog('warning', '⏳ Intentando reconectar...');
+      }
     };
+    
     es.onmessage = (e) => {
       try {
+        addLog('info', `📨 Mensaje recibido (${e.data.length} chars)`);
+        
         const msg: unknown = JSON.parse(e.data);
+        
+        // Verificar si es un mensaje de control
         if (typeof msg === "object" && msg !== null && "type" in (msg as Record<string, unknown>)) {
+          const controlMsg = msg as { type: string };
+          
+          if (controlMsg.type === 'connected') {
+            addLog('success', '🎉 Conexión SSE establecida');
+          } else if (controlMsg.type === 'heartbeat') {
+            addLog('info', '💓 Heartbeat recibido');
+          } else if (controlMsg.type === 'error') {
+            addLog('error', `⚠️ Error del servidor: ${JSON.stringify(msg)}`);
+          }
           return;
         }
+        
+        // Mensaje de datos IoT
         const casted = msg as IoTData;
         setData(casted);
         setLastUpdate(new Date());
         updateBuffer(casted);
+        addLog('success', `📊 Datos IoT actualizados (${casted.timestamp})`);
+        
       } catch (err) {
+        addLog('error', `❌ Error parseando mensaje: ${err}`);
         console.error(err);
       }
     };
-    return () => es.close();
-  }, [updateBuffer]);
+    
+    return () => {
+      addLog('warning', '🔌 Cerrando conexión EventSource');
+      es.close();
+    };
+  }, [updateBuffer, addLog]);
 
   /* ============ FILAS PARA GRÁFICAS ============ */
   const corrienteData: Row[] = buffer.corriente.map((p, i) => ({
@@ -194,7 +299,18 @@ export default function GPC300Dashboard() {
   return (
     <div className="min-h-screen p-6 bg-gradient-to-b from-[var(--green-dark)] via-[var(--gray-soft)] to-[var(--gray-soft)] text-gray-900">
       {/* Estado conexión */}
-      <div className="absolute right-6 top-6 z-50">
+      <div className="absolute right-6 top-6 z-50 flex gap-2">
+        {/* Botón para toggle debug console */}
+        <button
+          onClick={() => setShowDebug(!showDebug)}
+          className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+          title="Toggle Debug Console"
+        >
+          <Terminal className="w-4 h-4" />
+          <span>Debug</span>
+        </button>
+
+        {/* Estado de conexión */}
         <div
           className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${
             error
@@ -210,14 +326,22 @@ export default function GPC300Dashboard() {
         </div>
       </div>
 
-      {/* Header superior (se conserva) */}
+      {/* Debug Console */}
+      {showDebug && (
+        <DebugConsole 
+          logs={logs} 
+          onClose={() => setShowDebug(false)} 
+        />
+      )}
+
+      {/* Header superior */}
       <HeaderStatus
         title="DASHBOARD GPC-300"
         subtitle="Generador Principal - Estado Actual"
         lastUpdate={lastUpdate}
       />
 
-      {/* PANEL 1: ESTADO GENERAL (se conserva) */}
+      {/* PANEL 1: ESTADO GENERAL */}
       <div className="grid grid-cols-12 gap-4 mb-4">
         <Card title="Estado General" className="col-span-12 lg:col-span-8">
           <GeneralStatusCard
@@ -238,7 +362,7 @@ export default function GPC300Dashboard() {
         </Card>
       </div>
 
-      {/* PANEL 2: SOLO CORRIENTE Y VOLTAJE (lo demás se elimina) */}
+      {/* PANEL 2: CORRIENTE Y VOLTAJE */}
       <Card title="Mediciones Eléctricas" className="mb-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Corriente">
