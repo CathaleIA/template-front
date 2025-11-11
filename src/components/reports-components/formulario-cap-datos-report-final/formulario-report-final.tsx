@@ -471,51 +471,71 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
 
 
                                 {/* Aprobado Por */}
-                                <form.Field name="aprobadoPor" mode="array">
-                                    {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <div className="space-y-3">
-                                                <FieldLabel>Aprobado Por *</FieldLabel>
-                                                <FieldDescription>Personas que aprobaron el reporte</FieldDescription>
-                                                {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`aprobadoPor[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Nombre ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
-                                                                </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
-                                                    + Agregar Aprobador
-                                                </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
-                                            </div>
-                                        )
-                                    }}
-                                </form.Field>
+                             {/* Aprobado Por */}
+<form.Field name="aprobadoPor" mode="array">
+  {(field) => {
+    const isInvalid =
+      field.state.meta.isTouched && field.state.meta.errors.length > 0
+
+    return (
+      <div className="space-y-3">
+        <FieldLabel>Aprobado Por *</FieldLabel>
+        <FieldDescription>Personas que aprobaron el reporte</FieldDescription>
+
+        {field.state.value.map((_, index) => (
+          <form.Field key={index} name={`aprobadoPor[${index}]`}>
+            {(subField) => {
+              const isSubFieldInvalid =
+                subField.state.meta.isTouched &&
+                subField.state.meta.errors.length > 0
+              return (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={subField.state.value ?? ""}
+                      onChange={(e) => subField.handleChange(e.target.value)}
+                      onBlur={subField.handleBlur}
+                      placeholder={`Nombre ${index + 1}`}
+                      aria-invalid={isSubFieldInvalid}
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => field.removeValue(index)}
+                      className="p-2 rounded hover:bg-red-50 transition-colors border"
+                      aria-label="Eliminar"
+                    >
+                      <X className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                  {isSubFieldInvalid && (
+                    <FieldError>
+                      {subField.state.meta.errors.join(", ")}
+                    </FieldError>
+                  )}
+                </div>
+              )
+            }}
+          </form.Field>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => field.pushValue("")}
+        >
+          + Agregar Aprobador
+        </Button>
+
+        {isInvalid && (
+          <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+        )}
+      </div>
+    )
+  }}
+</form.Field>
+
                             </FieldGroup>
                         </FieldSet>
                         <FieldSet>
