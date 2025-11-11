@@ -2,24 +2,44 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect,useState } from "react"
 import type { ZipUploadRequest, ZipUploadResponse } from "@/types" // Updated import to use correct interfaces
 import { Button } from "@/components/ui/button"
-import { Input } from  "@/components/ui/input" // Fixed import path
-import { Label } from  "@/components/ui/label" // Fixed import path
+import { Input } from "@/components/ui/input" // Fixed import path
+import { Label } from "@/components/ui/label" // Fixed import path
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { v4 as uuidv4 } from "uuid"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+
 export default function ZipUploader() {
   const [zipFile, setZipFile] = useState<File | null>(null)
-  const [tenantName, setTenantName] = useState<string>("TENANT_CATHALEIA")
-  const [userPoolId, setUserPoolId] = useState<string>("USER_CATHALEIA")
+  const [tenantName, setTenantName] = useState<string>("")
+  const [userPoolId, setUserPoolId] = useState<string>("")
   const [activo, setActivo] = useState<string>("")
   const [fileName, setFileName] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [uploadResult, setUploadResult] = useState<ZipUploadResponse | null>(null)
+
   const [error, setError] = useState<string>("")
+  useEffect(() => {
+    async function fetchTenant() {
+      try {
+        const res = await fetch("/api/auth/tenantget")
+        const data = await res.json()
+        if (data?.userPoolId && data?.userPoolDomain) {
+          setTenantName(data.userPoolDomain)
+          setUserPoolId(data.userPoolId)
+        } else {
+          setError("No se encontraron datos de tenant en cookies")
+        }
+      } catch (err) {
+        console.error("Error obteniendo tenant:", err)
+        setError("Error al cargar tenant")
+      }
+    }
+    fetchTenant()
+  }, [])
 
   async function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -51,7 +71,7 @@ export default function ZipUploader() {
         fileName: generatedFileName,
         file: base64File,
       }
-
+      
       const res = await fetch("/api/upload-zipfile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,6 +132,9 @@ export default function ZipUploader() {
             <p className="text-sm text-gray-600 mb-4">Nombre: {fileName}</p>
             <p className="text-sm font-medium text-blue-600 mb-4">Job ID: {uploadResult.messageResponse}</p>
             <Button
+
+              variant="custom"
+              size="custom"
               onClick={() => {
                 setUploadResult(null)
                 setZipFile(null)
@@ -147,13 +170,15 @@ export default function ZipUploader() {
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button
+          <Button
+            variant="custom"
+            size="custom"
             type="submit"
             disabled={isLoading || !zipFile || !activo}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {isLoading ? "Subiendo..." : "Subir Archivo"}
-          </button>
+          </Button>
 
           {(!zipFile || !activo) && (
             <p className="text-xs text-gray-500 text-center">

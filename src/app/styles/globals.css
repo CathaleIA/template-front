@@ -193,8 +193,59 @@
   h3{
     @apply text-lg font-bold;
   }
+
+}
+/* --- TipTap Table Fix --- */
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1rem 0;
+  border: 1px solid #d1d5db; /* gris suave */
 }
 
+.tiptap th,
+.tiptap td {
+  border: 1px solid #363636;
+  padding: 4px 4px;
+  vertical-align: top;
+  text-align: left;
+  background-color: #ffffff;
+  color: #111827; /* texto oscuro */
+  white-space: normal !important; /* ✅ permite salto de línea */
+}
+
+.tiptap th {
+  background-color: #f3f4f6; /* gris claro para cabecera */
+  font-weight: bold;
+}
+
+.tiptap .selectedCell {
+  background-color: rgba(147, 197, 253, 0.3); /* azul suave */
+}
+
+.tiptap .column-resize-handle {
+  background-color: #3b82f6; /* azul */
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+}
+.tiptap img{
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+}
+.prose {
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #111827;
+}
 
 @keyframes accordion-down {
   from {
@@ -261,7 +312,7 @@
 .a4-page {
     width: 190mm;
     min-height: 257mm;
-    padding: 10mm;
+
     margin: auto;
     background: rgb(255, 255, 255);
     box-sizing: border-box;
@@ -269,10 +320,6 @@
     font-size: 9pt;
 }
 
-@page {
-    size: A4;
-    margin: 5mm;
-}
 
 /* Table styles */
 .table-style {
@@ -360,3 +407,310 @@
     border : none !important;
      */
 }
+
+
+.raw-html-block {
+  all: revert; /* evita conflictos con el reset del editor */
+  width: 100%;
+  display: block;
+}
+/* A4 Page layout */
+.raw-html-block .a4-page {
+    width: 190mm;
+    min-height: 257mm;
+    padding: 10mm;
+    margin: auto;
+    background: rgb(255, 255, 255);
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+}
+
+
+
+/* Table styles */
+.raw-html-block .table-style {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.raw-html-block .th-style {
+    border: 1px solid black;
+    background-color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    padding: 1px 5px;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.raw-html-block .td-style {
+    border: 1px solid black;
+    padding: 1px 5px;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+/* Misc utility styles */
+.raw-html-block .header-table td {
+    border: none;
+    padding: 2px 5px;
+}
+
+.raw-html-block .section-title {
+    background-color: #00076d;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    padding: 7px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.raw-html-block .logo {
+    width: 80px;
+    height: auto;
+    float: left;
+    margin-right: 10px;
+}
+
+.raw-html-block .clear {
+    clear: both;
+}
+
+.raw-html-block .text-center {
+    padding-top: 3%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.raw-html-block .box {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.raw-html-block .forTable {
+    font-weight: bold;
+}
+
+
+  /* ========================================
+     RESET Y CONFIGURACIÓN BASE - Solo para el reporte
+     ======================================== */
+  #template-container-estilos * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+  }
+
+  /* ========================================
+     CONTENEDOR PRINCIPAL
+     ======================================== */
+  #template-container-estilos .report-container {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.6;
+      font-size: 10pt;
+      max-width: 100%;
+      margin: 0;
+      padding: 20px;
+  }
+
+  /* ========================================
+     TÍTULOS
+     ======================================== */
+  #template-container-estilos .report-title {
+      text-align: center;
+      font-size: 14pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 25px;
+      color: #000;
+      letter-spacing: 0.5px;
+  }
+
+  #template-container-estilos .section-title {
+      font-size: 11pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      color: #000;
+      border-bottom: 2px solid #333;
+      padding-bottom: 4px;
+  }
+
+  #template-container-estilos .subsection-title {
+      font-weight: bold;
+      font-size: 10pt;
+      margin-top: 12px;
+      margin-bottom: 8px;
+      color: #333;
+  }
+
+  /* ========================================
+     SECCIONES Y ESPACIADO
+     ======================================== */
+  #template-container-estilos .report-section {
+      margin-bottom: 70px;
+      margin-top: 70px;
+      page-break-inside: avoid;
+  }
+
+  #template-container-estilos .info-section {
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 70px;
+      margin-right: 20px;
+      margin-bottom: 120px;
+      margin-left: 20px;
+  }
+
+  #template-container-estilos .info-item {
+      margin-bottom: 8px;
+      line-height: 1.5;
+  }
+
+  #template-container-estilos .subsection {
+       margin-top: 70px;
+      margin-bottom: 15px;
+  }
+
+  #template-container-estilos .activo-block {
+      margin-bottom: 15px;
+  }
+
+  /* ========================================
+     PÁRRAFOS Y CONTENIDO
+     ======================================== */
+  #template-container-estilos .section-content {
+      text-align: justify;
+      margin-bottom: 12px;
+      line-height: 1.6;
+  }
+
+  #template-container-estilos .activo-title {
+      font-weight: normal;
+      margin-bottom: 8px;
+  }
+
+  #template-container-estilos .label {
+      font-weight: bold;
+      color: #000;
+  }
+
+  #template-container-estilos .doc-abbrev {
+      font-weight: bold;
+  }
+
+  /* ========================================
+     TABLAS
+     ======================================== */
+  #template-container-estilos .control-table,
+  #template-container-estilos .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 9pt;
+  }
+
+  #template-container-estilos .control-table td,
+  #template-container-estilos .control-table th,
+  #template-container-estilos .data-table td,
+  #template-container-estilos .data-table th {
+      border: 1px solid #333;
+      padding: 6px 10px;
+      vertical-align: top;
+  }
+
+  #template-container-estilos .table-header th {
+      background-color: #f3f4f6;
+      font-weight: bold;
+      text-align: center;
+      color: #000;
+  }
+
+  #template-container-estilos .data-table thead th {
+      background-color: #f3f4f6;
+      font-weight: bold;
+      text-align: center;
+      color: #000;
+  }
+
+  #template-container-estilos .table-label {
+      font-weight: bold;
+      width: 20%;
+      background-color: #f9fafb;
+  }
+
+  #template-container-estilos .table-value {
+      padding-left: 12px;
+  }
+
+  #template-container-estilos .center-text {
+      text-align: center;
+  }
+
+  /* ========================================
+     LISTAS
+     ======================================== */
+  #template-container-estilos .pruebas-list,
+  #template-container-estilos .reference-list,
+  #template-container-estilos .equipment-list,
+  #template-container-estilos .observations-list,
+  #template-container-estilos .conclusions-list {
+      margin-left: 20px;
+      margin-bottom: 12px;
+      padding-left: 10px;
+  }
+
+  #template-container-estilos .pruebas-list li,
+  #template-container-estilos .reference-list li,
+  #template-container-estilos .equipment-list li,
+  #template-container-estilos .observations-list li,
+  #template-container-estilos .conclusions-list li {
+      margin-bottom: 6px;
+      line-height: 1.5;
+      list-style-type: disc;
+  }
+
+  #template-container-estilos .reference-list li,
+  #template-container-estilos .conclusions-list li {
+      text-align: justify;
+  }
+
+  /* ========================================
+     CONTROL DE SALTOS DE PÁGINA
+     ======================================== */
+  #template-container-estilos .report-section,
+  #template-container-estilos .activo-block,
+  #template-container-estilos .subsection,
+  #template-container-estilos table {
+      page-break-inside: avoid;
+  }
+
+  #template-container-estilos h2 {
+      page-break-after: avoid;
+  }
+
+  /* ========================================
+     AJUSTES FINALES
+     ======================================== */
+  #template-container-estilos b,
+  #template-container-estilos strong {
+      font-weight: bold;
+      color: #000;
+  }
+
+  /* ========================================
+     OVERRIDE DE ESTILOS DE TIPTAP
+     ======================================== */
+  #template-container-estilos .ProseMirror {
+      padding: 20px !important;
+      background: white !important;
+  }
+
+  #template-container-estilos .tiptap {
+      min-height: auto !important;
+  }
