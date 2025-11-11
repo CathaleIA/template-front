@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Activity, Terminal, X } from "lucide-react";
+import { Activity } from "lucide-react";
 import { getNumericValue, getBooleanValue } from "@/types/iot.types";
 
 import HeaderStatus from "./HeaderStatus";
@@ -53,15 +53,8 @@ interface IoTData {
   };
 }
 
-/* ============ LOG ENTRY ============ */
-interface LogEntry {
-  time: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-  message: string;
-}
-
-/* ============ BUFFER ============ */
-const BUFFER_SIZE = 80;
+/* ============ BUFFER (CORREGIDO) ============ */
+const MAX_HISTORIAL_MS = 10 * 60 * 1000;
 
 interface BufferPoint {
   time: number;
@@ -70,57 +63,7 @@ interface BufferPoint {
 
 type Row = { idx: number; ts: number } & Record<string, number>;
 
-/* ============ DEBUG CONSOLE COMPONENT ============ */
-function DebugConsole({ 
-  logs, 
-  onClose 
-}: { 
-  logs: LogEntry[]; 
-  onClose: () => void;
-}) {
-  const logColors = {
-    info: 'text-blue-400',
-    success: 'text-green-400',
-    error: 'text-red-400',
-    warning: 'text-yellow-400'
-  };
-
-  return (
-    <div className="fixed bottom-4 right-4 w-96 max-h-96 bg-gray-900 rounded-lg shadow-2xl border border-gray-700 overflow-hidden z-50">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-gray-800 px-4 py-2 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-green-400" />
-          <span className="text-sm font-semibold text-white">Debug Console</span>
-        </div>
-        <button 
-          onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Logs */}
-      <div className="overflow-y-auto max-h-80 p-3 space-y-1 font-mono text-xs">
-        {logs.length === 0 ? (
-          <div className="text-gray-500 text-center py-4">
-            Esperando logs...
-          </div>
-        ) : (
-          logs.map((log, idx) => (
-            <div key={idx} className="flex gap-2">
-              <span className="text-gray-500">{log.time}</span>
-              <span className={logColors[log.type]}>{log.message}</span>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ============ Card con "base" ancha y píldora verde ============ */
+/* ============ Card con TÍTULO INTERNO (Estilo Imagen) ============ */
 function Card({
   title,
   children,
@@ -131,73 +74,61 @@ function Card({
   className?: string;
 }) {
   return (
-    <div
-      className={[
-        "relative rounded-2xl bg-[var(--gray-soft)]",
-        "border border-[var(--color-panel-border)] shadow-lg",
-        "px-3 pb-3 pt-6",
-        className,
-      ].join(" ")}
-    >
-      <div className="absolute -top-4 left-5">
-        <div
-          className={[
-            "h-8 rounded-full",
-            "bg-[rgba(0,0,0,0.06)]",
-            "backdrop-blur-[1px]",
-            "px-6",
-            "inline-flex items-center shadow-sm",
-          ].join(" ")}
-          style={{ minWidth: 160 }}
-        >
-          <div className="inline-flex items-center rounded-full bg-[var(--green-medium)] text-white px-4 py-1 font-semibold uppercase tracking-wide text-[11px] relative -top-[2px] shadow">
+  <div
+    className={[
+      "bg-white rounded-2xl",
+      "border border-[var(--color-panel-border)] shadow-lg",
+      "overflow-hidden",
+      className,
+    ].join(" ")}
+  >
+    {/* Header — más compacto */}
+    <div className="px-0 py-0">
+      <div className="relative inline-flex items-stretch h-8">
+        <div className="bg-[var(--green-dark)] text-white px-4 h-8 flex items-center">
+          <h3 className="text-[13px] font-bold uppercase tracking-wider leading-none">
             {title}
-          </div>
+          </h3>
         </div>
-      </div>
-
-      <div className="mt-2 rounded-xl bg-white/70 p-3">
-        {children}
+        <svg
+          className="h-8 w-9 -ml-px text-[var(--green-dark)]"
+          viewBox="0 0 44 32"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M0 0 L0 32 Q44 32 44 0 Z" fill="currentColor" />
+        </svg>
       </div>
     </div>
-  );
+
+    {/* Cuerpo — casi pegado (vertical) */}
+    <div className="px-2 pb-2 pt-1 md:px-3 md:pb-3 md:pt-1">
+      {children}
+    </div>
+  </div>
+);
 }
 
 export default function GPC300Dashboard() {
   const [data, setData] = useState<IoTData | null>(null);
-  const [buffer, setBuffer] = useState<{
-    corriente: BufferPoint[];
-    voltaje: BufferPoint[];
-  }>({ corriente: [], voltaje: [] });
+  const [buffer, setBuffer] = useState<{ corriente: BufferPoint[]; voltaje: BufferPoint[] }>(
+    { corriente: [], voltaje: [] }
+  );
 
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 🆕 Estado para logs
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [showDebug, setShowDebug] = useState(true);
-
-  // 🆕 Función para añadir logs
-  const addLog = useCallback((type: LogEntry['type'], message: string) => {
-    const time = new Date().toLocaleTimeString('es-CO', { 
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    
-    setLogs(prev => [...prev, { time, type, message }].slice(-50)); // Últimos 50 logs
-  }, []);
-
-  /* ============ ACTUALIZAR BUFFER ============ */
+  /* ============ ACTUALIZAR BUFFER (CORREGIDO) ============ */
   const updateBuffer = useCallback((msg: IoTData) => {
     const gen = msg.data.generator;
-    const t = Date.now();
+    const ahora = Date.now();
 
     setBuffer((prev) => {
-      const append = (arr: BufferPoint[], value: Record<string, number>) =>
-        [...arr, { time: t, value }].slice(-BUFFER_SIZE);
+      const append = (arr: BufferPoint[], value: Record<string, number>) => {
+        const nuevoHistorial = [...arr, { time: ahora, value }];
+        return nuevoHistorial.filter((punto) => ahora - punto.time < MAX_HISTORIAL_MS);
+      };
 
       return {
         corriente: append(prev.corriente, {
@@ -216,110 +147,33 @@ export default function GPC300Dashboard() {
     });
   }, []);
 
-  /* ============ SSE CON LOGS ============ */
+  /* ============ SSE ============ */
   useEffect(() => {
-    addLog('info', '🔄 Iniciando conexión EventSource...');
-    addLog('info', `📍 Endpoint: /api/iot/stream`);
-    addLog('info', `🌍 Environment: ${process.env.NODE_ENV || 'unknown'}`);
-    
-    // Primero verificar el endpoint con fetch para obtener más detalles del error
-    fetch('/api/iot/stream', { 
-      method: 'HEAD',
-      credentials: 'include' 
-    })
-      .then(res => {
-        addLog('info', `🔍 HEAD request status: ${res.status} ${res.statusText}`);
-        if (!res.ok) {
-          addLog('error', `❌ Endpoint no disponible: ${res.status}`);
-        }
-      })
-      .catch(err => {
-        addLog('error', `❌ Error en HEAD request: ${err.message}`);
-      });
-    
     const es = new EventSource("/api/iot/stream");
-    
     es.onopen = () => {
       setConnected(true);
       setError(null);
-      addLog('success', '✅ EventSource conectado correctamente');
-      addLog('info', `📊 ReadyState: ${es.readyState} (1=OPEN)`);
     };
-    
-    es.onerror = (e) => {
+    es.onerror = () => {
       setConnected(false);
       setError("Error de conexión");
-      
-      // Log detallado del error
-      addLog('error', `❌ Error EventSource - ReadyState: ${es.readyState}`);
-      addLog('error', `❌ Event details: ${JSON.stringify({
-        type: e.type,
-        target: e.target?.constructor?.name,
-        readyState: es.readyState
-      })}`);
-      
-      // Información adicional del error
-      if (es.readyState === EventSource.CLOSED) {
-        addLog('error', '🔌 Conexión CERRADA por el servidor');
-        addLog('error', '💡 Posibles causas: 401 Auth, 500 Server Error, Timeout');
-      } else if (es.readyState === EventSource.CONNECTING) {
-        addLog('warning', '⏳ Estado: CONNECTING (intentando reconectar...)');
-      } else if (es.readyState === EventSource.OPEN) {
-        addLog('warning', '⚠️ Estado: OPEN pero con error');
-      }
-      
-      // Intentar hacer fetch para obtener el error real
-      fetch('/api/iot/stream', { credentials: 'include' })
-        .then(res => {
-          addLog('error', `🔍 Fetch test - Status: ${res.status} ${res.statusText}`);
-          return res.text();
-        })
-        .then(text => {
-          addLog('error', `📄 Response body: ${text.substring(0, 200)}`);
-        })
-        .catch(err => {
-          addLog('error', `❌ Fetch error: ${err.message}`);
-        });
     };
-    
     es.onmessage = (e) => {
       try {
-        addLog('info', `📨 Mensaje recibido (${e.data.length} chars)`);
-        
         const msg: unknown = JSON.parse(e.data);
-        
-        // Verificar si es un mensaje de control
         if (typeof msg === "object" && msg !== null && "type" in (msg as Record<string, unknown>)) {
-          const controlMsg = msg as { type: string };
-          
-          if (controlMsg.type === 'connected') {
-            addLog('success', '🎉 Conexión SSE establecida');
-          } else if (controlMsg.type === 'heartbeat') {
-            addLog('info', '💓 Heartbeat recibido');
-          } else if (controlMsg.type === 'error') {
-            addLog('error', `⚠️ Error del servidor: ${JSON.stringify(msg)}`);
-          }
           return;
         }
-        
-        // Mensaje de datos IoT
         const casted = msg as IoTData;
         setData(casted);
         setLastUpdate(new Date());
         updateBuffer(casted);
-        addLog('success', `📊 Datos IoT actualizados (${casted.timestamp})`);
-        
       } catch (err) {
-        addLog('error', `❌ Error parseando mensaje: ${err}`);
         console.error(err);
       }
     };
-    
-    return () => {
-      addLog('warning', '🔌 Cerrando conexión EventSource');
-      es.close();
-    };
-  }, [updateBuffer, addLog]);
+    return () => es.close();
+  }, [updateBuffer]);
 
   /* ============ FILAS PARA GRÁFICAS ============ */
   const corrienteData: Row[] = buffer.corriente.map((p, i) => ({
@@ -336,20 +190,9 @@ export default function GPC300Dashboard() {
 
   /* ============ RENDER ============ */
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-b from-[var(--green-dark)] via-[var(--gray-soft)] to-[var(--gray-soft)] text-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-[var(--green-dark)] via-[var(--gray-soft)] to-[var(--gray-soft)] text-gray-900">
       {/* Estado conexión */}
-      <div className="absolute right-6 top-6 z-50 flex gap-2">
-        {/* Botón para toggle debug console */}
-        <button
-          onClick={() => setShowDebug(!showDebug)}
-          className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md bg-gray-800 text-white hover:bg-gray-700 transition-colors"
-          title="Toggle Debug Console"
-        >
-          <Terminal className="w-4 h-4" />
-          <span>Debug</span>
-        </button>
-
-        {/* Estado de conexión */}
+      <div className="absolute right-6 top-6 z-50">
         <div
           className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${
             error
@@ -365,54 +208,48 @@ export default function GPC300Dashboard() {
         </div>
       </div>
 
-      {/* Debug Console */}
-      {showDebug && (
-        <DebugConsole 
-          logs={logs} 
-          onClose={() => setShowDebug(false)} 
+      {/* Contenedor principal — compactamos padding vertical (antes py-5) */}
+      <div className="container mx-auto px-3 md:px-6 2xl:px-10 max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1920px] py-3 md:py-4">
+        {/* Header superior */}
+        <HeaderStatus
+          title="DASHBOARD GPC-300"
+          subtitle="Generador Principal - Estado Actual"
+          lastUpdate={lastUpdate}
         />
-      )}
 
-      {/* Header superior */}
-      <HeaderStatus
-        title="DASHBOARD GPC-300"
-        subtitle="Generador Principal - Estado Actual"
-        lastUpdate={lastUpdate}
-      />
-
-      {/* PANEL 1: ESTADO GENERAL */}
-      <div className="grid grid-cols-12 gap-4 mb-4">
-        <Card title="Estado General" className="col-span-12 lg:col-span-8">
-          <GeneralStatusCard
-            activa={getNumericValue(data?.data.generator.potencia_activa) || 0}
-            reactiva={getNumericValue(data?.data.generator.potencia_reactiva) || 0}
-            aparente={getNumericValue(data?.data.generator.potencia_aparente) || 0}
-            fp={(getNumericValue(data?.data.generator.factor_potencia) || 0) * 100}
-          />
-        </Card>
-
-        <Card title="Breaker" className="col-span-12 lg:col-span-4">
-          <BreakerCard
-            closed={!!getBooleanValue(data?.data.breaker.closed)}
-            ok={!!getBooleanValue(data?.data.breaker.voltage_freq_ok)}
-            fault={!!getBooleanValue(data?.data.breaker.fault)}
-            frecuencia={getNumericValue(data?.data.generator.frecuencia) || 0}
-          />
-        </Card>
-      </div>
-
-      {/* PANEL 2: CORRIENTE Y VOLTAJE */}
-      <Card title="Mediciones Eléctricas" className="mb-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card title="Corriente">
-            <CurrentsChart data={corrienteData} height={360} />
+        {/* PANEL 1: ESTADO GENERAL + BREAKER — menor separación inferior (antes mb-5) */}
+        <div className="grid grid-cols-12 gap-4 mb-3">
+          <Card title="Estado General" className="col-span-12 lg:col-span-8">
+            <GeneralStatusCard
+              activa={getNumericValue(data?.data.generator.potencia_activa) || 0}
+              reactiva={getNumericValue(data?.data.generator.potencia_reactiva) || 0}
+              aparente={getNumericValue(data?.data.generator.potencia_aparente) || 0}
+              fp={(getNumericValue(data?.data.generator.factor_potencia) || 0) * 100}
+            />
           </Card>
 
-          <Card title="Voltaje">
-            <VoltagesChart data={voltajeData} height={360} />
+          <Card title="Breaker" className="col-span-12 lg:col-span-4">
+            <BreakerCard
+              closed={!!getBooleanValue(data?.data.breaker.closed)}
+              ok={!!getBooleanValue(data?.data.breaker.voltage_freq_ok)}
+              fault={!!getBooleanValue(data?.data.breaker.fault)}
+              frecuencia={getNumericValue(data?.data.generator.frecuencia) || 0}
+            />
           </Card>
         </div>
-      </Card>
+
+        {/* PANEL 2: CORRIENTE + VOLTAJE — menor separación inferior (antes mb-6) */}
+        <div className="grid grid-cols-12 gap-4 mb-4">
+          <Card title="Corriente" className="col-span-12 lg:col-span-6 h-full">
+            {/* Al compactar paddings arriba/abajo, compensa con un alto apenas mayor si quieres: 368 */}
+            <CurrentsChart data={corrienteData} height={364} />
+          </Card>
+
+          <Card title="Voltaje" className="col-span-12 lg:col-span-6 h-full">
+            <VoltagesChart data={voltajeData} height={364} />
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
