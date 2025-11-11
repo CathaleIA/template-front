@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/ui/data-table";
 import { ResponseQueryReportsList} from "@/types";
-import { getColumns } from "@/components/reports-components/colums-lotes-gestionar/colums";
+import { useColumns } from "@/components/reports-components/colums-lotes-gestionar/colums";
 import { useEffect, useState } from "react";
 
 interface TableGestionLotesProps {
@@ -68,7 +68,7 @@ export default function TableGestionLotes({
 
       <div>
         <DataTable
-          columns={getColumns(onJobSelect, onActivoSelect, selectedJobId, tenantName)}
+          columns={useColumns(onJobSelect, onActivoSelect, selectedJobId, tenantName)}
           data={data}
           filters={filters}
           // isLoading={isLoading} // si tu DataTable admite este prop

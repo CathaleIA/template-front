@@ -134,202 +134,218 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                             <FieldLegend>Información General del Reporte</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
+                                <form.Field name="reportTitle">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Título del Reporte *</FieldLabel>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Ingrese el título del reporte"
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
 
-                                <form.Field name="reportTitle" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Título del Reporte *</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Ingrese el título del reporte"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
-
-                                <form.Field name="codigo" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Código *</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Código del reporte"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+                                <form.Field name="codigo">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Código *</FieldLabel>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Código del reporte"
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <form.Field name="fechaEjecucion" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Fecha de Ejecución *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    type="date"
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="fechaEjecucion">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Fecha de Ejecución *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        type="date"
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
 
-                                    <form.Field name="fechaEmision" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Fecha de Emisión *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    type="date"
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="fechaEmision">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Fecha de Emisión *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        type="date"
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
                                 </div>
+
                             </FieldGroup>
                         </FieldSet>
-
-                        {/* SECCIÓN 2: Información del Cliente */}
                         <FieldSet>
                             <FieldLegend>Información del Cliente</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
-                                <form.Field name="cliente" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Cliente *</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Nombre del cliente"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+
+                                <form.Field name="cliente">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Cliente *</FieldLabel>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Nombre del cliente"
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <form.Field name="municipio" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Municipio *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                    placeholder="Municipio"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="municipio">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Municipio *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Municipio"
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
 
-                                    <form.Field name="departamento" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Departamento *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                    placeholder="Departamento"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="departamento">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Departamento *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Departamento"
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <form.Field name="primerNombre" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Primer Nombre *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                    placeholder="Primer nombre"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="primerNombre">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Primer Nombre *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Primer nombre"
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
 
-                                    <form.Field name="segundoNombre" children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Segundo Nombre *</FieldLabel>
-                                                <Input
-                                                    id={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
-                                                    aria-invalid={isInvalid}
-                                                    placeholder="Segundo nombre"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        )
-                                    }} />
+                                    <form.Field name="segundoNombre">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Segundo Nombre *</FieldLabel>
+                                                    <Input
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Segundo nombre"
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
                                 </div>
 
-
-
-
-                                <form.Field name="cargo" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Cargo *</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Cargo"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+                                <form.Field name="cargo">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Cargo *</FieldLabel>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Cargo"
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
 
                             </FieldGroup>
                         </FieldSet>
@@ -347,34 +363,37 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                                                 <FieldLabel>Elaborado Por *</FieldLabel>
                                                 <FieldDescription>Personas que elaboraron el reporte</FieldDescription>
                                                 {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`elaboradoPor[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Nombre ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
+                                                    <form.Field key={index} name={`elaboradoPor[${index}]`}>
+                                                        {(subField) => {
+                                                            const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Input
+                                                                            value={subField.state.value ?? ""}
+                                                                            onChange={(e) => subField.handleChange(e.target.value)}
+                                                                            onBlur={subField.handleBlur}
+                                                                            placeholder={`Nombre ${index + 1}`}
+                                                                            aria-invalid={isSubFieldInvalid}
+                                                                            className="flex-1"
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.removeValue(index)}
+                                                                            className="p-2 rounded hover:bg-red-50 transition-colors border"
+                                                                            aria-label="Eliminar"
+                                                                        >
+                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                        </button>
+                                                                    </div>
+                                                                    {isSubFieldInvalid && (
+                                                                        <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
+                                                                    )}
                                                                 </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
+                                                            )
+                                                        }}
+                                                    </form.Field>
+
                                                 ))}
                                                 <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
                                                     + Agregar Elaborador
@@ -389,138 +408,187 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                                 <form.Field name="revisadoPor" mode="array">
                                     {(field) => {
                                         const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+
                                         return (
                                             <div className="space-y-3">
                                                 <FieldLabel>Revisado Por *</FieldLabel>
                                                 <FieldDescription>Personas que revisaron el reporte</FieldDescription>
+
                                                 {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`revisadoPor[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Nombre ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
+                                                    <form.Field key={index} name={`revisadoPor[${index}]`}>
+                                                        {(subField) => {
+                                                            const isSubFieldInvalid =
+                                                                subField.state.meta.isTouched && subField.state.meta.errors.length > 0
+
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Input
+                                                                            value={subField.state.value ?? ""}
+                                                                            onChange={(e) => subField.handleChange(e.target.value)}
+                                                                            onBlur={subField.handleBlur}
+                                                                            placeholder={`Nombre ${index + 1}`}
+                                                                            aria-invalid={isSubFieldInvalid}
+                                                                            className="flex-1"
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.removeValue(index)}
+                                                                            className="p-2 rounded hover:bg-red-50 transition-colors border"
+                                                                            aria-label="Eliminar"
+                                                                        >
+                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {isSubFieldInvalid && (
+                                                                        <FieldError>
+                                                                            {subField.state.meta.errors.join(", ")}
+                                                                        </FieldError>
+                                                                    )}
                                                                 </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
+                                                            )
+                                                        }}
+                                                    </form.Field>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => field.pushValue("")}
+                                                >
                                                     + Agregar Revisor
                                                 </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+
+                                                {isInvalid && (
+                                                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                                                )}
                                             </div>
                                         )
                                     }}
                                 </form.Field>
 
+
                                 {/* Aprobado Por */}
-                                <form.Field name="aprobadoPor" mode="array">
-                                    {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                        return (
-                                            <div className="space-y-3">
-                                                <FieldLabel>Aprobado Por *</FieldLabel>
-                                                <FieldDescription>Personas que aprobaron el reporte</FieldDescription>
-                                                {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`aprobadoPor[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Nombre ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
-                                                                </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
-                                                    + Agregar Aprobador
-                                                </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
-                                            </div>
-                                        )
-                                    }}
-                                </form.Field>
+                             {/* Aprobado Por */}
+<form.Field name="aprobadoPor" mode="array">
+  {(field) => {
+    const isInvalid =
+      field.state.meta.isTouched && field.state.meta.errors.length > 0
+
+    return (
+      <div className="space-y-3">
+        <FieldLabel>Aprobado Por *</FieldLabel>
+        <FieldDescription>Personas que aprobaron el reporte</FieldDescription>
+
+        {field.state.value.map((_, index) => (
+          <form.Field key={index} name={`aprobadoPor[${index}]`}>
+            {(subField) => {
+              const isSubFieldInvalid =
+                subField.state.meta.isTouched &&
+                subField.state.meta.errors.length > 0
+              return (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={subField.state.value ?? ""}
+                      onChange={(e) => subField.handleChange(e.target.value)}
+                      onBlur={subField.handleBlur}
+                      placeholder={`Nombre ${index + 1}`}
+                      aria-invalid={isSubFieldInvalid}
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => field.removeValue(index)}
+                      className="p-2 rounded hover:bg-red-50 transition-colors border"
+                      aria-label="Eliminar"
+                    >
+                      <X className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                  {isSubFieldInvalid && (
+                    <FieldError>
+                      {subField.state.meta.errors.join(", ")}
+                    </FieldError>
+                  )}
+                </div>
+              )
+            }}
+          </form.Field>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => field.pushValue("")}
+        >
+          + Agregar Aprobador
+        </Button>
+
+        {isInvalid && (
+          <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+        )}
+      </div>
+    )
+  }}
+</form.Field>
+
                             </FieldGroup>
                         </FieldSet>
                         <FieldSet>
                             <FieldLegend>Detalles del Trabajo</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
-                                <form.Field name="objetivo" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Objetivo *</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Describa el objetivo del reporte"
-                                                rows={3}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+                                <FieldSeparator />
+                                <FieldGroup className="gap-4">
 
-                                <form.Field name="alcance" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Alcance *</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Describa el alcance"
-                                                rows={3}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+                                    <form.Field name="objetivo">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Objetivo *</FieldLabel>
+                                                    <Textarea
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Describa el objetivo del reporte"
+                                                        rows={3}
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
+
+                                    <form.Field name="alcance">
+                                        {(field) => {
+                                            const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                            return (
+                                                <Field data-invalid={isInvalid}>
+                                                    <FieldLabel htmlFor={field.name}>Alcance *</FieldLabel>
+                                                    <Textarea
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                        aria-invalid={isInvalid}
+                                                        placeholder="Describa el alcance"
+                                                        rows={3}
+                                                    />
+                                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                                </Field>
+                                            )
+                                        }}
+                                    </form.Field>
+
+                                </FieldGroup>
+
                                 <form.Field name="activos" mode="array">
                                     {(activosField) => (
                                         <div className="space-y-4">
@@ -633,114 +701,142 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                             <FieldLegend>Personal Presente</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
-
-
                                 <form.Field name="personalPresente" mode="array">
                                     {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        const isInvalid =
+                                            field.state.meta.isTouched && field.state.meta.errors.length > 0
                                         return (
                                             <div className="space-y-3">
                                                 <FieldLabel>Personal Intermediario</FieldLabel>
-                                                <FieldDescription>Personal que intervino a la hora de hacer pruebas</FieldDescription>
+                                                <FieldDescription>
+                                                    Personal que intervino a la hora de hacer pruebas
+                                                </FieldDescription>
+
                                                 {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`personalPresente[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`personalPresente ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
+                                                    <form.Field key={index} name={`personalPresente[${index}]`}>
+                                                        {(subField) => {
+                                                            const isSubFieldInvalid =
+                                                                subField.state.meta.isTouched &&
+                                                                subField.state.meta.errors.length > 0
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Input
+                                                                            value={subField.state.value ?? ""}
+                                                                            onChange={(e) =>
+                                                                                subField.handleChange(e.target.value)
+                                                                            }
+                                                                            onBlur={subField.handleBlur}
+                                                                            placeholder={`Personal ${index + 1}`}
+                                                                            aria-invalid={isSubFieldInvalid}
+                                                                            className="flex-1"
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.removeValue(index)}
+                                                                            className="p-2 rounded hover:bg-red-50 transition-colors border"
+                                                                            aria-label="Eliminar"
+                                                                        >
+                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                        </button>
+                                                                    </div>
+                                                                    {isSubFieldInvalid && (
+                                                                        <FieldError>
+                                                                            {subField.state.meta.errors.join(", ")}
+                                                                        </FieldError>
+                                                                    )}
                                                                 </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
+                                                            )
+                                                        }}
+                                                    </form.Field>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => field.pushValue("")}
+                                                >
                                                     + Agregar Personal
                                                 </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+
+                                                {isInvalid && (
+                                                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                                                )}
                                             </div>
                                         )
                                     }}
                                 </form.Field>
                             </FieldGroup>
+
                         </FieldSet>
                         <FieldSet>
                             <FieldLegend>Estandar de la Prueba</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
 
+                                <form.Field name="nombreDoc">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Nombre Estándar *</FieldLabel>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Nombre estándar"
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
 
-                                <form.Field name="nombreDoc" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Nombre Estandar *</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Nombre estandar"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
-                                <form.Field name="desDoc" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Descripcion Estandar *</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Descripcion del estandar"
-                                                rows={3}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
-                                <form.Field name="nombreEquipo" children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Equipos Utilizados *</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                aria-invalid={isInvalid}
-                                                placeholder="Descripcion de equipos utilizados"
-                                                rows={3}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    )
-                                }} />
+                                <form.Field name="desDoc">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Descripción Estándar *</FieldLabel>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Descripción del estándar"
+                                                    rows={3}
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
+
+                                <form.Field name="nombreEquipo">
+                                    {(field) => {
+                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        return (
+                                            <Field data-invalid={isInvalid}>
+                                                <FieldLabel htmlFor={field.name}>Equipos Utilizados *</FieldLabel>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    aria-invalid={isInvalid}
+                                                    placeholder="Descripción de equipos utilizados"
+                                                    rows={3}
+                                                />
+                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                            </Field>
+                                        )
+                                    }}
+                                </form.Field>
+
                             </FieldGroup>
 
 
@@ -749,97 +845,139 @@ export default function FormReportFinal({ onFormSubmit }: FormReportFinalProps) 
                             <FieldLegend>Observaciones, Recomendaciones y Conclusiones</FieldLegend>
                             <FieldSeparator />
                             <FieldGroup className="gap-4">
-
-
-
+                                {/* Conclusiones y Recomendaciones */}
                                 <form.Field name="conclucionesRecomendaciones" mode="array">
                                     {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        const isInvalid =
+                                            field.state.meta.isTouched && field.state.meta.errors.length > 0
                                         return (
                                             <div className="space-y-3">
                                                 <FieldLabel>Conclusiones y Recomendaciones</FieldLabel>
-                                                <FieldDescription>Recomendaciones y Conclusiones de la Prueba Realizada</FieldDescription>
+                                                <FieldDescription>
+                                                    Recomendaciones y Conclusiones de la Prueba Realizada
+                                                </FieldDescription>
+
                                                 {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`conclucionesRecomendaciones[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Textarea
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Conclusiones y Recomendaciones ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                        rows={3}
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
+                                                    <form.Field
+                                                        key={index}
+                                                        name={`conclucionesRecomendaciones[${index}]`}
+                                                    >
+                                                        {(subField) => {
+                                                            const isSubFieldInvalid =
+                                                                subField.state.meta.isTouched &&
+                                                                subField.state.meta.errors.length > 0
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Textarea
+                                                                            value={subField.state.value ?? ""}
+                                                                            onChange={(e) => subField.handleChange(e.target.value)}
+                                                                            onBlur={subField.handleBlur}
+                                                                            placeholder={`Conclusión o Recomendación ${index + 1
+                                                                                }`}
+                                                                            aria-invalid={isSubFieldInvalid}
+                                                                            className="flex-1"
+                                                                            rows={3}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.removeValue(index)}
+                                                                            className="p-2 rounded hover:bg-red-50 transition-colors border"
+                                                                            aria-label="Eliminar"
+                                                                        >
+                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                        </button>
+                                                                    </div>
+                                                                    {isSubFieldInvalid && (
+                                                                        <FieldError>
+                                                                            {subField.state.meta.errors.join(", ")}
+                                                                        </FieldError>
+                                                                    )}
                                                                 </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
+                                                            )
+                                                        }}
+                                                    </form.Field>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => field.pushValue("")}
+                                                >
                                                     + Agregar Conclusión o Recomendación
                                                 </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+
+                                                {isInvalid && (
+                                                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                                                )}
                                             </div>
                                         )
                                     }}
                                 </form.Field>
+
+                                {/* Observaciones */}
                                 <form.Field name="observaciones" mode="array">
                                     {(field) => {
-                                        const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0
+                                        const isInvalid =
+                                            field.state.meta.isTouched && field.state.meta.errors.length > 0
                                         return (
                                             <div className="space-y-3">
                                                 <FieldLabel>Observaciones</FieldLabel>
-                                                <FieldDescription>Observaciones de la Prueba Realizada</FieldDescription>
+                                                <FieldDescription>
+                                                    Observaciones de la Prueba Realizada
+                                                </FieldDescription>
+
                                                 {field.state.value.map((_, index) => (
-                                                    <form.Field key={index} name={`observaciones[${index}]`} children={(subField) => {
-                                                        const isSubFieldInvalid = subField.state.meta.isTouched && subField.state.meta.errors.length > 0
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Textarea
-                                                                        value={subField.state.value ?? ""}
-                                                                        onChange={(e) => subField.handleChange(e.target.value)}
-                                                                        onBlur={subField.handleBlur}
-                                                                        placeholder={`Observaciones ${index + 1}`}
-                                                                        aria-invalid={isSubFieldInvalid}
-                                                                        className="flex-1"
-                                                                        rows={3}
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => field.removeValue(index)}
-                                                                        className="p-2 rounded hover:bg-red-50 transition-colors border"
-                                                                        aria-label="Eliminar"
-                                                                    >
-                                                                        <X className="w-4 h-4 text-red-600" />
-                                                                    </button>
+                                                    <form.Field key={index} name={`observaciones[${index}]`}>
+                                                        {(subField) => {
+                                                            const isSubFieldInvalid =
+                                                                subField.state.meta.isTouched &&
+                                                                subField.state.meta.errors.length > 0
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Textarea
+                                                                            value={subField.state.value ?? ""}
+                                                                            onChange={(e) => subField.handleChange(e.target.value)}
+                                                                            onBlur={subField.handleBlur}
+                                                                            placeholder={`Observación ${index + 1}`}
+                                                                            aria-invalid={isSubFieldInvalid}
+                                                                            className="flex-1"
+                                                                            rows={3}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.removeValue(index)}
+                                                                            className="p-2 rounded hover:bg-red-50 transition-colors border"
+                                                                            aria-label="Eliminar"
+                                                                        >
+                                                                            <X className="w-4 h-4 text-red-600" />
+                                                                        </button>
+                                                                    </div>
+                                                                    {isSubFieldInvalid && (
+                                                                        <FieldError>
+                                                                            {subField.state.meta.errors.join(", ")}
+                                                                        </FieldError>
+                                                                    )}
                                                                 </div>
-                                                                {isSubFieldInvalid && (
-                                                                    <FieldError>{subField.state.meta.errors.join(", ")}</FieldError>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    }} />
+                                                            )
+                                                        }}
+                                                    </form.Field>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue("")}>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => field.pushValue("")}
+                                                >
                                                     + Agregar Observación
                                                 </Button>
-                                                {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+
+                                                {isInvalid && (
+                                                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                                                )}
                                             </div>
                                         )
                                     }}
