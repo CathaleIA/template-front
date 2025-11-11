@@ -4,14 +4,21 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, Edit2, Save, X } from "lucide-react"
+import { Trash2, Edit2, Save, X, Upload } from "lucide-react"
+import ButtonEventUploadHtmlFile from "@/components/reports-components/button-upload-html-file/button-event-upload-html-file";
 
 interface Conclusion {
     id: number
     text: string
 }
-
-export default function ConclusionsFormSave() {
+interface ArchivoProps {
+    reportId?: string | undefined;
+    tenantId?: string | undefined;
+    poolUserId?: string | undefined;
+    fileName?: string | undefined;
+    activo?: string | undefined;
+}
+export default function ConclusionsFormSave({ reportId, tenantId, poolUserId, fileName, activo }: ArchivoProps) {
     const [conclusions, setConclusions] = useState<Conclusion[]>([])
     const [newConclusion, setNewConclusion] = useState("")
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -47,9 +54,21 @@ export default function ConclusionsFormSave() {
         setEditText("")
     }
 
+    // 🔹 Nueva función: insertar las conclusiones en el DOM externo
+    const loadConclusionsToDOM = () => {
+        const listElement = document.getElementById("finalConclusionsList")
+        if (listElement) {
+            listElement.innerHTML = "" // limpiar lista previa
+            conclusions.forEach((c) => {
+                const li = document.createElement("li")
+                li.textContent = c.text
+                listElement.appendChild(li)
+            })
+        }
+    }
+
     return (
         <div className="h-screen p-6">
-            {/* Contenedor principal */}
             <div className="max-w-4xl mx-auto h-full border p-6 bg-white">
                 <h2 className="text-lg font-semibold mb-4">Gestión de Conclusiones</h2>
 
@@ -63,6 +82,8 @@ export default function ConclusionsFormSave() {
                         className="min-h-[100px] border rounded-sm"
                     />
                     <Button
+                        variant='custom'
+                        size='custom'
                         onClick={addConclusion}
                         disabled={!newConclusion.trim()}
                         className="mt-3 w-full rounded-sm bg-blue-600 text-white hover:bg-blue-700"
@@ -87,7 +108,6 @@ export default function ConclusionsFormSave() {
                                 <Card key={conclusion.id} className="p-3 border rounded-sm">
                                     <CardContent className="p-0">
                                         {editingId === conclusion.id ? (
-                                            // Modo edición
                                             <div>
                                                 <Textarea
                                                     value={editText}
@@ -96,7 +116,8 @@ export default function ConclusionsFormSave() {
                                                 />
                                                 <div className="flex gap-2 mt-2">
                                                     <Button
-                                                        size="sm"
+                                                        variant='custom'
+                                                        size='custom'
                                                         onClick={saveEdit}
                                                         disabled={!editText.trim()}
                                                         className="rounded-sm bg-green-600 text-white hover:bg-green-700"
@@ -105,8 +126,8 @@ export default function ConclusionsFormSave() {
                                                         Guardar
                                                     </Button>
                                                     <Button
-                                                        size="sm"
-                                                        variant="outline"
+                                                        variant='custom'
+                                                        size="custom"
                                                         onClick={cancelEdit}
                                                         className="rounded-sm border"
                                                     >
@@ -116,13 +137,12 @@ export default function ConclusionsFormSave() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            // Modo visualización
                                             <div>
                                                 <p className="text-sm leading-relaxed">{conclusion.text}</p>
                                                 <div className="flex gap-2 mt-2">
                                                     <Button
-                                                        size="sm"
-                                                        variant="outline"
+                                                        size='custom'
+                                                        variant="custom"
                                                         onClick={() => startEdit(conclusion)}
                                                         className="rounded-sm border"
                                                     >
@@ -130,8 +150,8 @@ export default function ConclusionsFormSave() {
                                                         Editar
                                                     </Button>
                                                     <Button
-                                                        size="sm"
-                                                        variant="destructive"
+                                                        size="custom"
+                                                        variant="custom"
                                                         onClick={() => deleteConclusion(conclusion.id)}
                                                         className="rounded-sm bg-red-600 text-white hover:bg-red-700"
                                                     >
@@ -147,8 +167,28 @@ export default function ConclusionsFormSave() {
                         </div>
                     )}
                 </div>
+
+                {/* 🔹 Botón para cargar en el DOM */}
+                <div className="mt-6">
+                    <Button
+                        variant='custom'
+                        size='custom'
+                        onClick={loadConclusionsToDOM}
+                        disabled={conclusions.length === 0}
+                        className="w-full rounded-sm bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                        <Upload className="w-4 h-4 mr-1" />
+                        Cargar Conclusiones en Documento
+                    </Button>
+                    <ButtonEventUploadHtmlFile
+                        reportId={reportId ?? ""}
+                        tenantId={tenantId ?? ""}
+                        poolUserId={poolUserId ?? ""}
+                        fileName={fileName ?? ""}
+                        activo={activo ?? ""}
+                    />
+                </div>
             </div>
         </div>
-
     )
 }

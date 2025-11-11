@@ -4,7 +4,7 @@ import { Noto_Sans } from 'next/font/google';
 import { ThemeProvider } from "@/context/theme-provider"
 import { ApolloHook } from '@/hooks/apollo-provider'
 
-import "@/app/styles/globals.css"
+import "@/app/styles/globals.css";
 import { UserProvider } from "@/context/UserContext"
 
 const notoSans = Noto_Sans({ 

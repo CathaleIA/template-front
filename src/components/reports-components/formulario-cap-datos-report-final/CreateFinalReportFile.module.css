@@ -1,0 +1,138 @@
+/* components/reports-components/components-to-editor/ReportEditor.module.css */
+
+/* Contenedor del editor */
+#Report_Editor_Container {
+  padding: 20px;
+  background: white;
+}
+
+/* Contenido dentro del editor */
+#Report_Editor_Container .ProseMirror {
+  padding: 40px 60px !important;
+  background: white !important;
+  min-height: 800px;
+}
+
+/* Títulos H1 */
+#Report_Editor_Container h1 {
+  text-align: center;
+  font-size: 16pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  margin-top: 40px;
+  color: #000;
+  letter-spacing: 0.5px;
+}
+
+/* Títulos H2 */
+#Report_Editor_Container h2 {
+  font-size: 12pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: #000;
+  border-bottom: 2px solid #333;
+  padding-bottom: 6px;
+}
+
+/* Párrafos */
+#Report_Editor_Container p {
+  text-align: justify;
+  margin-bottom: 12px;
+  line-height: 1.6;
+  font-size: 10pt;
+}
+
+/* Primeros párrafos centrados (info general) */
+#Report_Editor_Container .ProseMirror > h1 + p,
+#Report_Editor_Container .ProseMirror > h1 + p + p,
+#Report_Editor_Container .ProseMirror > h1 + p + p + p {
+  text-align: center !important;
+  text-transform: uppercase;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Tablas de Tiptap */
+#Report_Editor_Container .tableWrapper {
+  margin: 30px 0;
+}
+
+#Report_Editor_Container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 9pt;
+}
+
+#Report_Editor_Container table td,
+#Report_Editor_Container table th {
+  border: 1px solid #333;
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+#Report_Editor_Container table th {
+  background-color: #f3f4f6;
+  font-weight: bold;
+  text-align: center;
+  color: #000;
+}
+
+/* Listas */
+#Report_Editor_Container ul.list-disc {
+  margin-left: 30px;
+  margin-bottom: 16px;
+  padding-left: 10px;
+}
+
+#Report_Editor_Container ul.list-disc li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Párrafos después de h2 */
+#Report_Editor_Container h2 + p {
+  margin-top: 12px;
+}
+
+/* Espaciado entre secciones */
+#Report_Editor_Container h2:not(:first-of-type) {
+  margin-top: 60px;
+}
+
+/* Override de prose de Tailwind */
+#Report_Editor_Container.prose :where(h1):not(:where([class~="not-prose"] *)) {
+  text-align: center;
+  font-size: 16pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  margin-top: 40px;
+  color: #000;
+}
+
+#Report_Editor_Container.prose :where(h2):not(:where([class~="not-prose"] *)) {
+  font-size: 12pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: #000;
+  border-bottom: 2px solid #333;
+  padding-bottom: 6px;
+}
+
+#Report_Editor_Container.prose :where(p):not(:where([class~="not-prose"] *)) {
+  text-align: justify;
+  margin-bottom: 12px;
+  line-height: 1.6;
+  font-size: 10pt;
+}
+
+#Report_Editor_Container.prose :where(table):not(:where([class~="not-prose"] *)) {
+  width: 100%;
+  font-size: 9pt;
+}

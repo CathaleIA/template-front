@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-import TableGestionLotes from "@/components/reports-components/lotes-gestionar-list"
+import TableGestionLotes from "@/components/reports-components/colums-lotes-gestionar/lotes-gestionar-list"
 import ZipUploader from "@/components/reports-components/form-upload-zipfile"
-import ListadoAnexos from "@/components/reports-components/Listado-anexos"
+import ListadoAnexos from "@/components/reports-components/colums-anexos-gestionar/Listado-anexos"
 import ConclusionsForm from "@/components/reports-components/formulario-concluciones"
-import { ItemPremitive } from "@/types"
+import { ItemPremitive, ResponseQueryReportsList } from "@/types"
 import ReportsGestion from "@/components/reports-components/components-to-editor/reports-gestion"
-
+import TableGestionReportsFile from "@/components/reports-components/columns-final-reports/listado-final-reports"
+import Dashboard from "./graficas/charts"
+import { Button } from "../ui/button"
+import FormReportFinal from "@/components/reports-components/formulario-cap-datos-report-final/formulario-report-final"
+import { buildReportTemplate } from "./formulario-cap-datos-report-final/Data-Formulario-template"
 
 export default function SimpleStepper() {
     // 1. Define tus pasos
@@ -34,56 +38,55 @@ export default function SimpleStepper() {
             description: "Anexos a procesar"
         },
         {
+            id: 4.1,
+            title: "Formulario",
+            description: "Llena el formulario del reporte"
+        },
+        {
             id: 5,
             title: "Generar Reporte",
             description: "Agrupa los anexos",
-            content: (
-                <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded">
-                        <h4 className="font-medium mb-2">Resumen del Reporte</h4>
-                        <p className="text-sm text-gray-600">Fecha: {new Date().toLocaleDateString()}</p>
-                    </div>
-                    <button className="px-4 py-2 bg-purple-600 text-white rounded">Generar Reporte Final</button>
-                </div>
-            ),
+
         },
         {
             id: 6,
             title: "Listado Reportes",
-            description: "Todos los reportes",
-            content: (
-                <div className="space-y-3">
-                    <div className="border rounded p-3 flex justify-between items-center">
-                        <div>
-                            <h4 className="font-medium">Reporte #001</h4>
-                            <p className="text-sm text-gray-600">Generado: 15/01/2024</p>
-                        </div>
-                        <button className="text-blue-600 text-sm">Descargar</button>
-                    </div>
-                    <div className="border rounded p-3 flex justify-between items-center">
-                        <div>
-                            <h4 className="font-medium">Reporte #002</h4>
-                            <p className="text-sm text-gray-600">Generado: 14/01/2024</p>
-                        </div>
-                        <button className="text-blue-600 text-sm">Descargar</button>
-                    </div>
-                </div>
-            ),
+            description: "Descargar Reportes"
         },
     ]
 
     // 2. Estado para controlar el paso actual
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedJobId, setSelectedJobId] = useState<string>("")
-    const [tenantName] = useState<string>("TENANT_CATHALEIA") // Could be made dynamic later
-    const [estado] = useState<string>("NORMALIZADO") // Could be made dynamic later
-    const [userPoolId] = useState<string>("USER_CATHALEIA") // Could be made dynamic later
-    const [estadoReportLis] = useState<string>("DESCOMPRIMIDO")
+    const [activo, setActivo] = useState<string>("");
+    const [tenantName, setTenantName] = useState<string>("") // Could be made dynamic later
+    const [estado, setEstado] = useState<string>("NORMALIZADO") // Could be made dynamic later
+    const [userPoolId, setUserPoolId] = useState<string>("") // Could be made dynamic later
+    const [estadoReportLis, setEstadoReportLis] = useState<string>("DESCOMPRIMIDO")
     const [selectedAnexo, setSelectedAnexo] = useState<ItemPremitive | null>(null);
-    console.log("Selected Job ID:", selectedJobId)
-    console.log("Estado:", estado)
-    console.log("Tenant Name:", tenantName)
-    console.log("User Pool ID:", userPoolId)
+    const [selectedFinalReport, setSelectedFinalReport] = useState<string | null>(null);
+    const [formData, setFormData] = useState<Record<string, any>>({});
+    const [error, setError] = useState<string>("")
+    const [templateForm, setTemplateForm] = useState<string>("");
+    useEffect(() => {
+        async function fetchTenant() {
+            try {
+                const res = await fetch("/api/auth/tenantget")
+                const data = await res.json()
+                if (data?.userPoolId && data?.userPoolDomain) {
+                    setTenantName(data.userPoolDomain)
+                    setUserPoolId(data.userPoolId)
+                } else {
+                    setError("No se encontraron datos de tenant en cookies")
+                }
+            } catch (err) {
+                console.error("Error obteniendo tenant:", err)
+                setError("Error al cargar tenant")
+            }
+        }
+        fetchTenant()
+    }, [])
+
     // 3. Funciones de navegación
     const nextStep = () => {
         if (currentStep < steps.length) {
@@ -106,6 +109,26 @@ export default function SimpleStepper() {
         setCurrentStep(4); // saltar al paso de conclusiones
     };
 
+    const handleFormReportFinal = (data: Record<string, any>) => {
+        // Actualiza el estado con los datos recibidos
+        setFormData(data);
+        // Genera la plantilla con los datos nuevos (no uses el estado viejo)
+        const reportTemplate = buildReportTemplate(data);
+        setTemplateForm(reportTemplate);
+        console.log("Template Generado:", reportTemplate);
+        setCurrentStep(5);
+    }
+
+    // const handleSelectFinalReport = (lote_job_id: string) => {
+    //     console.log("Final Report seleccionado:", lote_job_id);
+    //     setSelectedFinalReport(lote_job_id);
+
+    //     // Crear una ruta dinamica para descargar el reporte final
+    //     // cramos la tura dinamica y consutlamo sla descarga la descarga del reporte final toca cuadrar la ruta dinamica
+    //     // /api/reports-download?tenantName=xxx&jobId=xxxx&poolUserId=xxxx
+    //     const downloadUrl = `/api/reports?lote_anexo=${lote_job_id}`;
+    //     window.open(downloadUrl, "_blank");
+    // }
     return (
         <div className="w-full min-h-[200px] mx-auto p-6">
             {/* 4. Header del stepper */}
@@ -165,35 +188,44 @@ export default function SimpleStepper() {
 
                 <div className="min-h-[200px] bg-gray-50 rounded p-4">
                     {currentStep === 1 && <ZipUploader />}
-                    {currentStep === 2 && <TableGestionLotes onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
-                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} />}
+                    {currentStep === 2 && <TableGestionLotes onActivoSelect={setActivo} onJobSelect={setSelectedJobId} selectedJobId={selectedJobId} tenantName={tenantName} status={estadoReportLis} userPoolId={userPoolId} />}
+                    {currentStep === 3 && <ListadoAnexos tenant_name={tenantName} job_id={`${selectedJobId}#`} estado={estado} onSelectAnexo={handleSelectAnexo} type="ANEXO" />}
 
-                    {currentStep === 4 && <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} />}
-                    {currentStep === 5 && <ReportsGestion />}
+                    {currentStep === 4 && <div>
+                        <ConclusionsForm s3Key={selectedAnexo?.s3_html_path} reportId={selectedJobId} tenantId={tenantName} poolUserId={userPoolId} fileName={selectedAnexo?.s3_html_path ? selectedAnexo.s3_html_path.split("/").pop() ?? "" : ""} activo={selectedAnexo?.activo} />
+                        <Dashboard s3KeyJson={selectedAnexo?.s3_json_path} />
+                    </div>}
+                    {currentStep === 4.1 && <FormReportFinal onFormSubmit={handleFormReportFinal} />}
+                    {currentStep === 5 && <ReportsGestion tenant_name={tenantName} userPoolId={userPoolId} job_id={selectedJobId} estado={estado} type="ANEXO" activo={activo} templateForm={templateForm} />}
+                    {currentStep === 6 && <TableGestionReportsFile tenantName={tenantName} status="GESTIONADO" userPoolId={userPoolId} selectedFinalReport={selectedFinalReport} />}
                 </div>
             </div>
 
             {/* 7. Botones de navegación */}
             <div className="flex justify-between">
-                <button
+                <Button
+                    variant="custom"
+                    size="custom"
                     onClick={prevStep}
                     disabled={currentStep === 1}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Anterior
-                </button>
+                </Button>
 
                 <span className="text-sm text-gray-500">
                     Paso {currentStep} de {steps.length}
                 </span>
 
-                <button
+                <Button
+                    variant="custom"
+                    size="custom"
                     onClick={nextStep}
                     disabled={currentStep === steps.length}
                     className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Siguiente
-                </button>
+                </Button>
             </div>
         </div>
     )
