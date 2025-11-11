@@ -13,7 +13,7 @@ import ButtonUploadDBStatus from "@/components/reports-components/button-upload-
 type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 // Exporta una función que devuelve el array de ColumnDef
-export function getColumns<TData extends ResponseQueryReportsList = ResponseQueryReportsList>(
+export function useColumns<TData extends ResponseQueryReportsList = ResponseQueryReportsList>(
   onJobSelect?: (jobId: string) => void,
   onActivoSelect?: (activo: string) => void,
   selectedJobId?: string,
