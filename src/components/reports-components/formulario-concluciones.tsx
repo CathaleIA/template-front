@@ -78,7 +78,7 @@ export default function ConclusionsForm({ s3Key, reportId, tenantId, poolUserId,
                 }}
             >
                 {htmlContent ? (
-                    <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                    <div id="Secciones-DOM" dangerouslySetInnerHTML={{ __html: htmlContent }} />
                 ) : (
                     <div className="flex items-center justify-center h-full text-gray-500">
                         Cargando...
