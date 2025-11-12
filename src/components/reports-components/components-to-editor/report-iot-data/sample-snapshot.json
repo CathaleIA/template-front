@@ -1,0 +1,211 @@
+﻿{
+    "timestamp": "2025-11-05T16:40:34.256435Z",
+    "device_id": "qnap-gateway-001",
+    "device_type": "GPC-300",
+    "data": {
+        "generator": {
+            "potencia_activa": {
+                "value": 689.0399780273438,
+                "timestamp": "2025-11-05T16:40:33.374871"
+            },
+            "potencia_aparente": {
+                "value": 773.6300048828125,
+                "timestamp": "2025-11-05T16:40:33.375146"
+            },
+            "potencia_reactiva": {
+                "value": -351.75,
+                "timestamp": "2025-11-05T16:40:33.375334"
+            },
+            "factor_potencia": {
+                "value": 0.890999972820282,
+                "timestamp": "2025-11-05T16:40:33.375509"
+            },
+            "frecuencia": {
+                "value": 59.939998626708984,
+                "timestamp": "2025-11-05T16:40:33.375680"
+            },
+            "corriente_L1": {
+                "value": 931.5800170898438,
+                "timestamp": "2025-11-05T16:40:33.375851"
+            },
+            "corriente_L2": {
+                "value": 942.3800048828125,
+                "timestamp": "2025-11-05T16:40:32.366654"
+            },
+            "corriente_L3": {
+                "value": 951.7100219726562,
+                "timestamp": "2025-11-05T16:40:32.366820"
+            },
+            "voltage_L1_L2": {
+                "value": 476.1099853515625,
+                "timestamp": "2025-11-05T16:40:32.368154"
+            },
+            "voltage_L2_L3": {
+                "value": 485.4700012207031,
+                "timestamp": "2025-11-05T16:40:32.368317"
+            },
+            "voltage_L1_L3": {
+                "value": 477.489990234375,
+                "timestamp": "2025-11-05T16:40:33.377854"
+            },
+            "voltage_L1_N": {
+                "value": 280.9700012207031,
+                "timestamp": "2025-11-05T16:40:33.378017"
+            },
+            "voltage_L2_N": {
+                "value": 275.55999755859375,
+                "timestamp": "2025-11-05T16:40:33.378192"
+            },
+            "voltage_L3_N": {
+                "value": 275.6300048828125,
+                "timestamp": "2025-11-05T16:40:33.378356"
+            },
+            "angulo_fase_A": {
+                "value": 213.75,
+                "timestamp": "2025-11-05T16:40:33.377020"
+            },
+            "angulo_fase_B": {
+                "value": 333.75,
+                "timestamp": "2025-11-05T16:40:33.377192"
+            },
+            "angulo_fase_C": {
+                "value": 93.75,
+                "timestamp": "2025-11-05T16:40:33.377356"
+            },
+            "secuencia_positiva": {
+                "value": 921.6300048828125,
+                "timestamp": "2025-11-05T16:40:33.376527"
+            },
+            "secuencia_negativa": {
+                "value": 0.11999999731779099,
+                "timestamp": "2025-11-05T16:40:33.376691"
+            },
+            "secuencia_zero": {
+                "value": 0.6000000238418579,
+                "timestamp": "2025-11-05T16:40:33.376856"
+            },
+            "desbalance_corriente": {
+                "value": 5.78000020980835,
+                "timestamp": "2025-11-05T16:40:33.376361"
+            },
+            "promedio_corrientes": {
+                "value": 930.9400024414062,
+                "timestamp": "2025-11-05T16:40:33.378519"
+            },
+            "promedio_voltajes": {
+                "value": 277.3900146484375,
+                "timestamp": "2025-11-05T16:40:33.378680"
+            },
+            "delta_L1_barra": {
+                "value": 0.12999999523162842,
+                "timestamp": "2025-11-05T16:40:33.378843"
+            },
+            "delta_L2_barra": {
+                "value": -0.8299999833106995,
+                "timestamp": "2025-11-05T16:40:33.379007"
+            },
+            "delta_L3_barra": {
+                "value": 0.9399999976158142,
+                "timestamp": "2025-11-05T16:40:33.379177"
+            }
+        },
+        "busbar": {
+            "voltage_L1_L2": {
+                "value": 479,
+                "timestamp": "2025-11-05T16:40:33.379342"
+            },
+            "voltage_L2_L3": {
+                "value": 479.3999938964844,
+                "timestamp": "2025-11-05T16:40:33.379507"
+            },
+            "voltage_L1_L3": {
+                "value": 481.4100036621094,
+                "timestamp": "2025-11-05T16:40:33.379671"
+            },
+            "frecuencia": {
+                "value": 60,
+                "timestamp": "2025-11-05T16:40:33.379833"
+            },
+            "angulo_fase_A": {
+                "value": 27,
+                "timestamp": "2025-11-05T16:40:33.379995"
+            },
+            "angulo_fase_B": {
+                "value": 147,
+                "timestamp": "2025-11-05T16:40:33.380171"
+            },
+            "angulo_fase_C": {
+                "value": 267,
+                "timestamp": "2025-11-05T16:40:33.380336"
+            },
+            "secuencia_positiva": {
+                "value": 478.9800109863281,
+                "timestamp": "2025-11-05T16:40:33.380497"
+            },
+            "secuencia_negativa": {
+                "value": 2.630000114440918,
+                "timestamp": "2025-11-05T16:40:33.380659"
+            },
+            "secuencia_zero": {
+                "value": 0.3700000047683716,
+                "timestamp": "2025-11-05T16:40:33.380823"
+            }
+        },
+        "breaker": {
+            "voltage_freq_ok": {
+                "value": true,
+                "timestamp": "2025-11-05T16:39:33.837817"
+            },
+            "opened": {
+                "value": false,
+                "timestamp": "2025-11-05T16:39:33.837872"
+            },
+            "closed": {
+                "value": true,
+                "timestamp": "2025-11-05T16:39:33.837928"
+            },
+            "fault": {
+                "value": false,
+                "timestamp": "2025-11-05T16:39:33.837982"
+            },
+            "ready_to_close": {
+                "value": false,
+                "timestamp": "2025-11-05T16:39:33.838037"
+            },
+            "sync_in_progress": {
+                "value": false,
+                "timestamp": "2025-11-05T16:39:33.838091"
+            },
+            "ready_to_open": {
+                "value": false,
+                "timestamp": "2025-11-05T16:39:33.838152"
+            }
+        },
+        "temperature": {
+            "devanado_u": {
+                "value": 74.41999816894531,
+                "timestamp": "2025-11-05T16:40:33.382162"
+            },
+            "devanado_v": {
+                "value": 74.44999694824219,
+                "timestamp": "2025-11-05T16:40:33.382325"
+            },
+            "devanado_w": {
+                "value": 80.0999984741211,
+                "timestamp": "2025-11-05T16:40:33.382488"
+            },
+            "rodamiento_delantero": {
+                "value": 55.75,
+                "timestamp": "2025-11-05T16:40:33.382649"
+            },
+            "rodamiento_trasero": {
+                "value": 54.439998626708984,
+                "timestamp": "2025-11-05T16:40:33.382811"
+            }
+        }
+    },
+    "metadata": {
+        "variables_count": 48,
+        "last_update": "2025-11-05T16:40:33.382811"
+    }
+}
