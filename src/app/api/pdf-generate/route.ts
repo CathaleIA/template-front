@@ -83,7 +83,7 @@ export async function POST(req: Request) {
       footerTemplate: footerTemplate,
       margin: {
         top: "190px",    // Altura exacta de tu header
-        bottom: "150px", // Altura exacta de tu footer
+        bottom: "155px", // Altura exacta de tu footer
         left: "96px",
         right: "96px"
       },
