@@ -1,7 +1,7 @@
 // industrial-iot-lab/dashboard-industrial/src/components/Dashboard.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Activity } from "lucide-react";
 import { getNumericValue, getBooleanValue } from "@/types/iot.types";
 
@@ -53,8 +53,9 @@ interface IoTData {
   };
 }
 
-/* ============ BUFFER (CORREGIDO) ============ */
+/* ============ BUFFER ============ */
 const MAX_HISTORIAL_MS = 10 * 60 * 1000;
+const MAX_RECONNECTIONS = 5;
 
 interface BufferPoint {
   time: number;
@@ -63,7 +64,7 @@ interface BufferPoint {
 
 type Row = { idx: number; ts: number } & Record<string, number>;
 
-/* ============ Card con TÍTULO INTERNO (Estilo Imagen) ============ */
+/* ============ Card con TÍTULO INTERNO ============ */
 function Card({
   title,
   children,
@@ -74,52 +75,53 @@ function Card({
   className?: string;
 }) {
   return (
-  <div
-    className={[
-      "bg-white rounded-2xl",
-      "border border-[var(--color-panel-border)] shadow-lg",
-      "overflow-hidden",
-      className,
-    ].join(" ")}
-  >
-    {/* Header — más compacto */}
-    <div className="px-0 py-0">
-      <div className="relative inline-flex items-stretch h-8">
-        <div className="bg-[var(--green-dark)] text-white px-4 h-8 flex items-center">
-          <h3 className="text-[13px] font-bold uppercase tracking-wider leading-none">
-            {title}
-          </h3>
+    <div
+      className={[
+        "bg-white rounded-2xl",
+        "border border-[var(--color-panel-border)]",
+        "overflow-hidden",
+        "shadow-[8px_8px_20px_rgba(0,0,0,0.18)]",
+        "hover:shadow-[10px_10px_25px_rgba(0,0,0,0.25)] transition-shadow duration-300",
+        className,
+      ].join(" ")}
+    >
+      {/* Header */}
+      <div className="px-0 py-0">
+        <div className="relative inline-flex items-stretch h-8">
+          {/* Bloque verde con borde solo inferior */}
+          <div className="bg-[var(--green-dark)] text-white px-16 h-8 flex items-center border-b-4 border-gray-400">
+            <h3 className="text-[13px] font-bold uppercase tracking-wider leading-none">
+              {title}
+            </h3>
+          </div>
+
+          {/* Curva lateral */}
+          <div className="-ml-px h-8 w-9 bg-[var(--green-dark)] border-b-4 border-r-4 border-gray-400 rounded-br-[9999px]" />
         </div>
-        <svg
-          className="h-8 w-9 -ml-px text-[var(--green-dark)]"
-          viewBox="0 0 44 32"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path d="M0 0 L0 32 Q44 32 44 0 Z" fill="currentColor" />
-        </svg>
+      </div>
+
+      {/* Cuerpo */}
+      <div className="px-2 pb-2 pt-1 md:px-3 md:pb-3 md:pt-1">
+        {children}
       </div>
     </div>
-
-    {/* Cuerpo — casi pegado (vertical) */}
-    <div className="px-2 pb-2 pt-1 md:px-3 md:pb-3 md:pt-1">
-      {children}
-    </div>
-  </div>
-);
+  );
 }
 
+/* ============ DASHBOARD ============ */
 export default function GPC300Dashboard() {
   const [data, setData] = useState<IoTData | null>(null);
-  const [buffer, setBuffer] = useState<{ corriente: BufferPoint[]; voltaje: BufferPoint[] }>(
-    { corriente: [], voltaje: [] }
-  );
+  const [buffer, setBuffer] = useState<{
+    corriente: BufferPoint[];
+    voltaje: BufferPoint[];
+  }>({ corriente: [], voltaje: [] });
 
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const reconnectAttempts = useRef(0);
 
-  /* ============ ACTUALIZAR BUFFER (CORREGIDO) ============ */
+  /* ============ ACTUALIZAR BUFFER ============ */
   const updateBuffer = useCallback((msg: IoTData) => {
     const gen = msg.data.generator;
     const ahora = Date.now();
@@ -127,7 +129,9 @@ export default function GPC300Dashboard() {
     setBuffer((prev) => {
       const append = (arr: BufferPoint[], value: Record<string, number>) => {
         const nuevoHistorial = [...arr, { time: ahora, value }];
-        return nuevoHistorial.filter((punto) => ahora - punto.time < MAX_HISTORIAL_MS);
+        return nuevoHistorial.filter(
+          (punto) => ahora - punto.time < MAX_HISTORIAL_MS
+        );
       };
 
       return {
@@ -147,32 +151,81 @@ export default function GPC300Dashboard() {
     });
   }, []);
 
-  /* ============ SSE ============ */
+  /* ============ WEBSOCKET CONNECTION ============ */
   useEffect(() => {
-    const es = new EventSource("/api/iot/stream");
-    es.onopen = () => {
-      setConnected(true);
-      setError(null);
-    };
-    es.onerror = () => {
-      setConnected(false);
-      setError("Error de conexión");
-    };
-    es.onmessage = (e) => {
-      try {
-        const msg: unknown = JSON.parse(e.data);
-        if (typeof msg === "object" && msg !== null && "type" in (msg as Record<string, unknown>)) {
-          return;
+    const WEBSOCKET_URL =
+      process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+      "wss://657pcrk382.execute-api.us-east-1.amazonaws.com/production/";
+
+    console.group("🌐 WebSocket Debug");
+    console.log("➡️ Intentando conectar a:", WEBSOCKET_URL);
+    console.groupEnd();
+
+    let ws: WebSocket | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let messageCount = 0;
+
+    const connectWebSocket = () => {
+      ws = new WebSocket(WEBSOCKET_URL);
+
+      ws.onopen = () => {
+        reconnectAttempts.current = 0;
+        setConnected(true);
+        setError(null);
+        console.log("✅ WebSocket conectado correctamente");
+      };
+
+      ws.onclose = () => {
+        setConnected(false);
+        console.warn("🔌 WebSocket desconectado");
+
+        if (reconnectAttempts.current < MAX_RECONNECTIONS) {
+          reconnectAttempts.current += 1;
+          console.warn(
+            `🔄 Intento de reconexión #${reconnectAttempts.current} en 3 segundos...`
+          );
+          reconnectTimer = setTimeout(connectWebSocket, 3000);
+        } else {
+          console.error("❌ Se alcanzó el número máximo de reconexiones");
+          setError("Conexión fallida: límite de reconexiones alcanzado");
         }
-        const casted = msg as IoTData;
-        setData(casted);
-        setLastUpdate(new Date());
-        updateBuffer(casted);
-      } catch (err) {
-        console.error(err);
-      }
+      };
+
+      ws.onerror = (err) => {
+        console.error("❌ Error en WebSocket:", err);
+        setError("Error de conexión WebSocket");
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg: unknown = JSON.parse(event.data);
+          if (
+            typeof msg === "object" &&
+            msg !== null &&
+            "type" in (msg as Record<string, unknown>)
+          ) {
+            return; // Mensaje de control, se ignora
+          }
+
+          const casted = msg as IoTData;
+          messageCount++;
+          console.debug(`📩 Mensaje recibido #${messageCount}`, casted);
+
+          setData(casted);
+          setLastUpdate(new Date());
+          updateBuffer(casted);
+        } catch (err) {
+          console.error("⚠️ Error parseando mensaje:", err);
+        }
+      };
     };
-    return () => es.close();
+
+    connectWebSocket();
+
+    return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws) ws.close();
+    };
   }, [updateBuffer]);
 
   /* ============ FILAS PARA GRÁFICAS ============ */
@@ -190,34 +243,42 @@ export default function GPC300Dashboard() {
 
   /* ============ RENDER ============ */
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--green-dark)] via-[var(--gray-soft)] to-[var(--gray-soft)] text-gray-900">
+    <div
+      className="min-h-screen bg-white text-black overflow-x-hidden"
+      style={{ scrollbarGutter: "stable both-edges" }}
+    >
       {/* Estado conexión */}
       <div className="absolute right-6 top-6 z-50">
         <div
-          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${
-            error
-              ? "bg-red-600 text-white"
-              : connected
+          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${error
+            ? "bg-red-600 text-white"
+            : connected
               ? "bg-[var(--green-light)] text-white"
               : "bg-yellow-500 text-black"
-          }`}
-          title={lastUpdate ? `Última: ${lastUpdate.toLocaleTimeString()}` : ""}
+            }`}
+          title={lastUpdate ? `Last: ${lastUpdate.toLocaleTimeString()}` : ""}
         >
-          <Activity className={`w-4 h-4 ${connected ? "animate-pulse" : ""}`} />
-          <span>{error ? error : connected ? "Conectado" : "Conectando..."}</span>
+          <Activity
+            className={`w-4 h-4 ${connected ? "animate-pulse" : ""}`}
+            style={{ color: "var(--green-medium)" }}
+          />
+          <span
+            style={{ color: "var(--green-medium)" }}
+          >
+            {error ? error : connected ? "Conectado" : "Conectando..."}
+          </span>
         </div>
       </div>
 
-      {/* Contenedor principal — compactamos padding vertical (antes py-5) */}
-      <div className="container mx-auto px-3 md:px-6 2xl:px-10 max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1920px] py-3 md:py-4">
+      {/* Contenedor principal */}
+      <div className="container mx-auto px-3 md:px-6 2xl:px-10 max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1920px] pt-0 pb-3 md:pb-4">
         {/* Header superior */}
         <HeaderStatus
-          title="DASHBOARD GPC-300"
-          subtitle="Generador Principal - Estado Actual"
+          subtitle="Generador Principal- Estado actual"
           lastUpdate={lastUpdate}
         />
 
-        {/* PANEL 1: ESTADO GENERAL + BREAKER — menor separación inferior (antes mb-5) */}
+        {/* PANEL 1: ESTADO GENERAL + BREAKER */}
         <div className="grid grid-cols-12 gap-4 mb-3">
           <Card title="Estado General" className="col-span-12 lg:col-span-8">
             <GeneralStatusCard
@@ -238,10 +299,9 @@ export default function GPC300Dashboard() {
           </Card>
         </div>
 
-        {/* PANEL 2: CORRIENTE + VOLTAJE — menor separación inferior (antes mb-6) */}
+        {/* PANEL 2: CORRIENTE + VOLTAJE */}
         <div className="grid grid-cols-12 gap-4 mb-4">
           <Card title="Corriente" className="col-span-12 lg:col-span-6 h-full">
-            {/* Al compactar paddings arriba/abajo, compensa con un alto apenas mayor si quieres: 368 */}
             <CurrentsChart data={corrienteData} height={364} />
           </Card>
 

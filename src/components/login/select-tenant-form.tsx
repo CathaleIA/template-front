@@ -199,7 +199,7 @@ export function SelectTenant() {
 
           <div className="flex flex-col gap-6">
             <img
-              src="assets/logo-grad.svg"
+              src="logos/cathaleiaNew.png"
               alt="Logo de la empresa"
               className="w-[150px] h-auto mx-auto"
             />
