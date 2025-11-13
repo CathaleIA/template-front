@@ -18,7 +18,7 @@ import {
 	IotReportData,
 	NumericMetric,
 	TemperatureMetrics,
-} from './types';
+} from '@/types';
 import switchReportStyles from './switchReportStyles';
 
 type RawMetric<T> = {
