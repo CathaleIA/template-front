@@ -15,7 +15,6 @@ interface BreakerPhaseData {
   ready_to_close?: VariableData;
   sync_in_progress?: VariableData;
   ready_to_open?: VariableData;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
