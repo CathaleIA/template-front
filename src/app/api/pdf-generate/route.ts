@@ -1,16 +1,21 @@
+import { NextResponse } from "next/server";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import cabeceraPagina from "@/components/reports-components/dinamic-report/cabecera-pagina";
 import piePagina from "@/components/reports-components/dinamic-report/piepagina";
-import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 
 export async function POST(req: Request) {
   try {
     const { html, styles } = await req.json();
 
+    const executablePath = await chromium.executablePath();
+
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: chromium.args,
+      executablePath,
+      headless: true, // o "new" si usas Puppeteer >= 22
     });
+
 
     const page = await browser.newPage();
 
@@ -25,12 +30,10 @@ export async function POST(req: Request) {
               padding: 0;
               box-sizing: border-box;
             }
-
             body {
               margin: 0 !important;
               padding: 0 !important;
             }
-            
             ${styles}
           </style>
         </head>
@@ -42,56 +45,33 @@ export async function POST(req: Request) {
 
     await page.setContent(finalHTML, { waitUntil: "networkidle0" });
 
-    // 🔥 Templates SIN márgenes ni padding
     const headerTemplate = `
-      <div style="width: 100%; margin: 0; padding: 0; display: block;">
-        <img 
-          src="data:image/png;base64,${cabeceraPagina}" 
-          style="
-            width: 100%; 
-            height: auto;
-            display: block; 
-            margin: 0; 
-            padding: 0;
-            border: 0;
-          " 
-        />
-      </div>
-    `;
+      <div style="width:100%;margin:0;padding:0;display:block;">
+        <img src="data:image/png;base64,${cabeceraPagina}" style="width:100%;height:auto;display:block;margin:0;padding:0;border:0;" />
+      </div>`;
 
     const footerTemplate = `
-      <div style="width: 100%; margin: 0; padding: 0; display: block;">
-        <img 
-          src="data:image/png;base64,${piePagina}" 
-          style="
-            width: 100%; 
-            height: auto;
-            display: block; 
-            margin: 0; 
-            padding: 0;
-            border: 0;
-          " 
-        />
-      </div>
-    `;
+      <div style="width:100%;margin:0;padding:0;display:block;">
+        <img src="data:image/png;base64,${piePagina}" style="width:100%;height:auto;display:block;margin:0;padding:0;border:0;" />
+      </div>`;
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: headerTemplate,
-      footerTemplate: footerTemplate,
+      headerTemplate,
+      footerTemplate,
       margin: {
-        top: "190px",    // Altura exacta de tu header
-        bottom: "150px", // Altura exacta de tu footer
+        top: "190px",
+        bottom: "155px",
         left: "96px",
-        right: "96px"
+        right: "96px",
       },
     });
 
     await browser.close();
 
-    return new Response(new Uint8Array(pdfBuffer), {
+    return new Response(Buffer.from(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
