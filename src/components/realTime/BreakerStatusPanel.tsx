@@ -1,5 +1,6 @@
+//industrial-iot-lab\dashboard-industrial\src\components\BreakerStatusPanel.tsx
 'use client';
-import { useEffect, useState } from 'react';
+import {useState} from 'react';
 
 interface VariableData {
   value: number | boolean | string;
@@ -14,6 +15,7 @@ interface BreakerPhaseData {
   ready_to_close?: VariableData;
   sync_in_progress?: VariableData;
   ready_to_open?: VariableData;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

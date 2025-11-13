@@ -10,6 +10,7 @@ import GeneralStatusCard from "./GeneralStatusCard";
 import BreakerCard from "./BreakerCard";
 import CurrentsChart from "./CurrentsChart";
 import VoltagesChart from "./VoltagesChart";
+import KPIVoltage from "./KPIVoltage";
 
 /* ============ TIPOS ============ */
 interface VariableData {
@@ -36,6 +37,11 @@ interface IoTData {
       voltage_L2_N?: VariableData;
       voltage_L3_N?: VariableData;
       promedio_voltajes?: VariableData;
+
+      // Nuevos campos para KPI de tensiones línea-línea
+      voltage_L1_L2?: VariableData;
+      voltage_L2_L3?: VariableData;
+      voltage_L1_L3?: VariableData;
     };
     busbar?: { frecuencia?: VariableData };
     breaker: {
@@ -250,37 +256,32 @@ export default function GPC300Dashboard() {
       {/* Estado conexión */}
       <div className="absolute right-6 top-6 z-50">
         <div
-          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${error
-            ? "bg-red-600 text-white"
-            : connected
+          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${
+            error
+              ? "bg-red-600 text-white"
+              : connected
               ? "bg-[var(--green-light)] text-white"
               : "bg-yellow-500 text-black"
-            }`}
+          }`}
           title={lastUpdate ? `Last: ${lastUpdate.toLocaleTimeString()}` : ""}
         >
-          <Activity
-            className={`w-4 h-4 ${connected ? "animate-pulse" : ""}`}
-            style={{ color: "var(--green-medium)" }}
-          />
-          <span
-            style={{ color: "var(--green-medium)" }}
-          >
-            {error ? error : connected ? "Conectado" : "Conectando..."}
-          </span>
+          <Activity className={`w-4 h-4 ${connected ? "animate-pulse" : ""}`} />
+          <span>{error ? error : connected ? "Connected" : "Connecting..."}</span>
         </div>
       </div>
 
       {/* Contenedor principal */}
-      <div className="container mx-auto px-3 md:px-6 2xl:px-10 max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1920px] pt-0 pb-3 md:pb-4">
+      <div className="container mx-auto px-3 md:px-6 2xl:px-10 max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1920px] py-3 md:py-4">
         {/* Header superior */}
         <HeaderStatus
-          subtitle="Generador Principal- Estado actual"
+          subtitle="Main Generator - Current Status"
           lastUpdate={lastUpdate}
         />
 
-        {/* PANEL 1: ESTADO GENERAL + BREAKER */}
+        {/* PANEL 1: ESTADO GENERAL + BREAKER + KPIs VOLTAJE */}
         <div className="grid grid-cols-12 gap-4 mb-3">
-          <Card title="Estado General" className="col-span-12 lg:col-span-8">
+          {/* Más ancho a la izquierda */}
+          <Card title="General Status" className="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4">
             <GeneralStatusCard
               activa={getNumericValue(data?.data.generator.potencia_activa) || 0}
               reactiva={getNumericValue(data?.data.generator.potencia_reactiva) || 0}
@@ -289,7 +290,8 @@ export default function GPC300Dashboard() {
             />
           </Card>
 
-          <Card title="Breaker" className="col-span-12 lg:col-span-4">
+          {/* Breaker más compacto al centro */}
+          <Card title="Breaker" className="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-2">
             <BreakerCard
               closed={!!getBooleanValue(data?.data.breaker.closed)}
               ok={!!getBooleanValue(data?.data.breaker.voltage_freq_ok)}
@@ -297,15 +299,29 @@ export default function GPC300Dashboard() {
               frecuencia={getNumericValue(data?.data.generator.frecuencia) || 0}
             />
           </Card>
+
+          {/* Nuevo KPI de Tensiones a la derecha */}
+          <Card
+            title="Voltage KPIs"
+            className="col-span-12 md:col-span-12 lg:col-span-6"
+          >
+            <KPIVoltage
+              voltages={data?.data.generator ?? {}}
+              // Si quieres ajustar el valor nominal y tolerancias:
+              // expectedLineLine={400}
+              // warningTolerancePercent={5}
+              // dangerTolerancePercent={10}
+            />
+          </Card>
         </div>
 
         {/* PANEL 2: CORRIENTE + VOLTAJE */}
         <div className="grid grid-cols-12 gap-4 mb-4">
-          <Card title="Corriente" className="col-span-12 lg:col-span-6 h-full">
+          <Card title="Current" className="col-span-12 lg:col-span-6 h-full">
             <CurrentsChart data={corrienteData} height={364} />
           </Card>
 
-          <Card title="Voltaje" className="col-span-12 lg:col-span-6 h-full">
+          <Card title="Voltage" className="col-span-12 lg:col-span-6 h-full">
             <VoltagesChart data={voltajeData} height={364} />
           </Card>
         </div>
