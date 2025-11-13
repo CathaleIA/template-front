@@ -281,7 +281,7 @@ export default function GPC300Dashboard() {
         {/* PANEL 1: ESTADO GENERAL + BREAKER + KPIs VOLTAJE */}
         <div className="grid grid-cols-12 gap-4 mb-3">
           {/* Más ancho a la izquierda */}
-          <Card title="General Status" className="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4">
+          <Card title="Estado General" className="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4">
             <GeneralStatusCard
               activa={getNumericValue(data?.data.generator.potencia_activa) || 0}
               reactiva={getNumericValue(data?.data.generator.potencia_reactiva) || 0}
