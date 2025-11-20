@@ -209,18 +209,36 @@ export default function GPC300Dashboard() {
       ws.onmessage = (event) => {
         try {
           const msg: unknown = JSON.parse(event.data);
+
+          // Control message - ignore
           if (
             typeof msg === "object" &&
             msg !== null &&
             "type" in (msg as Record<string, unknown>)
           ) {
-            // Control message (e.g. handshake) - ignore
             return;
           }
 
-          const casted = msg as IoTMessage;
+          // 🆕 FILTRAR: Solo procesar mensajes del generador
+          const casted = msg as IoTMessage & { subsystem?: string };
+
+          // Log para debug
+          console.debug(`📩 Mensaje recibido - Subsystem: ${casted.subsystem || 'undefined'}`);
+
+          // Si tiene subsystem y NO es generator, ignorar
+          if (casted.subsystem && casted.subsystem !== "generator") {
+            console.debug(`⏭️ Mensaje ignorado (subsystem: ${casted.subsystem})`);
+            return;
+          }
+
+          // Si no tiene subsystem pero tiene data.cylinders, es del motor - ignorar
+          if (!casted.subsystem && casted.data && 'cylinders' in casted.data) {
+            console.debug("⏭️ Mensaje ignorado (detectado como motor por estructura)");
+            return;
+          }
+
           messageCount++;
-          console.debug(`📩 Mensaje recibido #${messageCount}`, casted);
+          console.log(`✅ Procesando mensaje de generador #${messageCount}`);
 
           setData(casted);
           setLastUpdate(new Date());
@@ -275,13 +293,12 @@ export default function GPC300Dashboard() {
       {/* Connection status */}
       <div className="absolute right-6 top-6 z-50">
         <div
-          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${
-            error
+          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${error
               ? "bg-red-600 text-white"
               : connected
-              ? "bg-[var(--green-light)] text-white"
-              : "bg-yellow-500 text-black"
-          }`}
+                ? "bg-[var(--green-light)] text-white"
+                : "bg-yellow-500 text-black"
+            }`}
           title={lastUpdate ? `Last: ${lastUpdate.toLocaleTimeString()}` : ""}
         >
           <Activity
@@ -387,7 +404,7 @@ export default function GPC300Dashboard() {
             </Card>
           </div>
 
-        {/* Bearing + Sequences + Unbalance (50% - 50%) */}
+          {/* Bearing + Sequences + Unbalance (50% - 50%) */}
           <div className="grid grid-cols-12 gap-4 mb-4 items-start">
 
             {/* Izquierda (50%): Bearing */}
