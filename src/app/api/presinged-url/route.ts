@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantName = searchParams.get("tenantName") || "COPOWER";
   const userPoolName = searchParams.get("userPoolName") || "David-Gomez";
+  const fileName = searchParams.get("fileName") || "TEST";
 
   try {
     console.log("🔍 Obteniendo URL prefirmada para:", { tenantName, userPoolName });
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(PRESIGNED_URL_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantName, userPoolName }),
+      body: JSON.stringify({ tenantName, userPoolName, fileName }),
     });
 
     if (!response.ok) {

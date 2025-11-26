@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${notoSans.variable} font-sans`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <UserProvider>
               <ApolloHook>
                 <div className="min-h-screen bg-background">
