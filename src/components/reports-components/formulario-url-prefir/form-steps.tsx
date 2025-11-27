@@ -11,8 +11,10 @@ interface FormStepsProps {
 
 export function FormStep1({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <h2 className="text-xl font-bold">Información General del Reporte</h2>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-900">📋 Información General del Reporte</h2>
+      </div>
       <FieldGroup className="gap-4">
         <form.Field name="reportTitle">
           {(field: any) => (
@@ -37,8 +39,10 @@ export function FormStep1({ form }: { form: any }) {
 
 export function FormStep2({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <h2 className="text-xl font-bold">Información del Cliente</h2>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-900">👤 Información del Cliente</h2>
+      </div>
       <FieldGroup className="gap-4">
         <form.Field name="cliente">
           {(field: any) => <FormField field={field} label="Cliente *" placeholder="Nombre del cliente" />}
@@ -70,7 +74,9 @@ export function FormStep2({ form }: { form: any }) {
 export function FormStep3({ form }: { form: any }) {
   return (
     <div className="space-y-6 animate-fadeIn">
-      <h2 className="text-xl font-bold">Responsables del Reporte</h2>
+      <div className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-900">👥 Responsables del Reporte</h2>
+      </div>
       <FieldGroup className="gap-6">
         <form.Field name="elaboradoPor" mode="array">
           {(field: any) => (
@@ -107,7 +113,9 @@ export function FormStep3({ form }: { form: any }) {
 export function FormStep4({ form }: { form: any }) {
   return (
     <div className="space-y-4 animate-fadeIn">
-      <h2 className="text-xl font-bold">Detalles del Trabajo</h2>
+      <div className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-900">⚙️ Detalles del Trabajo</h2>
+      </div>
       <FieldGroup className="gap-4">
         <form.Field name="objetivo">
           {(field: any) => (
@@ -147,9 +155,11 @@ export function FormStep4({ form }: { form: any }) {
                               placeholder={`Prueba ${pruebaIndex + 1}`}
                               className="flex-1"
                               value={pruebasField.state.value[pruebaIndex] ?? ""}
-                              onChange={(e) =>
-                                (pruebasField.state.value[pruebaIndex] = e.target.value)
-                              }
+                              onChange={(e) => {
+                                const newValue = [...pruebasField.state.value];
+                                newValue[pruebaIndex] = e.target.value;
+                                pruebasField.handleChange(newValue);
+                              }}
                             />
                             <button
                               type="button"
@@ -199,7 +209,9 @@ export function FormStep4({ form }: { form: any }) {
 export function FormStep5({ form }: { form: any }) {
   return (
     <div className="space-y-4 animate-fadeIn">
-      <h2 className="text-xl font-bold">Personal Presente y Estándar de la Prueba</h2>
+      <div className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-900">📊 Personal Presente y Estándar de la Prueba</h2>
+      </div>
       <FieldGroup className="gap-4">
         <form.Field name="personalPresente" mode="array">
           {(field: any) => (

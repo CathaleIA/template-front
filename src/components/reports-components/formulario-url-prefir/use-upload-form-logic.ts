@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { stepSchemas, fullSchema } from "./validation-schemas";
@@ -32,52 +32,76 @@ export function useUploadFormLogic() {
     return null;
   };
 
-  const validateStep = async (step: number): Promise<boolean> => {
+  const isStepValid = (step: number, formValues: Record<string, any>): boolean => {
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas];
     if (!currentSchema) return true;
 
-    const validation = currentSchema.safeParse({
-      reportTitle: "",
-      codigo: "",
-      fechaEjecucion: "",
-      fechaEmision: "",
-      cliente: "",
-      municipio: "",
-      departamento: "",
-      primerNombre: "",
-      segundoNombre: "",
-      cargo: "",
-      elaboradoPor: [""],
-      revisadoPor: [""],
-      aprobadoPor: [""],
-      objetivo: "",
-      alcance: "",
-      activos: [{ nombre: "", pruebas: [""] }],
-      personalPresente: [""],
-      nombreDoc: "",
-      desDoc: "",
-      nombreEquipo: "",
-    });
+    const validation = currentSchema.safeParse(formValues);
+    return validation.success;
+  };
+
+  const validateStep = async (step: number, formValues: Record<string, any>): Promise<boolean> => {
+    const currentSchema = stepSchemas[step as keyof typeof stepSchemas];
+    if (!currentSchema) return true;
+
+    const validation = currentSchema.safeParse(formValues);
 
     if (!validation.success) {
       const errors = validation.error.issues;
+      
+      // Map de etiquetas amigables para los campos
+      const fieldLabels: Record<string, string> = {
+        reportTitle: "Título del Reporte",
+        codigo: "Código",
+        fechaEjecucion: "Fecha de Ejecución",
+        fechaEmision: "Fecha de Emisión",
+        cliente: "Cliente",
+        municipio: "Municipio",
+        departamento: "Departamento",
+        primerNombre: "Primer Nombre",
+        segundoNombre: "Segundo Nombre",
+        cargo: "Cargo",
+        elaboradoPor: "Elaborado Por",
+        revisadoPor: "Revisado Por",
+        aprobadoPor: "Aprobado Por",
+        objetivo: "Objetivo",
+        alcance: "Alcance",
+        activos: "Activos",
+        personalPresente: "Personal Presente",
+        nombreDoc: "Nombre Estándar",
+        desDoc: "Descripción Estándar",
+        nombreEquipo: "Equipos Utilizados",
+      };
+
       const errorMessages = errors
         .map((e: any) => {
-          const fieldPath = Array.isArray(e.path) && e.path.length > 0 ? e.path.join(".") : "campo";
-          return `${fieldPath}: ${e.message}`;
+          let fieldName = "campo desconocido";
+          
+          if (Array.isArray(e.path) && e.path.length > 0) {
+            const firstPath = e.path[0]?.toString() || "";
+            fieldName = fieldLabels[firstPath] || firstPath;
+          }
+          
+          return `• ${fieldName}: ${e.message}`;
         })
         .join("\n");
-      toast("❌ Por favor completa todos los campos requeridos", {
+
+      // Mostrar alerta nativa
+      alert(`⚠️ CAMPOS REQUERIDOS\n\n${errorMessages}`);
+      
+      // También mostrar toast como respaldo
+      toast("⚠️ Campos Requeridos", {
         description: errorMessages,
         position: "top-center",
       });
+      
       return false;
     }
     return true;
   };
 
   const handleNextStep = async (formValues: Record<string, any>) => {
-    const isValid = await validateStep(currentStep);
+    const isValid = await validateStep(currentStep, formValues);
     if (isValid) {
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
@@ -94,7 +118,7 @@ export function useUploadFormLogic() {
     if (step < currentStep) {
       setCurrentStep(step);
     } else if (step > currentStep) {
-      const isValid = await validateStep(currentStep);
+      const isValid = await validateStep(currentStep, formValues);
       if (isValid) {
         if (!completedSteps.includes(currentStep)) {
           setCompletedSteps([...completedSteps, currentStep]);
@@ -227,6 +251,7 @@ export function useUploadFormLogic() {
     dragActive,
     setDragActive,
     validateFile,
+    isStepValid,
     handleNextStep,
     handlePrevStep,
     goToStep,
