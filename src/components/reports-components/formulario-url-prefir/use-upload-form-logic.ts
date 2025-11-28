@@ -19,6 +19,7 @@ export function useUploadFormLogic() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any> | null>(null);
 
   const validateFile = (file: File): string | null => {
     if (!file) return "Selecciona un archivo";
@@ -132,6 +133,51 @@ export function useUploadFormLogic() {
     if (!tenantName.trim() || !userPoolName.trim() || !fileName.trim()) {
       throw new Error("Tenant, User Pool y Nombre de Archivo son requeridos");
     }
+    
+    // Si hay formData, enviar todo al backend para que genere la URL
+    if (formData) {
+      try {
+        console.log("📤 Enviando formulario al backend para obtener URL prefirmada...");
+        const response = await fetch("/api/public/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenantName,
+            userPoolName,
+            fileName,
+            formulario: formData,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Error ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("✅ Respuesta del backend:", data);
+
+        // Extraer URL prefirmada de la respuesta
+        let presignedUrl = data.url || data.presignedUrl || data.presigned_url;
+        
+        // Si viene en el campo 'message' (como en tu prueba de Postman)
+        if (!presignedUrl && data.message && typeof data.message === "string") {
+          const urlMatch = data.message.match(/https?:\/\/[^\s\)]+/);
+          presignedUrl = urlMatch ? urlMatch[0] : null;
+        }
+
+        if (!presignedUrl) {
+          throw new Error("No se encontró URL prefirmada en la respuesta del backend");
+        }
+
+        return presignedUrl;
+      } catch (error: any) {
+        console.error("❌ Error obteniendo URL prefirmada con formulario:", error);
+        throw error;
+      }
+    }
+
+    // Fallback: obtener URL sin formulario (solo tenant/userPool/fileName)
     const url = `/api/public/upload?tenantName=${encodeURIComponent(
       tenantName
     )}&userPoolName=${encodeURIComponent(userPoolName)}&fileName=${encodeURIComponent(fileName)}`;
@@ -149,12 +195,13 @@ export function useUploadFormLogic() {
   };
 
   const uploadToS3 = async (presignedUrl: string, fileToUpload: File) => {
-    const formData = new FormData();
-    formData.append("file", fileToUpload);
-    formData.append("presignedUrl", presignedUrl);
+    const formDataToSend = new FormData();
+    formDataToSend.append("file", fileToUpload);
+    formDataToSend.append("presignedUrl", presignedUrl);
+    
     const response = await fetch("/api/public/upload", {
       method: "PUT",
-      body: formData,
+      body: formDataToSend,
     });
     if (!response.ok) {
       const errorData = await response.json();
@@ -171,13 +218,19 @@ export function useUploadFormLogic() {
       setError(validationError);
       return;
     }
+    
+    if (!formData) {
+      setError("Debe completar y enviar el formulario antes de subir el archivo");
+      return;
+    }
+    
     setLoading(true);
     setMessage("Obteniendo URL prefirmada...");
     try {
       const presignedUrl = await getPresignedUrl();
-      setMessage("Subiendo archivo...");
+      setMessage("Subiendo archivo ZIP...");
       await uploadToS3(presignedUrl, file!);
-      setMessage("✅ Archivo subido correctamente");
+      setMessage("✅ Archivo subido correctamente junto con el formulario");
       setFile(null);
       setProgress(0);
     } catch (err: any) {
@@ -204,14 +257,18 @@ export function useUploadFormLogic() {
         });
         return;
       }
+      
+      // Guardar datos del formulario en estado
+      setFormData(formValues);
       setSavedValues(formValues);
+      
       try {
         localStorage.setItem("formularioReporte", JSON.stringify(formValues));
       } catch (error) {
         console.error("Error al guardar en localStorage:", error);
       }
       toast("✅ Formulario completado exitosamente", {
-        description: "Todos los datos han sido validados y guardados",
+        description: "Ahora puedes subir el archivo ZIP",
         position: "top-center",
       });
     } catch (error) {
@@ -258,5 +315,6 @@ export function useUploadFormLogic() {
     handleUpload,
     handleFormSubmit,
     handleReset,
+    formData,
   };
 }
