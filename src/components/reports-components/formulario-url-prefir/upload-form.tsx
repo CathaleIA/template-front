@@ -44,6 +44,7 @@ export function UploadForm() {
     handleUpload,
     handleFormSubmit,
     handleReset,
+    formData,
   } = useUploadFormLogic();
 
   const form = useForm({
@@ -138,6 +139,21 @@ export function UploadForm() {
           <div className="lg:sticky lg:top-4 lg:h-fit">
             <Card className="shadow-lg border-0 rounded-xl">
               <CardContent className="p-6">
+                {formData && Object.keys(formData).length > 0 ? (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
+                    <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
+                      <span className="text-lg">✅</span> Formulario completado
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">Los datos se guardarán junto con el archivo</p>
+                  </div>
+                ) : (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+                    <p className="text-sm font-semibold text-amber-700 flex items-center gap-2">
+                      <span className="text-lg">⚠️</span> Formulario incompleto
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">Completa el formulario antes de subir el archivo</p>
+                  </div>
+                )}
                 <ZipUploadSection
                   file={file}
                   setFile={setFile}
@@ -156,6 +172,7 @@ export function UploadForm() {
                   onUpload={handleUpload}
                   validateFile={validateFile}
                   setError={setError}
+                  isFormCompleted={!!formData && Object.keys(formData).length > 0}
                 />
               </CardContent>
             </Card>

@@ -13,7 +13,7 @@ export function FormStep1({ form }: { form: any }) {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">📋 Información General del Reporte</h2>
+        <h2 className="text-2xl font-bold text-slate-900"> Información General del Reporte</h2>
       </div>
       <FieldGroup className="gap-4">
         <form.Field name="reportTitle">

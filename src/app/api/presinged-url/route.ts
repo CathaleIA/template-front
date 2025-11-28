@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     console.log("🔵 PUT /api/presinged-url - Iniciando...");
-    console.log("📋 Headers recibidos:", {
+    console.log(" Headers recibidos:", {
       contentType: request.headers.get("content-type"),
       presignedUrl: request.headers.get("x-presigned-url")?.substring(0, 50) + "...",
     });
@@ -116,7 +116,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("❌ Error en proxy:", error.message);
-    console.error("📋 Stack:", error.stack);
+    console.error(" Stack:", error.stack);
     return NextResponse.json(
       { error: error.message || "Error desconocido" },
       { status: 500 }

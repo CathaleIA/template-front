@@ -31,7 +31,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       [
         { "title": "Reports", "url": "#" },
         { "title": "Create", "url": "/dashboard/reports" },
-        { "title": "List", "url": "/dashboard/listreports" },
+        { "title": "Solar Reports", "url": "/dashboard/listreports" },
         { "title": "Config", "url": "#" },
       ],
       [{ "title": "Analysis", "url": "#" },

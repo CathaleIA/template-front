@@ -16,6 +16,7 @@ interface ZipUploadSectionProps {
   onUpload: () => void;
   validateFile: (file: File) => string | null;
   setError: (error: string) => void;
+  isFormCompleted?: boolean;
 }
 
 export function ZipUploadSection({
@@ -36,6 +37,7 @@ export function ZipUploadSection({
   onUpload,
   validateFile,
   setError,
+  isFormCompleted = false,
 }: ZipUploadSectionProps) {
   const handleFileDrop = (droppedFile: File) => {
     const validationError = validateFile(droppedFile);
@@ -172,8 +174,13 @@ export function ZipUploadSection({
           {/* Upload Button */}
           <button
             onClick={onUpload}
-            disabled={loading || !file}
-            className="w-full bg-blue-600 text-white rounded p-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            disabled={loading || !file || !isFormCompleted}
+            className={`w-full text-white rounded p-2 font-medium transition-colors ${
+              isFormCompleted 
+                ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                : "bg-gray-400 cursor-not-allowed opacity-50"
+            }`}
+            title={!isFormCompleted ? "Debes completar el formulario primero" : ""}
           >
             {loading ? "Cargando..." : "Subir archivo"}
           </button>
