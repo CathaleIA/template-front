@@ -49,8 +49,86 @@ export function FormTextarea({ field, label, placeholder }: any) {
   );
 }
 
-export function ResponsableArrayField({ field, label, description }: any) {
+export function ResponsableArrayField({ field, label, description, isExtended = false, titlePrefix = "" }: any) {
   const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0;
+  
+  if (isExtended) {
+    return (
+      <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+        <div>
+          <FieldLabel className="font-semibold text-slate-700">{label}</FieldLabel>
+          <FieldDescription className="text-slate-600">{description}</FieldDescription>
+        </div>
+        {field.state.value.map((_: any, index: number) => (
+          <div key={index} className="p-4 bg-white rounded-lg border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-slate-700">{titlePrefix} {index + 1}</span>
+              <button
+                type="button"
+                onClick={() => field.removeValue(index)}
+                className="text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                Eliminar
+              </button>
+            </div>
+            <div>
+              <FieldLabel className="text-sm font-medium text-slate-700 mb-2 block">Nombre</FieldLabel>
+              <Input
+                value={field.state.value[index]?.nombre ?? ""}
+                onChange={(e) => {
+                  const newValue = [...field.state.value];
+                  newValue[index] = { ...newValue[index], nombre: e.target.value };
+                  field.handleChange(newValue);
+                }}
+                onBlur={() => field.handleBlur()}
+                placeholder="Nombre completo"
+                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+              />
+            </div>
+            <div>
+              <FieldLabel className="text-sm font-medium text-slate-700 mb-2 block">Cargo</FieldLabel>
+              <Input
+                value={field.state.value[index]?.cargo ?? ""}
+                onChange={(e) => {
+                  const newValue = [...field.state.value];
+                  newValue[index] = { ...newValue[index], cargo: e.target.value };
+                  field.handleChange(newValue);
+                }}
+                onBlur={() => field.handleBlur()}
+                placeholder="Ej: Ingeniero, Técnico"
+                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+              />
+            </div>
+            <div>
+              <FieldLabel className="text-sm font-medium text-slate-700 mb-2 block">Empresa</FieldLabel>
+              <Input
+                value={field.state.value[index]?.empresa ?? ""}
+                onChange={(e) => {
+                  const newValue = [...field.state.value];
+                  newValue[index] = { ...newValue[index], empresa: e.target.value };
+                  field.handleChange(newValue);
+                }}
+                onBlur={() => field.handleBlur()}
+                placeholder="Nombre de la empresa"
+                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+              />
+            </div>
+          </div>
+        ))}
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          onClick={() => field.pushValue({ nombre: "", cargo: "", empresa: "" })}
+          className="w-full rounded-lg hover:bg-blue-50 transition-all"
+        >
+          + Agregar {titlePrefix}
+        </Button>
+        {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
       <div>

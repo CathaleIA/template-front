@@ -124,7 +124,7 @@ export function ZipUploadSection({
           {/* File Info */}
           {file && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-sm font-medium text-green-900">✓ Archivo seleccionado:</p>
+              <p className="text-sm font-medium text-green-900">Archivo seleccionado:</p>
               <p className="text-xs text-green-700 mt-1">{file.name}</p>
               <p className="text-xs text-green-600 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               <button
@@ -138,30 +138,6 @@ export function ZipUploadSection({
               </button>
             </div>
           )}
-
-          {/* Tenant Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Tenant Name</label>
-            <input
-              type="text"
-              value={tenantName}
-              onChange={(e) => setTenantName(e.target.value)}
-              disabled={loading}
-              className="w-full border rounded p-2"
-            />
-          </div>
-
-          {/* User Pool */}
-          <div>
-            <label className="block text-sm font-medium mb-2">User Pool</label>
-            <input
-              type="text"
-              value={userPoolName}
-              onChange={(e) => setUserPoolName(e.target.value)}
-              disabled={loading}
-              className="w-full border rounded p-2"
-            />
-          </div>
 
           {/* File Name */}
           {fileName && (

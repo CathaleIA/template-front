@@ -41,7 +41,7 @@ export function FormStep2({ form }: { form: any }) {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">👤 Información del Cliente</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Información del Cliente</h2>
       </div>
       <FieldGroup className="gap-4">
         <form.Field name="cliente">
@@ -75,7 +75,7 @@ export function FormStep3({ form }: { form: any }) {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">👥 Responsables del Reporte</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Responsables del Reporte</h2>
       </div>
       <FieldGroup className="gap-6">
         <form.Field name="elaboradoPor" mode="array">
@@ -84,6 +84,8 @@ export function FormStep3({ form }: { form: any }) {
               field={field}
               label="Elaborado Por"
               description="Personas que elaboraron el reporte"
+              isExtended={true}
+              titlePrefix="Elaborador"
             />
           )}
         </form.Field>
@@ -93,6 +95,8 @@ export function FormStep3({ form }: { form: any }) {
               field={field}
               label="Revisado Por"
               description="Personas que revisaron el reporte"
+              isExtended={true}
+              titlePrefix="Revisor"
             />
           )}
         </form.Field>
@@ -102,6 +106,8 @@ export function FormStep3({ form }: { form: any }) {
               field={field}
               label="Aprobado Por"
               description="Personas que aprobaron el reporte"
+              isExtended={true}
+              titlePrefix="Aprobador"
             />
           )}
         </form.Field>
@@ -114,7 +120,7 @@ export function FormStep4({ form }: { form: any }) {
   return (
     <div className="space-y-4 animate-fadeIn">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">⚙️ Detalles del Trabajo</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Detalles del Trabajo</h2>
       </div>
       <FieldGroup className="gap-4">
         <form.Field name="objetivo">
@@ -210,7 +216,7 @@ export function FormStep5({ form }: { form: any }) {
   return (
     <div className="space-y-4 animate-fadeIn">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">📊 Personal Presente y Estándar de la Prueba</h2>
+        <h2 className="text-2xl font-bold text-slate-900"> Personal Presente y Estándar de la Prueba</h2>
       </div>
       <FieldGroup className="gap-4">
         <form.Field name="personalPresente" mode="array">
