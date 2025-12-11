@@ -33,7 +33,7 @@ export function StepIndicator({
               `}
               onClick={() => onGoToStep(step.number)}
             >
-              {completedSteps.includes(step.number) && step.number < currentStep ? "✓" : step.number}
+              {completedSteps.includes(step.number) && step.number < currentStep ? step.number : step.number}
             </div>
 
             <div className="text-center mt-3">
@@ -112,7 +112,7 @@ export function NavigationButtons({
               className="px-8 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-md transition-all" 
               onClick={onSubmit}
             >
-              ✓ Guardar Formulario
+              Guardar Formulario
             </Button>
           </>
         ) : (

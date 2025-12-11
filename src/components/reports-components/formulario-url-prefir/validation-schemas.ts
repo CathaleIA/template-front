@@ -17,9 +17,27 @@ export const step2Schema = z.object({
 });
 
 export const step3Schema = z.object({
-  elaboradoPor: z.array(z.string().min(2, "Campo obligatorio")).min(1, "Debe haber al menos un elaborador"),
-  revisadoPor: z.array(z.string().min(2, "Campo obligatorio")).min(1, "Debe haber al menos un revisador"),
-  aprobadoPor: z.array(z.string().min(2, "Campo obligatorio")).min(1, "Debe haber al menos un aprobador"),
+  elaboradoPor: z.array(
+    z.object({
+      nombre: z.string().min(2, "Nombre obligatorio"),
+      cargo: z.string().min(2, "Cargo obligatorio"),
+      empresa: z.string().min(2, "Empresa obligatoria"),
+    })
+  ).min(1, "Debe haber al menos un elaborador"),
+  revisadoPor: z.array(
+    z.object({
+      nombre: z.string().min(2, "Nombre obligatorio"),
+      cargo: z.string().min(2, "Cargo obligatorio"),
+      empresa: z.string().min(2, "Empresa obligatoria"),
+    })
+  ).min(1, "Debe haber al menos un revisor"),
+  aprobadoPor: z.array(
+    z.object({
+      nombre: z.string().min(2, "Nombre obligatorio"),
+      cargo: z.string().min(2, "Cargo obligatorio"),
+      empresa: z.string().min(2, "Empresa obligatoria"),
+    })
+  ).min(1, "Debe haber al menos un aprobador"),
 });
 
 export const step4Schema = z.object({

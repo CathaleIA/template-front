@@ -54,9 +54,9 @@ export function UploadForm() {
       municipio: "",
       departamento: "",
       codigo: "",
-      elaboradoPor: [""] as string[],
-      revisadoPor: [""] as string[],
-      aprobadoPor: [""] as string[],
+      elaboradoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      revisadoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      aprobadoPor: [{ nombre: "", cargo: "", empresa: "" }],
       fechaEjecucion: "",
       fechaEmision: "",
       primerNombre: "",
@@ -119,18 +119,6 @@ export function UploadForm() {
                     onSubmit={() => form.handleSubmit()}
                   />
                 </form>
-
-                {/* Resultado del formulario */}
-                {savedValues && Object.keys(savedValues).length > 0 && (
-                  <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
-                    <h3 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-                      <span className="text-2xl">✅</span> Formulario completado exitosamente
-                    </h3>
-                    <pre className="text-sm text-green-700 overflow-auto max-h-60 bg-white p-4 rounded border border-green-200 font-mono">
-                      {JSON.stringify(savedValues, null, 2)}
-                    </pre>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -142,14 +130,14 @@ export function UploadForm() {
                 {formData && Object.keys(formData).length > 0 ? (
                   <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
                     <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
-                      <span className="text-lg">✅</span> Formulario completado
+                      Formulario completado
                     </p>
                     <p className="text-xs text-green-600 mt-1">Los datos se guardarán junto con el archivo</p>
                   </div>
                 ) : (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
                     <p className="text-sm font-semibold text-amber-700 flex items-center gap-2">
-                      <span className="text-lg">⚠️</span> Formulario incompleto
+                      Formulario incompleto
                     </p>
                     <p className="text-xs text-amber-600 mt-1">Completa el formulario antes de subir el archivo</p>
                   </div>

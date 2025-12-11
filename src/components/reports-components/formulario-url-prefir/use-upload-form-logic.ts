@@ -88,10 +88,10 @@ export function useUploadFormLogic() {
         .join("\n");
 
       // Mostrar alerta nativa
-      alert(`⚠️ CAMPOS REQUERIDOS\n\n${errorMessages}`);
+      alert(`CAMPOS REQUERIDOS\n\n${errorMessages}`);
       
       // También mostrar toast como respaldo
-      toast("⚠️ Campos Requeridos", {
+      toast("Campos Requeridos", {
         description: errorMessages,
         position: "top-center",
       });
@@ -137,7 +137,7 @@ export function useUploadFormLogic() {
     // Si hay formData, enviar todo al backend para que genere la URL
     if (formData) {
       try {
-        console.log("📤 Enviando formulario al backend para obtener URL prefirmada...");
+        console.log("Enviando formulario al backend para obtener URL prefirmada...");
         const response = await fetch("/api/public/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -155,7 +155,7 @@ export function useUploadFormLogic() {
         }
 
         const data = await response.json();
-        console.log("✅ Respuesta del backend:", data);
+        console.log("Respuesta del backend:", data);
 
         // Extraer URL prefirmada de la respuesta
         let presignedUrl = data.url || data.presignedUrl || data.presigned_url;
@@ -172,7 +172,7 @@ export function useUploadFormLogic() {
 
         return presignedUrl;
       } catch (error: any) {
-        console.error("❌ Error obteniendo URL prefirmada con formulario:", error);
+        console.error("Error obteniendo URL prefirmada con formulario:", error);
         throw error;
       }
     }
@@ -230,7 +230,7 @@ export function useUploadFormLogic() {
       const presignedUrl = await getPresignedUrl();
       setMessage("Subiendo archivo ZIP...");
       await uploadToS3(presignedUrl, file!);
-      setMessage("✅ Archivo subido correctamente junto con el formulario");
+      setMessage("Archivo subido correctamente junto con el formulario");
       setFile(null);
       setProgress(0);
     } catch (err: any) {
@@ -251,7 +251,7 @@ export function useUploadFormLogic() {
             return `${fieldPath}: ${e.message}`;
           })
           .join("\n");
-        toast("❌ Errores de validación", {
+        toast("Errores de validación", {
           description: errorMessages,
           position: "top-center",
         });
@@ -267,13 +267,13 @@ export function useUploadFormLogic() {
       } catch (error) {
         console.error("Error al guardar en localStorage:", error);
       }
-      toast("✅ Formulario completado exitosamente", {
+      toast("Formulario completado exitosamente", {
         description: "Ahora puedes subir el archivo ZIP",
         position: "top-center",
       });
     } catch (error) {
       console.error("Error inesperado:", error);
-      toast("❌ Error al procesar el formulario", {
+      toast("Error al procesar el formulario", {
         description: "Ocurrió un error inesperado",
         position: "top-center",
       });
