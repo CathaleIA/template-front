@@ -1,7 +1,7 @@
 'use client';
 
 
-import Dashboard from '@/components/componentsRealTime/Dashboard';
+import Dashboard from '@/components/componentsRealTime/DashboardMotor';
 export default function DashboardPage() {
 
 
