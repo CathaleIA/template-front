@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack(config) {
+  // Excluir snowflake-sdk del bundle (solo servidor)
+  serverExternalPackages: ['snowflake-sdk'],
+  
+  webpack(config, { isServer }) {
     // Encontrar la regla existente para archivos
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')
@@ -24,6 +27,22 @@ const nextConfig = {
 
     // Modificar la regla de archivo para ignorar SVGs
     fileLoaderRule.exclude = /\.svg$/i;
+
+    // Excluir snowflake-sdk del bundle del cliente
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      };
+    }
+    
+    config.externals = config.externals || [];
+    config.externals.push({
+      'snowflake-sdk': 'commonjs snowflake-sdk',
+    });
 
     return config;
   },
