@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
-import { executeQuery } from '@/lib/snowflake';
+
+// URL de tu Lambda via API Gateway
+// TODO: Reemplazar con tu URL real después del deployment
+const LAMBDA_ENDPOINT = process.env.NEXT_PUBLIC_LAMBDA_ENDPOINT ||
+  'https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/prod/query';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -9,27 +14,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Call the dedicated Manuals Agent function
-    const query = `SELECT ASK_MANUALS(?) as RESULT`;
-    const binds = [message];
+    console.log('📚 Querying Manuals Agent via Lambda:', message);
 
-    console.log('📚 Querying Manuals Agent:', message);
-    const results = await executeQuery(query, binds);
-    
-    // Parse the result if it's a string JSON
-    let parsedResult = results[0]?.RESULT;
-    if (typeof parsedResult === 'string') {
-        try {
-            parsedResult = JSON.parse(parsedResult);
-        } catch (e) {
-            // Keep as string if parse fails
-        }
+    // Llamar a la Lambda via API Gateway
+    const response = await fetch(LAMBDA_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message,
+        agentType: 'manuals', // o 'data' para el otro agente
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('❌ Lambda Error:', errorData);
+      return NextResponse.json(
+        {
+          error: 'Failed to query manuals agent',
+          details: errorData.error || response.statusText
+        },
+        { status: response.status }
+      );
     }
 
+    const result = await response.json();
+
+    console.log('✅ Query completed successfully');
+
     // Return in expected format
-    return NextResponse.json({ 
-      answer: parsedResult,
-      sources: [] // Could be enhanced later with actual source tracking
+    return NextResponse.json({
+      answer: result.answer,
+      agentType: result.agentType,
+      sources: result.sources || [],
     });
 
   } catch (error: any) {
@@ -43,8 +62,14 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    await executeQuery('SELECT 1');
-    return NextResponse.json({ status: 'ok', message: 'Snowflake connection healthy' });
+    // Health check simple
+    return NextResponse.json({
+      status: 'ok',
+      message: 'AI Chat API is ready',
+      endpoint: LAMBDA_ENDPOINT !== 'https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/prod/query'
+        ? 'configured'
+        : 'pending configuration'
+    });
   } catch (error: any) {
     return NextResponse.json(
       { status: 'error', message: error.message },
