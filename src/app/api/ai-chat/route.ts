@@ -1,9 +1,41 @@
 import { NextResponse } from 'next/server';
 
 // URL de tu Lambda via API Gateway
-// TODO: Reemplazar con tu URL real después del deployment
 const LAMBDA_ENDPOINT = process.env.NEXT_PUBLIC_LAMBDA_ENDPOINT ||
   'https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/prod/query';
+
+// Clasificador inteligente de preguntas
+async function classifyQuestion(question: string): Promise<'manuals' | 'data'> {
+  const lowerQuestion = question.toLowerCase();
+
+  // Palabras clave para DATOS
+  const dataKeywords = [
+    'temperatura', 'voltaje', 'corriente', 'potencia', 'frecuencia',
+    'presión', 'aceite', 'refrigerante', 'cilindro', 'breaker',
+    'máxima', 'mínima', 'promedio', 'actual', 'ahora', 'ayer',
+    'este mes', 'última', 'histórico', 'cuánto', 'cuándo',
+    'estado', 'valor', 'lectura', 'dato'
+  ];
+
+  // Palabras clave para MANUALES
+  const manualKeywords = [
+    'cómo', 'qué es', 'para qué', 'manual', 'instrucción',
+    'procedimiento', 'mantenimiento', 'reparar', 'solucionar',
+    'problema', 'error', 'falla', 'causa', 'síntoma',
+    'especificación', 'característica', 'función', 'componente'
+  ];
+
+  const dataScore = dataKeywords.filter(kw => lowerQuestion.includes(kw)).length;
+  const manualScore = manualKeywords.filter(kw => lowerQuestion.includes(kw)).length;
+
+  // Si tiene más keywords de datos, es pregunta de datos
+  if (dataScore > manualScore) {
+    return 'data';
+  }
+
+  // Por defecto, asumir manuales (más seguro para preguntas técnicas)
+  return 'manuals';
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +46,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    console.log('📚 Querying Manuals Agent via Lambda:', message);
+    // Clasificar la pregunta para elegir el agente correcto
+    const agentType = await classifyQuestion(message);
+
+    const agentEmoji = agentType === 'data' ? '📊' : '📚';
+    const agentName = agentType === 'data' ? 'Data Agent' : 'Manuals Agent';
+    console.log(`${agentEmoji} Querying ${agentName} via Lambda:`, message);
 
     // Llamar a la Lambda via API Gateway
     const response = await fetch(LAMBDA_ENDPOINT, {
@@ -24,7 +61,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         message,
-        agentType: 'manuals', // o 'data' para el otro agente
+        agentType, // 'manuals' o 'data' según clasificación
       }),
     });
 
@@ -33,7 +70,7 @@ export async function POST(request: Request) {
       console.error('❌ Lambda Error:', errorData);
       return NextResponse.json(
         {
-          error: 'Failed to query manuals agent',
+          error: `Failed to query ${agentName}`,
           details: errorData.error || response.statusText
         },
         { status: response.status }
@@ -42,7 +79,7 @@ export async function POST(request: Request) {
 
     const result = await response.json();
 
-    console.log('✅ Query completed successfully');
+    console.log(`✅ ${agentName} completed successfully`);
 
     // Return in expected format
     return NextResponse.json({
@@ -52,9 +89,9 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('❌ Manuals Agent Error:', error);
+    console.error('❌ AI Agent Error:', error);
     return NextResponse.json(
-      { error: 'Failed to query manuals agent', details: error.message },
+      { error: 'Failed to query AI agent', details: error.message },
       { status: 500 }
     );
   }
@@ -65,10 +102,11 @@ export async function GET() {
     // Health check simple
     return NextResponse.json({
       status: 'ok',
-      message: 'AI Chat API is ready',
+      message: 'AI Chat API is ready with intelligent routing',
       endpoint: LAMBDA_ENDPOINT !== 'https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/prod/query'
         ? 'configured'
-        : 'pending configuration'
+        : 'pending configuration',
+      agents: ['manuals', 'data']
     });
   } catch (error: any) {
     return NextResponse.json(
