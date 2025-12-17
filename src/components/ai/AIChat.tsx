@@ -94,9 +94,9 @@ export default function AIChat() {
   };
 
   const exampleQuestions = [
+    "¿Cuál es la temperatura actual?",
     "¿Qué hacer si hay vibración alta?",
-    "Hola, ¿cómo estás?",
-    "Procedimiento de emergencia",
+    "Dame los datos de voltaje de hoy",
     "¿Qué es el factor de potencia?",
   ];
 
@@ -108,9 +108,9 @@ export default function AIChat() {
           <Brain className="w-5 h-5 mr-2" />
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider leading-none">
-              Asistente Técnico IA
+              Asistente Inteligente
             </h3>
-            <p className="text-xs text-gray-200">Pregunta sobre tus equipos</p>
+            <p className="text-xs text-gray-200">Manuales + Datos en Tiempo Real</p>
           </div>
         </div>
         <div className="-ml-px h-10 w-10 bg-[var(--green-dark)] border-b-4 border-r-4 border-gray-400 rounded-br-[9999px]" />
@@ -121,8 +121,12 @@ export default function AIChat() {
         {messages.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             <Sparkles className="w-12 h-12 mx-auto mb-3 text-[var(--green-dark)]" />
-            <p className="text-sm mb-4 font-semibold">Inicia una conversación</p>
-            <p className="text-xs text-gray-400 mb-4">Pregunta sobre manuales técnicos o conversa libremente</p>
+            <p className="text-lg mb-2 font-bold text-gray-800">Hola, soy tu asistente inteligente. Puedo ayudarte con:</p>
+            <div className="text-left max-w-md mx-auto mb-4 space-y-2">
+              <p className="text-sm text-gray-700">📚 <strong>Consultas técnicas</strong> sobre equipos (manuales, procedimientos, troubleshooting)</p>
+              <p className="text-sm text-gray-700">📊 <strong>Análisis de datos</strong> de telemetría (temperaturas, voltajes, potencia, etc.)</p>
+            </div>
+            <p className="text-sm mb-4 font-semibold text-gray-600">¿En qué puedo ayudarte hoy?</p>
             <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
               {exampleQuestions.map((q, i) => (
                 <button
@@ -216,7 +220,7 @@ export default function AIChat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Escribe tu mensaje..."
             disabled={isLoading}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--green-dark)] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
