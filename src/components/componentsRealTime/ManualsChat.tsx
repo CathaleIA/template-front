@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, BookOpen } from 'lucide-react';
+import { Send, Bot, User, Loader2, BookOpen, BarChart3 } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: any[];
+  agentType?: 'manuals' | 'data'; // Tipo de agente que respondió
 }
 
 export default function ManualsChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: 'Hola, soy tu asistente técnico experto. Tengo acceso a todos los manuales de tus equipos (PLC300, GPC-300, etc.). ¿En qué puedo ayudarte hoy?' 
+    {
+      role: 'assistant',
+      content: 'Hola, soy tu asistente inteligente. Puedo ayudarte con:\n\n📚 Consultas técnicas sobre equipos (manuales, procedimientos, troubleshooting)\n📊 Análisis de datos de telemetría (temperaturas, voltajes, potencia, etc.)\n\n¿En qué puedo ayudarte hoy?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -48,13 +49,14 @@ export default function ManualsChat() {
         throw new Error(data.error);
       }
 
-      // The API returns the response directly as a string from ASK_MANUALS
+      // The API returns the response with agent type
       const responseText = typeof data === 'string' ? data : (data.answer || data.response || 'Lo siento, no pude encontrar una respuesta.');
 
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
+      setMessages(prev => [...prev, {
+        role: 'assistant',
         content: responseText,
-        sources: data.sources 
+        sources: data.sources,
+        agentType: data.agentType // 'manuals' or 'data'
       }]);
     } catch (error) {
       console.error('Error querying agent:', error);
@@ -75,8 +77,8 @@ export default function ManualsChat() {
           <Bot className="w-6 h-6 text-blue-400" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-100">Asistente de Manuales</h3>
-          <p className="text-xs text-slate-400">Potenciado por Snowflake Cortex & RAG</p>
+          <h3 className="font-semibold text-slate-100">Asistente Inteligente</h3>
+          <p className="text-xs text-slate-400">Manuales + Datos en Tiempo Real</p>
         </div>
       </div>
 
@@ -94,10 +96,27 @@ export default function ManualsChat() {
             )}
             
             <div className={`max-w-[80%] rounded-2xl p-4 ${
-              msg.role === 'user' 
-                ? 'bg-blue-600 text-white' 
+              msg.role === 'user'
+                ? 'bg-blue-600 text-white'
                 : 'bg-slate-800 text-slate-200'
             }`}>
+              {/* Agent Type Badge */}
+              {msg.role === 'assistant' && msg.agentType && (
+                <div className="mb-2 flex items-center gap-1.5">
+                  {msg.agentType === 'data' ? (
+                    <>
+                      <BarChart3 className="w-3.5 h-3.5 text-green-400" />
+                      <span className="text-xs font-medium text-green-400">Datos</span>
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+                      <span className="text-xs font-medium text-blue-400">Manuales</span>
+                    </>
+                  )}
+                </div>
+              )}
+
               <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
               
               {/* Sources Citation */}
@@ -132,7 +151,7 @@ export default function ManualsChat() {
             </div>
             <div className="bg-slate-800 rounded-2xl p-4 flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-              <span className="text-sm text-slate-400">Analizando manuales...</span>
+              <span className="text-sm text-slate-400">Pensando...</span>
             </div>
           </div>
         )}
@@ -146,7 +165,7 @@ export default function ManualsChat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pregunta sobre el mantenimiento, errores o especificaciones..."
+            placeholder="Pregunta sobre datos, manuales, mantenimiento, errores..."
             className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
             disabled={isLoading}
           />
