@@ -20,6 +20,9 @@ export function useUploadFormLogic() {
   const [error, setError] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const [formData, setFormData] = useState<Record<string, any> | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; timestamp: Date }>>([]);
+  const [formHasChanges, setFormHasChanges] = useState(false);
 
   const validateFile = (file: File): string | null => {
     if (!file) return "Selecciona un archivo";
@@ -72,6 +75,9 @@ export function useUploadFormLogic() {
         nombreDoc: "Nombre Estándar",
         desDoc: "Descripción Estándar",
         nombreEquipo: "Equipos Utilizados",
+        conclusiones: "Conclusiones",
+        observaciones: "Observaciones",
+        recomendaciones: "Recomendaciones",
       };
 
       const errorMessages = errors
@@ -107,7 +113,7 @@ export function useUploadFormLogic() {
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
       }
-      if (currentStep < 5) setCurrentStep(currentStep + 1);
+      if (currentStep < 6) setCurrentStep(currentStep + 1);
     }
   };
 
@@ -213,6 +219,17 @@ export function useUploadFormLogic() {
   const handleUpload = async () => {
     setError("");
     setMessage("");
+    
+    // Verificar si el formulario tiene cambios sin guardar
+    if (formHasChanges && uploadedFiles.length > 0) {
+      setError("Debes guardar el formulario antes de subir otro archivo");
+      toast.error("Formulario no guardado", {
+        description: "Completa y guarda el formulario antes de subir el archivo",
+        position: "top-center",
+      });
+      return;
+    }
+    
     const validationError = validateFile(file!);
     if (validationError) {
       setError(validationError);
@@ -230,9 +247,20 @@ export function useUploadFormLogic() {
       const presignedUrl = await getPresignedUrl();
       setMessage("Subiendo archivo ZIP...");
       await uploadToS3(presignedUrl, file!);
-      setMessage("Archivo subido correctamente junto con el formulario");
-      setFile(null);
-      setProgress(0);
+      
+      // Agregar al historial
+      setUploadedFiles(prev => [...prev, { name: file!.name, timestamp: new Date() }]);
+      
+      // Auto-reset para el siguiente archivo
+      setMessage(`✓ ${file!.name} subido correctamente`);
+      setTimeout(() => {
+        setFile(null);
+        setFileName("");
+        setProgress(0);
+        setMessage("");
+      }, 2000);
+      
+      setUploadSuccess(true);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
     } finally {
@@ -261,6 +289,7 @@ export function useUploadFormLogic() {
       // Guardar datos del formulario en estado
       setFormData(formValues);
       setSavedValues(formValues);
+      setFormHasChanges(false);
       
       try {
         localStorage.setItem("formularioReporte", JSON.stringify(formValues));
@@ -285,6 +314,37 @@ export function useUploadFormLogic() {
     setSavedValues({});
     setCurrentStep(1);
     setCompletedSteps([]);
+    setFormData(null);
+    setUploadedFiles([]);
+  };
+
+  const handleUploadAnother = () => {
+    setFile(null);
+    setFileName("");
+    setProgress(0);
+    setMessage("");
+    setError("");
+    setUploadSuccess(false);
+  };
+
+  const handleNewReport = (formReset: () => void) => {
+    handleReset(formReset);
+    setFile(null);
+    setFileName("");
+    setProgress(0);
+    setMessage("");
+    setError("");
+    setUploadSuccess(false);
+    toast("Formulario reiniciado", {
+      description: "Puedes comenzar un nuevo reporte",
+      position: "top-center",
+    });
+  };
+
+  const handleFormChange = (hasChanges: boolean) => {
+    if (uploadedFiles.length > 0) {
+      setFormHasChanges(hasChanges);
+    }
   };
 
   return {
@@ -316,5 +376,11 @@ export function useUploadFormLogic() {
     handleFormSubmit,
     handleReset,
     formData,
+    uploadSuccess,
+    handleUploadAnother,
+    uploadedFiles,
+    handleNewReport,
+    formHasChanges,
+    handleFormChange,
   };
 }
