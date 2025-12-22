@@ -43,6 +43,7 @@ export const step3Schema = z.object({
 export const step4Schema = z.object({
   objetivo: z.string().min(2, { message: "El objetivo es obligatorio" }),
   alcance: z.string().min(2, { message: "El alcance es obligatorio" }),
+  centroTransformacion: z.string().regex(/^\d+$/, { message: "Solo se permiten números" }).min(1, { message: "El Centro de Transformación es obligatorio" }),
   activos: z.array(
     z.object({
       nombre: z.string().min(2, { message: "El activo es obligatorio" }),
@@ -51,6 +52,13 @@ export const step4Schema = z.object({
       ).min(1, "Debe haber al menos una prueba")
     })
   ).min(1, "Debe haber al menos un activo"),
+  equipos: z.array(
+    z.object({
+      marca: z.string().min(2, { message: "La marca es obligatoria" }),
+      referencia: z.string().min(2, { message: "La referencia es obligatoria" }),
+      numeroSerie: z.string().min(2, { message: "El número de serie es obligatorio" }),
+    })
+  ).min(1, "Debe haber al menos un equipo"),
 });
 
 export const step5Schema = z.object({
@@ -60,11 +68,18 @@ export const step5Schema = z.object({
   nombreEquipo: z.string().min(2, { message: "Equipos utilizados obligatorio" }),
 });
 
+export const step6Schema = z.object({
+  conclusiones: z.string().min(10, { message: "Las conclusiones son obligatorias (mínimo 10 caracteres)" }),
+  observaciones: z.string().min(10, { message: "Las observaciones son obligatorias (mínimo 10 caracteres)" }),
+  recomendaciones: z.string().min(10, { message: "Las recomendaciones son obligatorias (mínimo 10 caracteres)" }),
+});
+
 export const fullSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema)
   .merge(step4Schema)
-  .merge(step5Schema);
+  .merge(step5Schema)
+  .merge(step6Schema);
 
 export const stepSchemas = {
   1: step1Schema,
@@ -72,4 +87,5 @@ export const stepSchemas = {
   3: step3Schema,
   4: step4Schema,
   5: step5Schema,
+  6: step6Schema,
 };
