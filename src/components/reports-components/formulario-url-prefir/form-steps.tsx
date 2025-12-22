@@ -11,11 +11,11 @@ interface FormStepsProps {
 
 export function FormStep1({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900"> Información General del Reporte</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Información General del Reporte</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="reportTitle">
           {(field: any) => (
             <FormField field={field} label="Título del Reporte *" placeholder="Ingrese el título del reporte" />
@@ -39,11 +39,11 @@ export function FormStep1({ form }: { form: any }) {
 
 export function FormStep2({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Información del Cliente</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Información del Cliente</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="cliente">
           {(field: any) => <FormField field={field} label="Cliente *" placeholder="Nombre del cliente" />}
         </form.Field>
@@ -73,11 +73,11 @@ export function FormStep2({ form }: { form: any }) {
 
 export function FormStep3({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Responsables del Reporte</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Responsables del Reporte</h2>
       </div>
-      <FieldGroup className="gap-6">
+      <FieldGroup className="gap-4 sm:gap-6">
         <form.Field name="elaboradoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -118,11 +118,11 @@ export function FormStep3({ form }: { form: any }) {
 
 export function FormStep4({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Detalles del Trabajo</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Detalles del Trabajo</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="objetivo">
           {(field: any) => (
             <FormTextarea field={field} label="Objetivo *" placeholder="Describa el objetivo del reporte" />
@@ -133,12 +133,92 @@ export function FormStep4({ form }: { form: any }) {
             <FormTextarea field={field} label="Alcance *" placeholder="Describa el alcance" />
           )}
         </form.Field>
+        <form.Field name="centroTransformacion">
+          {(field: any) => (
+            <FormField 
+              field={field} 
+              label="Centro de Transformación (CT) *" 
+              placeholder="Ingrese solo números" 
+              type="text"
+            />
+          )}
+        </form.Field>
+
+        {/* Equipos */}
+        <form.Field name="equipos" mode="array">
+          {(equiposField: any) => (
+            <div className="space-y-4">
+              <FieldLabel>Equipos Utilizados *</FieldLabel>
+              {equiposField.state.value.map((_: any, equipoIndex: number) => (
+                <div key={equipoIndex} className="p-4 border rounded-md space-y-3 bg-slate-50">
+                  <form.Field name={`equipos[${equipoIndex}].marca`}>
+                    {(marcaField: any) => (
+                      <div className="space-y-1">
+                        <FieldLabel>Marca</FieldLabel>
+                        <Input
+                          value={marcaField.state.value ?? ""}
+                          onChange={(e) => marcaField.handleChange(e.target.value)}
+                          placeholder="Ej: Fluke, FLIR, Megger"
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <form.Field name={`equipos[${equipoIndex}].referencia`}>
+                      {(referenciaField: any) => (
+                        <div className="space-y-1">
+                          <FieldLabel>Referencia</FieldLabel>
+                          <Input
+                            value={referenciaField.state.value ?? ""}
+                            onChange={(e) => referenciaField.handleChange(e.target.value)}
+                            placeholder="Modelo o referencia"
+                          />
+                        </div>
+                      )}
+                    </form.Field>
+
+                    <form.Field name={`equipos[${equipoIndex}].numeroSerie`}>
+                      {(serieField: any) => (
+                        <div className="space-y-1">
+                          <FieldLabel>Número de Serie</FieldLabel>
+                          <Input
+                            value={serieField.state.value ?? ""}
+                            onChange={(e) => serieField.handleChange(e.target.value)}
+                            placeholder="Número de serie"
+                          />
+                        </div>
+                      )}
+                    </form.Field>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => equiposField.removeValue(equipoIndex)}
+                    className="text-red-600 text-sm"
+                  >
+                    Eliminar Equipo
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => equiposField.pushValue({ marca: "", referencia: "", numeroSerie: "" })}
+              >
+                + Agregar Equipo
+              </Button>
+            </div>
+          )}
+        </form.Field>
+
         <form.Field name="activos" mode="array">
           {(activosField: any) => (
             <div className="space-y-4">
               <FieldLabel>Activos *</FieldLabel>
               {activosField.state.value.map((_: any, activoIndex: number) => (
-                <div key={activoIndex} className="p-4 border rounded-lg space-y-3 bg-slate-50">
+                <div key={activoIndex} className="p-4 border rounded-md space-y-3 bg-slate-50">
                   <form.Field name={`activos[${activoIndex}].nombre`}>
                     {(nombreField: any) => (
                       <div className="space-y-1">
@@ -214,11 +294,11 @@ export function FormStep4({ form }: { form: any }) {
 
 export function FormStep5({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900"> Personal Presente y Estándar de la Prueba</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900">Personal Presente y Estándar de la Prueba</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="personalPresente" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -259,6 +339,45 @@ export function FormStep5({ form }: { form: any }) {
   );
 }
 
+export function FormStep6({ form }: { form: any }) {
+  return (
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900">Conclusiones, Observaciones y Recomendaciones</h2>
+      </div>
+      <FieldGroup className="gap-3 sm:gap-4">
+        <form.Field name="conclusiones">
+          {(field: any) => (
+            <FormTextarea
+              field={field}
+              label="Conclusiones *"
+              placeholder="Describa las conclusiones del reporte"
+            />
+          )}
+        </form.Field>
+        <form.Field name="observaciones">
+          {(field: any) => (
+            <FormTextarea
+              field={field}
+              label="Observaciones *"
+              placeholder="Describa las observaciones relevantes"
+            />
+          )}
+        </form.Field>
+        <form.Field name="recomendaciones">
+          {(field: any) => (
+            <FormTextarea
+              field={field}
+              label="Recomendaciones *"
+              placeholder="Describa las recomendaciones"
+            />
+          )}
+        </form.Field>
+      </FieldGroup>
+    </div>
+  );
+}
+
 export function StepContent({ form, currentStep }: FormStepsProps) {
   switch (currentStep) {
     case 1:
@@ -271,6 +390,8 @@ export function StepContent({ form, currentStep }: FormStepsProps) {
       return <FormStep4 form={form} />;
     case 5:
       return <FormStep5 form={form} />;
+    case 6:
+      return <FormStep6 form={form} />;
     default:
       return null;
   }

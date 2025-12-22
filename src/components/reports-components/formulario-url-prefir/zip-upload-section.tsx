@@ -64,11 +64,8 @@ export function ZipUploadSection({
   };
 
   return (
-    <div className="lg:sticky lg:top-4 lg:self-start h-fit">
-      <div className="p-4 border rounded-lg shadow bg-white">
-        <h2 className="text-xl font-bold mb-3">Subir archivo ZIP</h2>
-
-        <div className="space-y-3">
+    <div className="xl:sticky xl:top-4 xl:self-start h-fit">
+      <div className="space-y-3">
           {/* Drag & Drop Area */}
           <div
             onDragEnter={() => setDragActive(true)}
@@ -82,13 +79,13 @@ export function ZipUploadSection({
                 handleFileDrop(droppedFiles[0]);
               }
             }}
-            className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+            className={`border-2 border-dashed rounded-md p-4 sm:p-6 text-center transition-colors ${
               dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-50"
             }`}
           >
-            <div className="mb-2">
+            <div className="mb-2 sm:mb-3">
               <svg
-                className="mx-auto h-10 w-10 text-gray-400"
+                className="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-gray-400"
                 stroke="currentColor"
                 fill="none"
                 viewBox="0 0 48 48"
@@ -101,7 +98,7 @@ export function ZipUploadSection({
                 />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Arrastra tu archivo .zip aquí</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Arrastra tu archivo .zip aquí</p>
             <p className="text-xs text-gray-500 mb-2">o</p>
             <label>
               <input
@@ -115,7 +112,7 @@ export function ZipUploadSection({
                 disabled={loading}
                 className="hidden"
               />
-              <span className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-50">
+              <span className="inline-block px-3 py-2 sm:px-4 text-xs sm:text-sm bg-blue-600 text-white rounded font-medium cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-50">
                 Seleccionar archivo
               </span>
             </label>
@@ -123,9 +120,9 @@ export function ZipUploadSection({
 
           {/* File Info */}
           {file && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-sm font-medium text-green-900">Archivo seleccionado:</p>
-              <p className="text-xs text-green-700 mt-1">{file.name}</p>
+            <div className="bg-green-50 border border-green-200 rounded-md p-2 sm:p-3">
+              <p className="text-xs sm:text-sm font-medium text-green-900">Archivo seleccionado:</p>
+              <p className="text-xs text-green-700 mt-1 truncate" title={file.name}>{file.name}</p>
               <p className="text-xs text-green-600 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               <button
                 onClick={() => {
@@ -141,9 +138,9 @@ export function ZipUploadSection({
 
           {/* File Name */}
           {fileName && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <label className="block text-sm font-medium mb-1">Nombre del archivo:</label>
-              <p className="text-sm font-mono text-blue-900">{fileName}</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-2 sm:p-3">
+              <label className="block text-xs sm:text-sm font-medium mb-1">Nombre del archivo:</label>
+              <p className="text-xs sm:text-sm font-mono text-blue-900 break-all">{fileName}</p>
             </div>
           )}
 
@@ -151,7 +148,7 @@ export function ZipUploadSection({
           <button
             onClick={onUpload}
             disabled={loading || !file || !isFormCompleted}
-            className={`w-full text-white rounded p-2 font-medium transition-colors ${
+            className={`w-full text-white rounded-md p-2 sm:p-3 text-sm sm:text-base font-medium transition-colors ${
               isFormCompleted 
                 ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 : "bg-gray-400 cursor-not-allowed opacity-50"
@@ -167,15 +164,14 @@ export function ZipUploadSection({
               <div className="w-full bg-gray-200 rounded h-2">
                 <div className="bg-blue-600 h-2 rounded transition-all" style={{ width: `${progress}%` }} />
               </div>
-              <p className="text-sm text-gray-600 mt-1">{progress}%</p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 text-center font-medium">{progress}%</p>
             </div>
           )}
 
           {/* Messages */}
-          {error && <p className="text-red-600 font-medium text-sm">{error}</p>}
-          {message && <p className="text-green-600 text-sm">{message}</p>}
+          {error && <p className="text-red-600 font-medium text-xs sm:text-sm break-words">{error}</p>}
+          {message && <p className="text-green-600 text-xs sm:text-sm break-words">{message}</p>}
         </div>
-      </div>
     </div>
   );
 }

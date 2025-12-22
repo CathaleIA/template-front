@@ -72,6 +72,9 @@ export function useUploadFormLogic() {
         nombreDoc: "Nombre Estándar",
         desDoc: "Descripción Estándar",
         nombreEquipo: "Equipos Utilizados",
+        conclusiones: "Conclusiones",
+        observaciones: "Observaciones",
+        recomendaciones: "Recomendaciones",
       };
 
       const errorMessages = errors

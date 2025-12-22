@@ -11,18 +11,32 @@ import { X } from "lucide-react";
 
 export function FormField({ field, label, placeholder, type = "text" }: any) {
   const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0;
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Si el campo es centroTransformacion, solo permitir números
+    if (field.name === 'centroTransformacion') {
+      // Solo actualizar si el valor es vacío o contiene solo números
+      if (value === '' || /^\d+$/.test(value)) {
+        field.handleChange(value);
+      }
+    } else {
+      field.handleChange(value);
+    }
+  };
+
   return (
     <Field data-invalid={isInvalid}>
-      <FieldLabel htmlFor={field.name} className="font-semibold text-slate-700">{label}</FieldLabel>
+      <FieldLabel htmlFor={field.name} className="text-sm sm:text-base font-semibold text-slate-700">{label}</FieldLabel>
       <Input
         id={field.name}
         type={type}
         value={field.state.value}
         onBlur={field.handleBlur}
-        onChange={(e) => field.handleChange(e.target.value)}
+        onChange={handleChange}
         aria-invalid={isInvalid}
         placeholder={placeholder}
-        className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all"
+        className="rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all text-sm sm:text-base"
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
@@ -33,7 +47,7 @@ export function FormTextarea({ field, label, placeholder }: any) {
   const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0;
   return (
     <Field data-invalid={isInvalid}>
-      <FieldLabel htmlFor={field.name} className="font-semibold text-slate-700">{label}</FieldLabel>
+      <FieldLabel htmlFor={field.name} className="text-sm sm:text-base font-semibold text-slate-700">{label}</FieldLabel>
       <Textarea
         id={field.name}
         value={field.state.value}
@@ -42,7 +56,7 @@ export function FormTextarea({ field, label, placeholder }: any) {
         aria-invalid={isInvalid}
         placeholder={placeholder}
         rows={3}
-        className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all resize-none"
+        className="rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all resize-none text-sm sm:text-base"
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
@@ -54,13 +68,13 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
   
   if (isExtended) {
     return (
-      <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 rounded-md border border-slate-200">
         <div>
-          <FieldLabel className="font-semibold text-slate-700">{label}</FieldLabel>
-          <FieldDescription className="text-slate-600">{description}</FieldDescription>
+          <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700">{label}</FieldLabel>
+          <FieldDescription className="text-xs sm:text-sm text-slate-600">{description}</FieldDescription>
         </div>
         {field.state.value.map((_: any, index: number) => (
-          <div key={index} className="p-4 bg-white rounded-lg border border-slate-200 space-y-3">
+          <div key={index} className="p-3 sm:p-4 bg-white rounded-md border border-slate-200 space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-slate-700">{titlePrefix} {index + 1}</span>
               <button
@@ -82,7 +96,7 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
                 }}
                 onBlur={() => field.handleBlur()}
                 placeholder="Nombre completo"
-                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+                className="rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
               />
             </div>
             <div>
@@ -96,7 +110,7 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
                 }}
                 onBlur={() => field.handleBlur()}
                 placeholder="Ej: Ingeniero, Técnico"
-                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+                className="rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
               />
             </div>
             <div>
@@ -110,7 +124,7 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
                 }}
                 onBlur={() => field.handleBlur()}
                 placeholder="Nombre de la empresa"
-                className="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
+                className="rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all w-full"
               />
             </div>
           </div>
@@ -120,7 +134,7 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
           variant="outline" 
           size="sm" 
           onClick={() => field.pushValue({ nombre: "", cargo: "", empresa: "" })}
-          className="w-full rounded-lg hover:bg-blue-50 transition-all"
+          className="w-full rounded-md hover:bg-blue-50 transition-all"
         >
           + Agregar {titlePrefix}
         </Button>
@@ -130,10 +144,10 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
   }
   
   return (
-    <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+    <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 rounded-lg border border-slate-200">
       <div>
-        <FieldLabel className="font-semibold text-slate-700">{label}</FieldLabel>
-        <FieldDescription className="text-slate-600">{description}</FieldDescription>
+        <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700">{label}</FieldLabel>
+        <FieldDescription className="text-xs sm:text-sm text-slate-600">{description}</FieldDescription>
       </div>
       {field.state.value.map((_: any, index: number) => (
         <div key={index} className="flex items-center gap-2">
@@ -146,12 +160,12 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
             }}
             onBlur={() => field.handleBlur()}
             placeholder={`Nombre ${index + 1}`}
-            className="flex-1 rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all"
+            className="flex-1 rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500 transition-all"
           />
           <button
             type="button"
             onClick={() => field.removeValue(index)}
-            className="p-2 rounded-lg hover:bg-red-100 transition-all border border-red-200"
+            className="p-2 rounded-md hover:bg-red-100 transition-all border border-red-200"
           >
             <X className="w-4 h-4 text-red-600" />
           </button>

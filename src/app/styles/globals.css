@@ -729,3 +729,58 @@
   #template-container-estilos .tiptap {
       min-height: auto !important;
   }
+
+  /* ========================================
+     UTILIDADES RESPONSIVE FORMULARIO
+     ======================================== */
+  /* Ocultar scrollbar pero mantener funcionalidad */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE y Edge */
+    scrollbar-width: none;  /* Firefox */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling en iOS */
+    scroll-behavior: smooth; /* Smooth scrolling */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari y Opera */
+  }
+
+  /* Snap scrolling para mejor UX en móviles */
+  .snap-x {
+    scroll-snap-type: x proximity;
+  }
+
+  .snap-mandatory {
+    scroll-snap-type: x mandatory;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  /* Mejorar touch en dispositivos móviles */
+  @media (max-width: 768px) {
+    input, textarea, select, button {
+      font-size: 16px !important; /* Previene zoom automático en iOS */
+    }
+  }
+
+  /* Animación de fadeIn para pasos */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
