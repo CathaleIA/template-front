@@ -15,7 +15,7 @@ export function StepIndicator({
   onGoToStep,
 }: StepIndicatorProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-md sm:rounded-lg shadow-sm border border-slate-200 p-3 sm:p-4 lg:p-6">
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-md sm:rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3 sm:p-4 lg:p-6">
       {/* Vista móvil y tablet pequeño - Solo círculos con scroll */}
       <div className="lg:hidden">
         <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide snap-x snap-mandatory">
@@ -28,7 +28,7 @@ export function StepIndicator({
                   w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold cursor-pointer transition-all
                   ${
                     currentStep === step.number
-                      ? "bg-blue-600 text-white ring-4 ring-blue-200 scale-110"
+                      ? "bg-blue-600 text-white scale-110"
                       : completedSteps.includes(step.number)
                       ? "bg-green-500 text-white"
                       : "bg-slate-200 text-slate-500"
@@ -49,9 +49,9 @@ export function StepIndicator({
           ))}
         </div>
         {/* Título del paso actual */}
-        <div className="text-center mt-3 pt-3 border-t border-slate-200">
-          <p className="text-sm font-semibold text-slate-900">{stepLabels[currentStep - 1]?.title}</p>
-          <p className="text-xs text-slate-500 mt-1">{stepLabels[currentStep - 1]?.description}</p>
+        <div className="text-center mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{stepLabels[currentStep - 1]?.title}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{stepLabels[currentStep - 1]?.description}</p>
         </div>
       </div>
 
@@ -69,10 +69,10 @@ export function StepIndicator({
                   w-11 h-11 xl:w-12 xl:h-12 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer flex-shrink-0 transition-all
                   ${
                     currentStep === step.number
-                      ? "bg-blue-600 text-white ring-4 ring-blue-200"
+                      ? "bg-blue-600 text-white"
                       : completedSteps.includes(step.number)
                       ? "bg-green-500 text-white hover:bg-green-600"
-                      : "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                      : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600"
                   }
                 `}
               >
@@ -86,13 +86,13 @@ export function StepIndicator({
                     currentStep === step.number
                       ? "text-blue-600"
                       : completedSteps.includes(step.number)
-                      ? "text-green-600"
-                      : "text-slate-600"
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-slate-600 dark:text-slate-400"
                   }`}
                 >
                   {step.title}
                 </div>
-                <div className="text-xs text-slate-500 truncate max-w-[100px] xl:max-w-none hidden xl:block">{step.description}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[100px] xl:max-w-none hidden xl:block">{step.description}</div>
               </div>
             </div>
 
@@ -129,21 +129,21 @@ export function NavigationButtons({
   onSubmit,
 }: NavigationButtonsProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-200 mt-4 sm:mt-6">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-200 dark:border-slate-700 mt-4 sm:mt-6">
       <Button 
         type="button" 
         variant="outline" 
         onClick={onPrev} 
         disabled={currentStep === 1}
-        className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all w-full sm:w-auto order-1"
+        className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all w-full sm:w-auto order-1"
       >
         <ChevronLeft className="w-4 h-4" />
         <span className="text-sm sm:text-base">Anterior</span>
       </Button>
 
       {/* Indicador de paso */}
-      <div className="flex items-center justify-center px-4 py-2 bg-slate-50 rounded-md border border-slate-200 order-3 sm:order-2 w-full sm:w-auto">
-        <span className="text-sm sm:text-base font-semibold text-slate-700">
+      <div className="flex items-center justify-center px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 order-3 sm:order-2 w-full sm:w-auto">
+        <span className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
           Paso {currentStep} de {totalSteps}
         </span>
       </div>
@@ -155,7 +155,7 @@ export function NavigationButtons({
               type="button" 
               variant="outline" 
               onClick={onReset}
-              className="px-4 sm:px-6 py-2.5 rounded-md hover:bg-slate-100 transition-all w-full sm:w-auto"
+              className="px-4 sm:px-6 py-2.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all w-full sm:w-auto"
             >
               <span className="text-sm sm:text-base">Limpiar</span>
             </Button>

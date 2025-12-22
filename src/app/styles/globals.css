@@ -124,11 +124,11 @@
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #1e293b;
   --foreground: #fafafa;
-  --card: #171717;
+  --card: #1e293b;
   --card-foreground: #fafafa;
-  --popover: #171717;
+  --popover: #1e293b;
   --popover-foreground: #fafafa;
   --primary: #e5e5e5;
   --primary-foreground: #171717;
@@ -161,17 +161,17 @@
   --plotly-6: #595F634D;
   --plotly-rangeselector : #171717;
 
-  --third-paper: #0a0a0a;
-  --third-plot: #171717;
+  --third-paper: #1e293b;
+  --third-plot: #1e293b;
   --third-text: #e5e5e5;
   --third-grid: #ffffff1a;
-  --third-range-selector: #171717;
-  --third-bg-blue: #171717;
+  --third-range-selector: #1e293b;
+  --third-bg-blue: #1e293b;
 
-  --blue-hover: #262626;
+  --blue-hover: #334155;
 
-  --bg-white: #0a0a0a;
-  --bg-inset: #171717;
+  --bg-white: #1e293b;
+  --bg-inset: #334155;
 }
 
 

@@ -12,8 +12,8 @@ interface FormStepsProps {
 export function FormStep1({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Información General del Reporte</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Información General del Reporte</h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="reportTitle">
@@ -40,8 +40,8 @@ export function FormStep1({ form }: { form: any }) {
 export function FormStep2({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Información del Cliente</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Información del Cliente</h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="cliente">
@@ -74,8 +74,8 @@ export function FormStep2({ form }: { form: any }) {
 export function FormStep3({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Responsables del Reporte</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Responsables del Reporte</h2>
       </div>
       <FieldGroup className="gap-4 sm:gap-6">
         <form.Field name="elaboradoPor" mode="array">
@@ -119,8 +119,8 @@ export function FormStep3({ form }: { form: any }) {
 export function FormStep4({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Detalles del Trabajo</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Detalles del Trabajo</h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="objetivo">
@@ -150,7 +150,7 @@ export function FormStep4({ form }: { form: any }) {
             <div className="space-y-4">
               <FieldLabel>Equipos Utilizados *</FieldLabel>
               {equiposField.state.value.map((_: any, equipoIndex: number) => (
-                <div key={equipoIndex} className="p-4 border rounded-md space-y-3 bg-slate-50">
+                <div key={equipoIndex} className="p-4 border border-slate-200 dark:border-slate-700 rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/50">
                   <form.Field name={`equipos[${equipoIndex}].marca`}>
                     {(marcaField: any) => (
                       <div className="space-y-1">
@@ -195,7 +195,7 @@ export function FormStep4({ form }: { form: any }) {
                   <button
                     type="button"
                     onClick={() => equiposField.removeValue(equipoIndex)}
-                    className="text-red-600 text-sm"
+                    className="text-red-600 dark:text-red-400 text-sm hover:text-red-800 dark:hover:text-red-300"
                   >
                     Eliminar Equipo
                   </button>
@@ -218,7 +218,7 @@ export function FormStep4({ form }: { form: any }) {
             <div className="space-y-4">
               <FieldLabel>Activos *</FieldLabel>
               {activosField.state.value.map((_: any, activoIndex: number) => (
-                <div key={activoIndex} className="p-4 border rounded-md space-y-3 bg-slate-50">
+                <div key={activoIndex} className="p-4 border border-slate-200 dark:border-slate-700 rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/50">
                   <form.Field name={`activos[${activoIndex}].nombre`}>
                     {(nombreField: any) => (
                       <div className="space-y-1">
@@ -270,7 +270,7 @@ export function FormStep4({ form }: { form: any }) {
                   <button
                     type="button"
                     onClick={() => activosField.removeValue(activoIndex)}
-                    className="text-red-600 text-sm"
+                    className="text-red-600 dark:text-red-400 text-sm hover:text-red-800 dark:hover:text-red-300"
                   >
                     Eliminar Activo
                   </button>
@@ -295,21 +295,21 @@ export function FormStep4({ form }: { form: any }) {
 export function FormStep5({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900">Personal Presente y Estándar de la Prueba</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">Personal Presente y Estándar de la Prueba</h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="personalPresente" mode="array">
           {(field: any) => (
             <ResponsableArrayField
               field={field}
-              label="Personal Intermediario"
+              label="Personal Presente"
               description="Personal que intervino a la hora de hacer pruebas"
             />
           )}
         </form.Field>
-        <div className="border-t pt-4 mt-4">
-          <h3 className="font-bold mb-4">Estándar de la Prueba</h3>
+        <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+          <h3 className="font-bold mb-4 text-slate-900 dark:text-slate-100">Estándar de la Prueba</h3>
           <form.Field name="nombreDoc">
             {(field: any) => (
               <FormField field={field} label="Nombre Estándar *" placeholder="Nombre estándar" />
@@ -342,8 +342,8 @@ export function FormStep5({ form }: { form: any }) {
 export function FormStep6({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-2 sm:pb-3">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900">Conclusiones, Observaciones y Recomendaciones</h2>
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">Conclusiones, Observaciones y Recomendaciones</h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="conclusiones">
