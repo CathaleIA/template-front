@@ -12,7 +12,7 @@ export const step2Schema = z.object({
   municipio: z.string().min(2, { message: "El municipio es obligatorio" }),
   departamento: z.string().min(2, { message: "El departamento es obligatorio" }),
   primerNombre: z.string().min(2, { message: "El primer nombre es obligatorio" }),
-  segundoNombre: z.string().min(2, { message: "El segundo nombre es obligatorio" }),
+  segundoNombre: z.string().optional(),
   cargo: z.string().min(2, { message: "El cargo es obligatorio" }),
 });
 
