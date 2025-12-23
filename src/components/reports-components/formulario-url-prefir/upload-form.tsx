@@ -308,7 +308,7 @@ export function UploadForm() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
               Has realizado cambios en el formulario que aún no se han guardado. 
-              Debes guardar el formulario (hacer clic en "Guardar" en el paso 6) antes de subir otro archivo.
+              Debes guardar el formulario (hacer clic en &quot;Guardar&quot; en el paso 6) antes de subir otro archivo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
