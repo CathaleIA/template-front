@@ -60,7 +60,7 @@ export function FormStep2({ form }: { form: any }) {
             {(field: any) => <FormField field={field} label="Primer Nombre *" placeholder="Primer nombre" />}
           </form.Field>
           <form.Field name="segundoNombre">
-            {(field: any) => <FormField field={field} label="Segundo Nombre *" placeholder="Segundo nombre" />}
+            {(field: any) => <FormField field={field} label="Segundo Nombre" placeholder="Segundo nombre" />}
           </form.Field>
         </div>
         <form.Field name="cargo">

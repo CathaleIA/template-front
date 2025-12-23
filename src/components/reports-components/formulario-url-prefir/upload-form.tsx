@@ -8,7 +8,6 @@ import { StepIndicator, NavigationButtons } from "./step-indicator";
 import { StepContent } from "./form-steps";
 import { ZipUploadSection } from "./zip-upload-section";
 import { useUploadFormLogic } from "./use-upload-form-logic";
-import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,61 +65,34 @@ export function UploadForm() {
   } = useUploadFormLogic();
 
   const [showSaveWarning, setShowSaveWarning] = useState(false);
-  const [showJsonViewer, setShowJsonViewer] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const form = useForm({
     defaultValues: {
-      // ⚠️ DATOS DE PRUEBA - RECORDAR BORRAR DESPUÉS ⚠️
-      reportTitle: "Reporte de Inspección Técnica Motor Principal",
-      cliente: "Empresa Industrial XYZ S.A.S.",
-      municipio: "Medellín",
-      departamento: "Antioquia",
-      codigo: "RPT-2025-001",
-      elaboradoPor: [{ 
-        nombre: "Juan Carlos Pérez", 
-        cargo: "Ingeniero Eléctrico", 
-        empresa: "COPOWER S.A.S." 
-      }],
-      revisadoPor: [{ 
-        nombre: "María Fernanda López", 
-        cargo: "Ingeniera Senior", 
-        empresa: "COPOWER S.A.S." 
-      }],
-      aprobadoPor: [{ 
-        nombre: "Carlos Alberto Gómez", 
-        cargo: "Director Técnico", 
-        empresa: "COPOWER S.A.S." 
-      }],
-      fechaEjecucion: "2025-12-15",
-      fechaEmision: "2025-12-19",
-      primerNombre: "Roberto",
-      segundoNombre: "Andrés",
-      cargo: "Gerente de Mantenimiento",
-      alcance: "Inspección completa del motor principal incluyendo análisis de vibración, termografía y análisis de aceite. Evaluación del estado general de los componentes críticos.",
-      objetivo: "Determinar el estado actual del motor principal y recomendar acciones correctivas y preventivas para garantizar su operación segura y eficiente.",
-      centroTransformacion: "12345",
-      activos: [{ 
-        nombre: "Motor Principal ABB 500HP", 
-        pruebas: ["Análisis de Vibración", "Termografía Infrarroja", "Análisis de Aceite"] 
-      }],
-      equipos: [{
-        marca: "Fluke",
-        referencia: "810",
-        numeroSerie: "FLK-810-001"
-      }, {
-        marca: "FLIR",
-        referencia: "E75",
-        numeroSerie: "E75-2025-123"
-      }],
-      personalPresente: ["Pedro Martínez - Operador de Planta", "Ana Jiménez - Coordinadora de Mantenimiento"] as string[],
-      nombreDoc: "IEEE 43-2013",
-      desDoc: "Práctica recomendada IEEE para la prueba de resistencia de aislamiento de maquinaria rotativa",
-      nombreEquipo: "Analizador de vibración Fluke 810, Cámara termográfica FLIR E75, Kit de análisis de aceite",
+      reportTitle: "",
+      cliente: "",
+      municipio: "",
+      departamento: "",
+      codigo: "",
+      elaboradoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      revisadoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      aprobadoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      fechaEjecucion: "",
+      fechaEmision: "",
+      primerNombre: "",
+      segundoNombre: "",
+      cargo: "",
+      alcance: "",
+      objetivo: "",
+      centroTransformacion: "",
+      activos: [{ nombre: "", pruebas: [] }],
+      equipos: [{ marca: "", referencia: "", numeroSerie: "" }],
+      personalPresente: [] as string[],
+      nombreDoc: "",
+      desDoc: "",
+      nombreEquipo: "",
       conclusiones: "",
       observaciones: "",
       recomendaciones: "",
-      // ⚠️ FIN DATOS DE PRUEBA ⚠️
     },
     onSubmit: async ({ value }) => {
       handleFormSubmit(value);
@@ -134,13 +106,6 @@ export function UploadForm() {
       handleFormChange(hasChanges);
     }
   }, [form.state.values, formData, uploadedFiles.length]);
-
-  const copyJsonToClipboard = () => {
-    const jsonString = JSON.stringify(formData || form.state.values, null, 2);
-    navigator.clipboard.writeText(jsonString);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
@@ -251,50 +216,6 @@ export function UploadForm() {
                 </Card>
               </div>
             </div>
-
-            {/* Visor de JSON del Formulario */}
-            {formData && (
-              <div className="mt-4">
-                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <button
-                        onClick={() => setShowJsonViewer(!showJsonViewer)}
-                        className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      >
-                        {showJsonViewer ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        Ver JSON del Formulario
-                      </button>
-                      {showJsonViewer && (
-                        <button
-                          onClick={copyJsonToClipboard}
-                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                        >
-                          {copied ? (
-                            <>
-                              <Check className="w-4 h-4" />
-                              Copiado
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4" />
-                              Copiar JSON
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                    {showJsonViewer && (
-                      <div className="bg-slate-900 dark:bg-slate-950 rounded-md p-4 overflow-x-auto">
-                        <pre className="text-xs text-green-400 font-mono">
-                          {JSON.stringify(formData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
           </div>
         </div>
       </div>
