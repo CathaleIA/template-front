@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import estilosA4 from "@/components/reports-components/dinamic-report/estilos"
 import estiloForm from "@/components/reports-components/dinamic-report/EstilosFormFinal"
 import tiptapTableStyles from "@/components/reports-components/dinamic-report/StyleTableTipTap"
-import switchReportStyles from "@/components/reports-components/components-to-editor/report-iot-data/switchReportStyles"
 import { Button } from "@/components/ui/button";
 //Aca esta la logica trae el archivo de s3
 // Limpia y formatea el archivo internamente para los estilos
@@ -88,7 +87,7 @@ export default function CreateFinalReportFile({ job_id, activo }: FinalReportPro
 
             const cleanedHtml = decodeRawHtmlBlocks(decodedHtml);
 
-            const combinedStyles = `\n${tiptapTableStyles}\n${estilosA4}\n${estiloForm}\n${switchReportStyles}\n`;
+            const combinedStyles = `\n${tiptapTableStyles}\n${estilosA4}\n${estiloForm}`;
 
             const pdfResponse = await fetch("/api/pdf-generate", {
                 method: "POST",
