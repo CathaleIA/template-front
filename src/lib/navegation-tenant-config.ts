@@ -113,14 +113,31 @@ export const tenantConfigs: Record<string, TenantConfig> = {
   dautom: {
     navMain: [
       {
+        title: "Servicio de Dashboard",
+        url: "#",
+        icon: ClipboardMinus,
+        isActive: false,
+        items: [
+          { title: "Crear", url: "/motul-dashboard/reports" },
+          { title: "Listar", url: "#" },
+          { title: "Configurar", url: "#" },
+        ],
+      },
+    ],
+    settings: [
+      { name: "Users Managment", url: "/dashboard/users", icon: Users },
+    ],
+  },
+  motul:{
+    navMain: [
+      {
         title: "Servicio de Reportes",
         url: "#",
         icon: ClipboardMinus,
         isActive: false,
         items: [
-          { title: "Crear", url: "/dashboard/reports" },
-          { title: "Listar", url: "#" },
-          { title: "Configurar", url: "#" },
+          { title: "General", url: "/dashboard/general" },
+          { title: "Cargar CSV", url: "#" }
         ],
       },
     ],
