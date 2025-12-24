@@ -210,18 +210,6 @@ export function UploadForm() {
                   />
                   </CardContent>
                 </Card>
-
-                {/* JSON Preview */}
-                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg">
-                  <CardContent className="p-4 sm:p-6">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Vista Previa JSON</h3>
-                    <div className="bg-slate-950 dark:bg-slate-900 rounded-md p-3 overflow-auto max-h-96">
-                      <pre className="text-xs text-green-400 font-mono">
-                        {JSON.stringify(form.state.values, null, 2)}
-                      </pre>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </div>
