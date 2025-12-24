@@ -128,7 +128,7 @@ export default function GestionReportesPage() {
             <CardHeader>
               <CardTitle>Lotes Disponibles</CardTitle>
               <CardDescription>
-                Selecciona un lote para gestionar sus anexos. Los lotes en estado "DESCOMPRIMIDO" están listos para procesar.
+                Selecciona un lote para gestionar sus anexos. Los lotes en estado &quot;DESCOMPRIMIDO&quot; están listos para procesar.
               </CardDescription>
             </CardHeader>
             <CardContent>
