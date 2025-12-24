@@ -23,8 +23,8 @@ const stepLabels = [
   { number: 1, title: "General", description: "Información general" },
   { number: 2, title: "Cliente", description: "Datos del cliente" },
   { number: 3, title: "Responsables", description: "Personas involucradas" },
-  { number: 4, title: "Detalles", description: "Detalles del trabajo" },
-  { number: 5, title: "Personal", description: "Personal y estándares" },
+  { number: 4, title: "Personal", description: "Personal y estándares" },
+  { number: 5, title: "Detalles", description: "Detalles del trabajo" },
   { number: 6, title: "Resultados", description: "Conclusiones y observaciones" },
 ];
 
@@ -73,26 +73,22 @@ export function UploadForm() {
       municipio: "",
       departamento: "",
       codigo: "",
-      elaboradoPor: [{ nombre: "", cargo: "", empresa: "" }],
-      revisadoPor: [{ nombre: "", cargo: "", empresa: "" }],
-      aprobadoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      elaboradoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
+      revisadoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
+      aprobadoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
       fechaEjecucion: "",
       fechaEmision: "",
-      primerNombre: "",
-      segundoNombre: "",
-      cargo: "",
-      alcance: "",
+      personalPresenteCliente: [{ nombre: "", cargo: "" }],
       objetivo: "",
       centroTransformacion: "",
       activos: [{ nombre: "", pruebas: [] }],
       equipos: [{ marca: "", referencia: "", numeroSerie: "" }],
-      personalPresente: [] as string[],
+      personalPresente: [{ nombre: "", cargo: "" }],
       nombreDoc: "",
       desDoc: "",
-      nombreEquipo: "",
-      conclusiones: "",
-      observaciones: "",
-      recomendaciones: "",
+      conclusiones: [""],
+      observaciones: [""],
+      recomendaciones: [""],
     },
     onSubmit: async ({ value }) => {
       handleFormSubmit(value);
@@ -168,7 +164,7 @@ export function UploadForm() {
             </div>
 
               {/* RIGHT COLUMN - ZIP UPLOAD */}
-              <div className="w-full">
+              <div className="w-full space-y-4">
                 <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg xl:sticky xl:top-6">
                   <CardContent className="p-4 sm:p-6">
                   {formData && Object.keys(formData).length > 0 ? (
@@ -212,6 +208,18 @@ export function UploadForm() {
                     formHasChanges={formHasChanges}
                     onShowSaveWarning={() => setShowSaveWarning(true)}
                   />
+                  </CardContent>
+                </Card>
+
+                {/* JSON Preview */}
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg">
+                  <CardContent className="p-4 sm:p-6">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Vista Previa JSON</h3>
+                    <div className="bg-slate-950 dark:bg-slate-900 rounded-md p-3 overflow-auto max-h-96">
+                      <pre className="text-xs text-green-400 font-mono">
+                        {JSON.stringify(form.state.values, null, 2)}
+                      </pre>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

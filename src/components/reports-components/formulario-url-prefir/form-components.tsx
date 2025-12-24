@@ -63,8 +63,72 @@ export function FormTextarea({ field, label, placeholder }: any) {
   );
 }
 
-export function ResponsableArrayField({ field, label, description, isExtended = false, titlePrefix = "" }: any) {
+export function ResponsableArrayField({ field, label, description, isExtended = false, showOnlyNameAndCargo = false, titlePrefix = "" }: any) {
   const isInvalid = field.state.meta.isTouched && field.state.meta.errors.length > 0;
+  
+  // Versión simplificada: solo nombre y cargo (sin empresa)
+  if (showOnlyNameAndCargo) {
+    return (
+      <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
+        <div>
+          <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">{label}</FieldLabel>
+          <FieldDescription className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{description}</FieldDescription>
+        </div>
+        {field.state.value.map((_: any, index: number) => (
+          <div key={index} className="p-3 sm:p-4 bg-white dark:bg-slate-900/50 rounded-md border border-slate-200 dark:border-slate-700 space-y-2 sm:space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{titlePrefix} {index + 1}</span>
+              <button
+                type="button"
+                onClick={() => field.removeValue(index)}
+                className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
+              >
+                Eliminar
+              </button>
+            </div>
+            <div>
+              <FieldLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Nombre</FieldLabel>
+              <Input
+                value={field.state.value[index]?.nombre ?? ""}
+                onChange={(e) => {
+                  const newValue = [...field.state.value];
+                  newValue[index] = { ...newValue[index], nombre: e.target.value };
+                  field.handleChange(newValue);
+                }}
+                onBlur={() => field.handleBlur()}
+                placeholder="Nombre completo"
+                className="rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all w-full"
+              />
+            </div>
+            <div>
+              <FieldLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Cargo</FieldLabel>
+              <Input
+                value={field.state.value[index]?.cargo ?? ""}
+                onChange={(e) => {
+                  const newValue = [...field.state.value];
+                  newValue[index] = { ...newValue[index], cargo: e.target.value };
+                  field.handleChange(newValue);
+                }}
+                onBlur={() => field.handleBlur()}
+                placeholder="Ej: Ingeniero, Supervisor, Técnico"
+                className="rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all w-full"
+              />
+            </div>
+          </div>
+        ))}
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          onClick={() => field.pushValue({ nombre: "", cargo: "" })}
+          className="w-full rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+        >
+          + Agregar {titlePrefix}
+        </Button>
+        {isInvalid && <FieldError>{field.state.meta.errors.join(", ")}</FieldError>}
+      </div>
+    );
+  }
   
   if (isExtended) {
     return (
@@ -133,7 +197,7 @@ export function ResponsableArrayField({ field, label, description, isExtended = 
           type="button" 
           variant="outline" 
           size="sm" 
-          onClick={() => field.pushValue({ nombre: "", cargo: "", empresa: "" })}
+          onClick={() => field.pushValue({ nombre: "", cargo: "", empresa: "Copower" })}
           className="w-full rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
         >
           + Agregar {titlePrefix}
