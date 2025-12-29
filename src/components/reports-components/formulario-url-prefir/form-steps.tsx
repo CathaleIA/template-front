@@ -341,7 +341,9 @@ export function FormStep6({ form }: { form: any }) {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">Conclusiones, Observaciones y Recomendaciones</h2>
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">
+          Conclusiones, Observaciones y Recomendaciones
+        </h2>
       </div>
       <FieldGroup className="gap-3 sm:gap-4">
         {/* Conclusiones */}
@@ -349,25 +351,38 @@ export function FormStep6({ form }: { form: any }) {
           {(field: any) => (
             <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
               <div>
-                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">Conclusiones *</FieldLabel>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Conclusiones *
+                </FieldLabel>
               </div>
               {field.state.value.map((_: any, index: number) => (
                 <div key={index} className="flex items-start gap-2">
-                  <Input
-                    value={field.state.value[index] ?? ""}
-                    onChange={(e) => {
-                      const newValue = [...field.state.value];
-                      newValue[index] = e.target.value;
-                      field.handleChange(newValue);
-                    }}
-                    onBlur={() => field.handleBlur()}
-                    placeholder={`Conclusión ${index + 1}`}
-                    className="flex-1 rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
-                  />
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `conclusiones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Conclusión ${index + 1}`}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => field.removeValue(index)}
-                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800"
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
                   >
                     <X className="w-4 h-4 text-red-600 dark:text-red-400" />
                   </button>
@@ -391,25 +406,38 @@ export function FormStep6({ form }: { form: any }) {
           {(field: any) => (
             <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
               <div>
-                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">Observaciones *</FieldLabel>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Observaciones *
+                </FieldLabel>
               </div>
               {field.state.value.map((_: any, index: number) => (
                 <div key={index} className="flex items-start gap-2">
-                  <Input
-                    value={field.state.value[index] ?? ""}
-                    onChange={(e) => {
-                      const newValue = [...field.state.value];
-                      newValue[index] = e.target.value;
-                      field.handleChange(newValue);
-                    }}
-                    onBlur={() => field.handleBlur()}
-                    placeholder={`Observación ${index + 1}`}
-                    className="flex-1 rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
-                  />
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `observaciones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Observación ${index + 1}`}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => field.removeValue(index)}
-                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800"
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
                   >
                     <X className="w-4 h-4 text-red-600 dark:text-red-400" />
                   </button>
@@ -433,25 +461,38 @@ export function FormStep6({ form }: { form: any }) {
           {(field: any) => (
             <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
               <div>
-                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">Recomendaciones *</FieldLabel>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Recomendaciones *
+                </FieldLabel>
               </div>
               {field.state.value.map((_: any, index: number) => (
                 <div key={index} className="flex items-start gap-2">
-                  <Input
-                    value={field.state.value[index] ?? ""}
-                    onChange={(e) => {
-                      const newValue = [...field.state.value];
-                      newValue[index] = e.target.value;
-                      field.handleChange(newValue);
-                    }}
-                    onBlur={() => field.handleBlur()}
-                    placeholder={`Recomendación ${index + 1}`}
-                    className="flex-1 rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
-                  />
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `recomendaciones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Recomendación ${index + 1}`}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => field.removeValue(index)}
-                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800"
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
                   >
                     <X className="w-4 h-4 text-red-600 dark:text-red-400" />
                   </button>
