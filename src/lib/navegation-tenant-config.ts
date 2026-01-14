@@ -29,7 +29,7 @@ export const tenantConfigs: Record<string, TenantConfig> = {
           { title: "Solar", url: "/dashboard/formulario-url-prefir" },
           { title: "Configurar", url: "#" },
           { title: "Tabla", url: "/dashboard/gestion-reportes" },
-
+ 
         ],
       },
       {

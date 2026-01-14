@@ -2,7 +2,7 @@ import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { FormField, FormTextarea, ResponsableArrayField } from "./form-components";
+import { FormField, FormTextarea, ResponsableArrayField, FileUploadField } from "./form-components";
 
 interface FormStepsProps {
   form: any;
@@ -95,6 +95,7 @@ export function FormStep3({ form }: { form: any }) {
             />
           )}
         </form.Field>
+
         <form.Field name="revisadoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -106,6 +107,7 @@ export function FormStep3({ form }: { form: any }) {
             />
           )}
         </form.Field>
+
         <form.Field name="aprobadoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField

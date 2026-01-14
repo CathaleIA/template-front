@@ -23,6 +23,7 @@ export function useUploadFormLogic() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; timestamp: Date }>>([]);
   const [formHasChanges, setFormHasChanges] = useState(false);
+  const [logoCliente, setLogoCliente] = useState<{ name: string; size: number; type: string; data: string } | null>(null);
 
   const validateFile = (file: File): string | null => {
     if (!file) return "Selecciona un archivo";
@@ -152,6 +153,7 @@ export function useUploadFormLogic() {
             userPoolName,
             fileName,
             formulario: formData,
+            logoCliente: logoCliente,
           }),
         });
 
@@ -382,5 +384,7 @@ export function useUploadFormLogic() {
     handleNewReport,
     formHasChanges,
     handleFormChange,
+    logoCliente,
+    setLogoCliente,
   };
 }
