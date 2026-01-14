@@ -25,22 +25,49 @@ export const step3Schema = z.object({
       nombre: z.string().min(2, "Nombre obligatorio"),
       cargo: z.string().min(2, "Cargo obligatorio"),
       empresa: z.string().min(2, "Empresa obligatoria"),
+      firma: z.object({
+        name: z.string(),
+        size: z.number(),
+        type: z.string(),
+        data: z.string(),
+      }, { required_error: "La firma es obligatoria" }),
     })
-  ).min(1, "Debe haber al menos un elaborador"),
+  ).min(1, "Debe haber al menos un elaborador").refine(
+    (arr) => arr.every((item) => item.firma !== null && item.firma !== undefined),
+    { message: "Todos los elaboradores deben tener firma" }
+  ),
   revisadoPor: z.array(
     z.object({
       nombre: z.string().min(2, "Nombre obligatorio"),
       cargo: z.string().min(2, "Cargo obligatorio"),
       empresa: z.string().min(2, "Empresa obligatoria"),
+      firma: z.object({
+        name: z.string(),
+        size: z.number(),
+        type: z.string(),
+        data: z.string(),
+      }, { required_error: "La firma es obligatoria" }),
     })
-  ).min(1, "Debe haber al menos un revisor"),
+  ).min(1, "Debe haber al menos un revisor").refine(
+    (arr) => arr.every((item) => item.firma !== null && item.firma !== undefined),
+    { message: "Todos los revisores deben tener firma" }
+  ),
   aprobadoPor: z.array(
     z.object({
       nombre: z.string().min(2, "Nombre obligatorio"),
       cargo: z.string().min(2, "Cargo obligatorio"),
       empresa: z.string().min(2, "Empresa obligatoria"),
+      firma: z.object({
+        name: z.string(),
+        size: z.number(),
+        type: z.string(),
+        data: z.string(),
+      }, { required_error: "La firma es obligatoria" }),
     })
-  ).min(1, "Debe haber al menos un aprobador"),
+  ).min(1, "Debe haber al menos un aprobador").refine(
+    (arr) => arr.every((item) => item.firma !== null && item.firma !== undefined),
+    { message: "Todos los aprobadores deben tener firma" }
+  ),
 });
 
 export const step4Schema = z.object({

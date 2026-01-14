@@ -1,6 +1,6 @@
 'use client'
 import { useForm } from "@tanstack/react-form";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { fullSchema } from "./validation-schemas";
@@ -62,6 +62,8 @@ export function UploadForm() {
     handleNewReport,
     formHasChanges,
     handleFormChange,
+    logoCliente,
+    setLogoCliente,
   } = useUploadFormLogic();
 
   const [showSaveWarning, setShowSaveWarning] = useState(false);
@@ -73,9 +75,9 @@ export function UploadForm() {
       municipio: "",
       departamento: "",
       codigo: "",
-      elaboradoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
-      revisadoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
-      aprobadoPor: [{ nombre: "", cargo: "", empresa: "Copower" }],
+      elaboradoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
+      revisadoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
+      aprobadoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
       fechaEjecucion: "",
       fechaEmision: "",
       personalPresenteCliente: [{ nombre: "", cargo: "" }],
@@ -103,6 +105,7 @@ export function UploadForm() {
     }
   }, [form.state.values, formData, uploadedFiles.length]);
 
+  // ...existing code...
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       {/* HEADER - Ocupa todo el ancho */}
@@ -207,6 +210,8 @@ export function UploadForm() {
                     onNewReport={() => handleNewReport(form.reset)}
                     formHasChanges={formHasChanges}
                     onShowSaveWarning={() => setShowSaveWarning(true)}
+                    logoCliente={logoCliente}
+                    onLogoClienteChange={setLogoCliente}
                   />
                   </CardContent>
                 </Card>
