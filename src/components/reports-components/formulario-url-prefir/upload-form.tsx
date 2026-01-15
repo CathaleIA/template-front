@@ -91,11 +91,17 @@ export function UploadForm() {
       conclusiones: [""],
       observaciones: [""],
       recomendaciones: [""],
+      logoCliente: null,
     },
     onSubmit: async ({ value }) => {
       handleFormSubmit(value);
     },
   });
+
+  // Sincronizar logoCliente con el formulario
+  useEffect(() => {
+    (form.setFieldValue as any)('logoCliente', logoCliente);
+  }, [logoCliente]);
 
   // Detectar cambios en el formulario después de subir archivos
   useEffect(() => {
