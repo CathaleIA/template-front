@@ -11,8 +11,8 @@ export function useUploadFormLogic() {
   const [savedValues, setSavedValues] = useState({});
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [tenantName, setTenantName] = useState("COPOWER");
-  const [userPoolName, setUserPoolName] = useState("David-Gomez");
+  const [tenantName, setTenantName] = useState("");
+  const [userPoolName, setUserPoolName] = useState("");
   const [fileName, setFileName] = useState("");
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
@@ -24,6 +24,39 @@ export function useUploadFormLogic() {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; timestamp: Date }>>([]);
   const [formHasChanges, setFormHasChanges] = useState(false);
   const [logoCliente, setLogoCliente] = useState<{ name: string; size: number; type: string; data: string } | null>(null);
+
+  // Cargar tenantName y userPoolName desde cookies
+  useEffect(() => {
+    async function fetchTenantData() {
+      try {
+        const res = await fetch("/api/auth/tenantget");
+        const data = await res.json();
+        
+        if (data?.userPoolDomain && data?.username) {
+          setTenantName(data.userPoolDomain);
+          setUserPoolName(data.username);
+          console.log("Datos de tenant cargados:", { 
+            tenantName: data.userPoolDomain, 
+            userPoolName: data.username 
+          });
+        } else {
+          console.error("No se encontraron datos de tenant en cookies");
+          toast.error("Error", {
+            description: "No se encontraron datos de tenant. Intenta recargar la página.",
+            position: "top-center",
+          });
+        }
+      } catch (err) {
+        console.error("Error obteniendo tenant:", err);
+        toast.error("Error", {
+          description: "Error al cargar datos de tenant",
+          position: "top-center",
+        });
+      }
+    }
+    
+    fetchTenantData();
+  }, []);
 
   const validateFile = (file: File): string | null => {
     if (!file) return "Selecciona un archivo";
