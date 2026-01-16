@@ -53,7 +53,6 @@ export function ZipUploadSection({
   uploadedFiles = [],
   onNewReport,
   formHasChanges = false,
-  onShowSaveWarning,
   logoCliente,
   onLogoClienteChange,
 }: ZipUploadSectionProps) {
