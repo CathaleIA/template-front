@@ -118,6 +118,7 @@ interface NavigationButtonsProps {
   onNext: () => void;
   onReset: () => void;
   onSubmit: () => void;
+  formHasChanges?: boolean;
 }
 
 export function NavigationButtons({
@@ -127,6 +128,7 @@ export function NavigationButtons({
   onNext,
   onReset,
   onSubmit,
+  formHasChanges = false,
 }: NavigationButtonsProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-200 dark:border-slate-700 mt-4 sm:mt-6">
@@ -161,10 +163,16 @@ export function NavigationButtons({
             </Button>
             <Button 
               type="submit" 
-              className="px-6 sm:px-8 py-2.5 rounded-md bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-md transition-all w-full sm:w-auto" 
+              className={`px-6 sm:px-8 py-2.5 rounded-md font-semibold shadow-md transition-all w-full sm:w-auto ${
+                formHasChanges 
+                  ? "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 animate-pulse" 
+                  : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              } text-white`}
               onClick={onSubmit}
             >
-              <span className="text-sm sm:text-base">Guardar Formulario</span>
+              <span className="text-sm sm:text-base">
+                {formHasChanges ? "Guardar Cambios" : "Guardar Formulario"}
+              </span>
             </Button>
           </>
         ) : (

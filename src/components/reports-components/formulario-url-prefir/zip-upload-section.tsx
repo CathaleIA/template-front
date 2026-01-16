@@ -1,4 +1,5 @@
 import { Upload, FileCheck, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface ZipUploadSectionProps {
   file: File | null;
@@ -24,7 +25,6 @@ interface ZipUploadSectionProps {
   uploadedFiles?: Array<{ name: string; timestamp: Date }>;
   onNewReport?: () => void;
   formHasChanges?: boolean;
-  onShowSaveWarning?: () => void;
   logoCliente?: { name: string; size: number; type: string; data: string } | null;
   onLogoClienteChange?: (logo: { name: string; size: number; type: string; data: string } | null) => void;
 }
@@ -190,12 +190,13 @@ export function ZipUploadSection({
                       reader.onload = (event) => {
                         const base64String = event.target?.result as string;
                         if (onLogoClienteChange) {
-                          onLogoClienteChange({
+                          const logoData = {
                             name: logoFile.name,
                             size: logoFile.size,
                             type: logoFile.type,
                             data: base64String
-                          });
+                          };
+                          onLogoClienteChange(logoData);
                         }
                       };
                       reader.readAsDataURL(logoFile);
@@ -246,19 +247,30 @@ export function ZipUploadSection({
                 alert('Debes cargar el logo del cliente antes de subir el archivo');
                 return;
               }
-              if (formHasChanges && uploadedFiles.length > 0 && onShowSaveWarning) {
-                onShowSaveWarning();
-              } else {
-                onUpload();
+              if (formHasChanges) {
+                toast.error("Formulario modificado", {
+                  description: "Debes guardar el formulario nuevamente antes de subir el archivo",
+                  position: "top-center",
+                });
+                return;
               }
+              onUpload();
             }}
-            disabled={loading || !file || !isFormCompleted || !logoCliente}
+            disabled={loading || !file || !isFormCompleted || !logoCliente || formHasChanges}
             className={`w-full text-white rounded-md p-2 sm:p-3 text-sm sm:text-base font-medium transition-colors ${
-              isFormCompleted && logoCliente
+              isFormCompleted && logoCliente && !formHasChanges
                 ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
             }`}
-            title={!isFormCompleted ? "Debes completar el formulario primero" : !logoCliente ? "Debes cargar el logo del cliente" : ""}
+            title={
+              !isFormCompleted 
+                ? "Debes completar el formulario primero" 
+                : !logoCliente 
+                  ? "Debes cargar el logo del cliente" 
+                  : formHasChanges
+                    ? "Debes guardar el formulario nuevamente"
+                    : ""
+            }
           >
             {loading ? "Cargando..." : "Subir archivo"}
           </button>
@@ -302,7 +314,7 @@ export function ZipUploadSection({
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs sm:text-sm font-medium text-green-900 dark:text-green-300 truncate" title={uploadedFile.name}>
-                          ✓ {uploadedFile.name}
+                          {uploadedFile.name}
                         </p>
                         <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
                           {new Date(uploadedFile.timestamp).toLocaleString('es-ES', {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { stepSchemas, fullSchema } from "./validation-schemas";
@@ -145,6 +145,15 @@ export function useUploadFormLogic() {
     if (formData) {
       try {
         console.log("Enviando formulario al backend para obtener URL prefirmada...");
+        
+        // Asegurar que el logoCliente siempre esté incluido en el formulario
+        const formularioConLogo = {
+          ...formData,
+          logoCliente: formData.logoCliente || logoCliente,
+        };
+        
+        console.log("LogoCliente incluido en el envío:", !!formularioConLogo.logoCliente);
+        
         const response = await fetch("/api/public/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -152,8 +161,7 @@ export function useUploadFormLogic() {
             tenantName,
             userPoolName,
             fileName,
-            formulario: formData,
-            logoCliente: logoCliente,
+            formulario: formularioConLogo,
           }),
         });
 
@@ -223,10 +231,10 @@ export function useUploadFormLogic() {
     setMessage("");
     
     // Verificar si el formulario tiene cambios sin guardar
-    if (formHasChanges && uploadedFiles.length > 0) {
-      setError("Debes guardar el formulario antes de subir otro archivo");
-      toast.error("Formulario no guardado", {
-        description: "Completa y guarda el formulario antes de subir el archivo",
+    if (formHasChanges) {
+      setError("Debes guardar el formulario antes de subir el archivo");
+      toast.error("Formulario modificado", {
+        description: "Guarda el formulario nuevamente antes de subir el archivo",
         position: "top-center",
       });
       return;
@@ -254,7 +262,7 @@ export function useUploadFormLogic() {
       setUploadedFiles(prev => [...prev, { name: file!.name, timestamp: new Date() }]);
       
       // Auto-reset para el siguiente archivo
-      setMessage(`✓ ${file!.name} subido correctamente`);
+      setMessage(`${file!.name} subido correctamente`);
       setTimeout(() => {
         setFile(null);
         setFileName("");
@@ -288,16 +296,16 @@ export function useUploadFormLogic() {
         return;
       }
       
-      // Guardar datos del formulario en estado
-      setFormData(formValues);
-      setSavedValues(formValues);
-      setFormHasChanges(false);
+      // Asegurar que logoCliente esté en el formulario
+      const formValuesWithLogo = {
+        ...formValues,
+        logoCliente: formValues.logoCliente || logoCliente,
+      };
       
-      try {
-        localStorage.setItem("formularioReporte", JSON.stringify(formValues));
-      } catch (error) {
-        console.error("Error al guardar en localStorage:", error);
-      }
+      // Guardar datos del formulario en estado (solo en memoria, no en localStorage)
+      setFormData(formValuesWithLogo);
+      setSavedValues(formValuesWithLogo);
+      setFormHasChanges(false);
       toast("Formulario completado exitosamente", {
         description: "Ahora puedes subir el archivo ZIP",
         position: "top-center",
@@ -318,6 +326,7 @@ export function useUploadFormLogic() {
     setCompletedSteps([]);
     setFormData(null);
     setUploadedFiles([]);
+    setLogoCliente(null);
   };
 
   const handleUploadAnother = () => {
@@ -337,6 +346,7 @@ export function useUploadFormLogic() {
     setMessage("");
     setError("");
     setUploadSuccess(false);
+    setLogoCliente(null);
     toast("Formulario reiniciado", {
       description: "Puedes comenzar un nuevo reporte",
       position: "top-center",
@@ -344,9 +354,7 @@ export function useUploadFormLogic() {
   };
 
   const handleFormChange = (hasChanges: boolean) => {
-    if (uploadedFiles.length > 0) {
-      setFormHasChanges(hasChanges);
-    }
+    setFormHasChanges(hasChanges);
   };
 
   return {

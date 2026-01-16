@@ -1,6 +1,6 @@
 'use client'
 import { useForm } from "@tanstack/react-form";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { fullSchema } from "./validation-schemas";
@@ -8,16 +8,6 @@ import { StepIndicator, NavigationButtons } from "./step-indicator";
 import { StepContent } from "./form-steps";
 import { ZipUploadSection } from "./zip-upload-section";
 import { useUploadFormLogic } from "./use-upload-form-logic";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const stepLabels = [
   { number: 1, title: "General", description: "Información general" },
@@ -66,8 +56,6 @@ export function UploadForm() {
     setLogoCliente,
   } = useUploadFormLogic();
 
-  const [showSaveWarning, setShowSaveWarning] = useState(false);
-
   const form = useForm({
     defaultValues: {
       reportTitle: "",
@@ -94,7 +82,12 @@ export function UploadForm() {
       logoCliente: null,
     },
     onSubmit: async ({ value }) => {
-      handleFormSubmit(value);
+      // Asegurar que logoCliente esté en el formulario antes de enviar
+      const formValuesWithLogo = {
+        ...value,
+        logoCliente: logoCliente,
+      };
+      handleFormSubmit(formValuesWithLogo);
     },
   });
 
@@ -103,13 +96,15 @@ export function UploadForm() {
     (form.setFieldValue as any)('logoCliente', logoCliente);
   }, [logoCliente]);
 
-  // Detectar cambios en el formulario después de subir archivos
+  // Detectar cambios en el formulario después de guardarlo
   useEffect(() => {
-    if (uploadedFiles.length > 0 && formData) {
-      const hasChanges = JSON.stringify(form.state.values) !== JSON.stringify(formData);
+    if (formData) {
+      // Comparar valores actuales con los guardados, excluyendo logoCliente si ya está sincronizado
+      const currentValues = { ...form.state.values, logoCliente };
+      const hasChanges = JSON.stringify(currentValues) !== JSON.stringify(formData);
       handleFormChange(hasChanges);
     }
-  }, [form.state.values, formData, uploadedFiles.length]);
+  }, [form.state.values, formData, logoCliente]);
 
   // ...existing code...
   return (
@@ -167,6 +162,7 @@ export function UploadForm() {
                     onNext={() => handleNextStep(form.state.values)}
                     onReset={() => handleReset(form.reset)}
                     onSubmit={() => form.handleSubmit()}
+                    formHasChanges={formHasChanges}
                   />
                 </CardContent>
               </Card>
@@ -177,12 +173,23 @@ export function UploadForm() {
                 <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg xl:sticky xl:top-6">
                   <CardContent className="p-4 sm:p-6">
                   {formData && Object.keys(formData).length > 0 ? (
-                    <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-md">
-                      <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
-                        Formulario completado
-                      </p>
-                      <p className="text-xs text-green-600 dark:text-green-500 mt-1">Los datos se guardarán junto con el archivo</p>
-                    </div>
+                    formHasChanges ? (
+                      <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-700 rounded-md">
+                        <p className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                          Formulario modificado
+                        </p>
+                        <p className="text-xs text-orange-600 dark:text-orange-500 mt-1">
+                          Debes guardar el formulario nuevamente antes de subir el archivo
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-md">
+                        <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
+                          Formulario completado
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-500 mt-1">Los datos se guardarán junto con el archivo</p>
+                      </div>
+                    )
                   ) : (
                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-md">
                       <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
@@ -215,7 +222,6 @@ export function UploadForm() {
                     uploadedFiles={uploadedFiles}
                     onNewReport={() => handleNewReport(form.reset)}
                     formHasChanges={formHasChanges}
-                    onShowSaveWarning={() => setShowSaveWarning(true)}
                     logoCliente={logoCliente}
                     onLogoClienteChange={setLogoCliente}
                   />
@@ -226,35 +232,6 @@ export function UploadForm() {
           </div>
         </div>
       </div>
-
-      {/* Modal de advertencia para guardar formulario */}
-      <AlertDialog open={showSaveWarning} onOpenChange={setShowSaveWarning}>
-        <AlertDialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900 dark:text-slate-100">
-              ⚠️ Formulario no guardado
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
-              Has realizado cambios en el formulario que aún no se han guardado. 
-              Debes guardar el formulario (hacer clic en &quot;Guardar&quot; en el paso 6) antes de subir otro archivo.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-600">
-              Entendido
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => {
-                setShowSaveWarning(false);
-                goToStep(6, form.state.values);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-            >
-              Ir a guardar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
