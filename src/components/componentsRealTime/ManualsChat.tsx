@@ -12,7 +12,7 @@ export default function ManualsChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hola, soy tu asistente inteligente. Puedo ayudarte con:\n\n📚 Consultas técnicas sobre equipos (manuales, procedimientos, troubleshooting)\n📊 Análisis de datos de telemetría (temperaturas, voltajes, potencia, etc.)\n\n¿En qué puedo ayudarte hoy?'
+      content: 'Hola, soy tu asistente inteligente potenciado por AWS Bedrock. Puedo ayudarte con:\n\n📊 Análisis de datos de telemetría en tiempo real e históricos\n   • Generador: potencia, voltajes, corrientes, frecuencia, temperaturas\n   • Motor: temperaturas de cilindros, sistema de aceite, enfriamiento\n   • Estado del breaker y parámetros del busbar\n\n📚 Consultas técnicas (próximamente)\n\n¿Qué te gustaría saber sobre tus equipos?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -37,7 +37,7 @@ export default function ManualsChat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/ai-chat', {
+      const response = await fetch('/api/bedrock-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
@@ -60,9 +60,9 @@ export default function ManualsChat() {
       }]);
     } catch (error) {
       console.error('Error querying agent:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Hubo un error al consultar el agente. Por favor intenta de nuevo.' 
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Hubo un error al consultar el agente. Por favor intenta de nuevo.'
       }]);
     } finally {
       setIsLoading(false);
@@ -94,12 +94,11 @@ export default function ManualsChat() {
                 <Bot className="w-5 h-5 text-blue-400" />
               </div>
             )}
-            
-            <div className={`max-w-[80%] rounded-2xl p-4 ${
-              msg.role === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-800 text-slate-200'
-            }`}>
+
+            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-800 text-slate-200'
+              }`}>
               {/* Agent Type Badge */}
               {msg.role === 'assistant' && msg.agentType && (
                 <div className="mb-2 flex items-center gap-1.5">
@@ -118,7 +117,7 @@ export default function ManualsChat() {
               )}
 
               <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
-              
+
               {/* Sources Citation */}
               {msg.sources && msg.sources.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50">
@@ -127,8 +126,18 @@ export default function ManualsChat() {
                   </p>
                   <div className="space-y-1">
                     {msg.sources.map((source: any, i: number) => (
-                      <div key={i} className="text-xs text-slate-500 bg-slate-900/50 px-2 py-1 rounded">
-                        📄 {source.doc} <span className="opacity-50">(Score: {source.score.toFixed(2)})</span>
+                      <div key={i} className="text-xs text-slate-400 bg-slate-900/50 px-2 py-1.5 rounded">
+                        📊 {source.source || source.doc}
+                        {source.dateRange && (
+                          <div className="text-slate-500 mt-0.5">
+                            📅 {source.dateRange}
+                          </div>
+                        )}
+                        {source.recordCount !== undefined && (
+                          <div className="text-slate-500 mt-0.5">
+                            📦 {source.recordCount} registros
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -143,7 +152,7 @@ export default function ManualsChat() {
             )}
           </div>
         ))}
-        
+
         {isLoading && (
           <div className="flex gap-3">
             <div className="w-8 h-8 rounded-full bg-blue-600/20 flex items-center justify-center">
@@ -165,7 +174,7 @@ export default function ManualsChat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pregunta sobre datos, manuales, mantenimiento, errores..."
+            placeholder="Ej: ¿Cuál es la potencia del generador ahora? ¿Temperatura de cilindros?"
             className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
             disabled={isLoading}
           />
