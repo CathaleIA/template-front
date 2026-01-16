@@ -56,7 +56,7 @@ const DeltaBusDeltaTrend = lazy(() =>
 );
 
 // AI Chat component (lazy loaded)
-const ManualsChat = lazy(() => import("./ManualsChat"));
+const ChatSidebar = lazy(() => import("./ChatSidebar"));
 
 /* ============ BUFFER ============ */
 const MAX_HISTORIAL_MS = 10 * 60 * 1000;
@@ -268,7 +268,7 @@ export default function GPC300Dashboard() {
     connectWebSocket();
 
     return () => {
-        if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
   }, [updateBuffer]);
@@ -317,216 +317,205 @@ export default function GPC300Dashboard() {
   );
 
   const [activeTab, setActiveTab] = useState("main");
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
-    <div className="p-4 md:p-6 bg-slate-50 min-h-screen font-sans text-slate-800">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            GPC-300 Dashboard
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Industrial Generator Monitoring System
-          </p>
+    <>
+      <div className={`p-4 md:p-6 bg-slate-50 min-h-screen font-sans text-slate-800 transition-all duration-300 ${chatOpen ? 'mr-80' : ''}`}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+              GPC-300 Dashboard
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Industrial Generator Monitoring System
+            </p>
+          </div>
+          <HeaderStatus
+            connected={connected}
+            lastUpdate={lastUpdate}
+            error={error}
+          />
         </div>
-        <HeaderStatus
-          connected={connected}
-          lastUpdate={lastUpdate}
-          error={error}
-        />
-      </div>
 
-      <div className="flex space-x-1 bg-slate-200 p-1 rounded-lg mb-6 w-fit">
-        <button
-          onClick={() => setActiveTab("main")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            activeTab === "main"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
-          }`}
-        >
-          Main View
-        </button>
-        <button
-          onClick={() => setActiveTab("extras")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            activeTab === "extras"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
-          }`}
-        >
-          Detailed Analysis
-        </button>
-        <button
-          onClick={() => setActiveTab("ai-agent")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-            activeTab === "ai-agent"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
-          }`}
-        >
-          AI Agent
-        </button>
-      </div>
+        <div className="flex space-x-1 bg-slate-200 p-1 rounded-lg mb-6 w-fit">
+          <button
+            onClick={() => setActiveTab("main")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "main"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
+              }`}
+          >
+            Main View
+          </button>
+          <button
+            onClick={() => setActiveTab("extras")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "extras"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
+              }`}
+          >
+            Detailed Analysis
+          </button>
 
-      <div className="space-y-6">
-        {activeTab === "main" ? (
-          <>
-            <div className="grid grid-cols-12 gap-4 mb-4 items-start">
-              <Card title="General Status" className="col-span-12 lg:col-span-6">
-                <GeneralStatusCard
-                  activa={getNumericValue(data?.data.generator?.potencia_activa) ?? 0}
-                  reactiva={getNumericValue(data?.data.generator?.potencia_reactiva) ?? 0}
-                  aparente={getNumericValue(data?.data.generator?.potencia_aparente) ?? 0}
-                  fp={getNumericValue(data?.data.generator?.factor_potencia) ?? 0}
-                />
-              </Card>
+        </div>
 
-              <Card title="Voltage KPI" className="col-span-12 lg:col-span-6">
-                <KPIVoltage voltages={data?.data.generator ?? {}} />
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-12 gap-4 mb-4 items-start">
-              <Card title="Current" className="col-span-12 lg:col-span-6">
-                <CurrentsChart data={corrienteData} height={364} />
-              </Card>
-
-              <Card title="Voltage" className="col-span-12 lg:col-span-6">
-                <VoltagesChart data={voltajeData} height={364} />
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-12 gap-4 mb-4 items-start">
-              <Card
-                title="Bearing Temperatures"
-                className="col-span-12 lg:col-span-6"
-              >
-                <BearingTemperatures
-                  rodamientoDelantero={
-                    data?.data.temperature?.rodamiento_delantero
-                  }
-                  rodamientoTrasero={
-                    data?.data.temperature?.rodamiento_trasero
-                  }
-                />
-              </Card>
-
-              <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
-                <Card title="Generator Sequences" className="flex-1">
-                  <GeneratorSequenceGauge
-                    secuenciaPositiva={
-                      data?.data.generator?.secuencia_positiva
-                    }
-                    secuenciaNegativa={
-                      data?.data.generator?.secuencia_negativa
-                    }
-                    secuenciaZero={data?.data.generator?.secuencia_zero}
+        <div className="space-y-6">
+          {activeTab === "main" ? (
+            <>
+              <div className="grid grid-cols-12 gap-4 mb-4 items-start">
+                <Card title="General Status" className="col-span-12 lg:col-span-6">
+                  <GeneralStatusCard
+                    activa={getNumericValue(data?.data.generator?.potencia_activa) ?? 0}
+                    reactiva={getNumericValue(data?.data.generator?.potencia_reactiva) ?? 0}
+                    aparente={getNumericValue(data?.data.generator?.potencia_aparente) ?? 0}
+                    fp={getNumericValue(data?.data.generator?.factor_potencia) ?? 0}
                   />
                 </Card>
 
-                <Card title="Current Unbalance" className="flex-1">
-                  <DesbalanceCorrienteIndicator
-                    desbalance_corriente={
-                      data?.data.generator?.desbalance_corriente
-                    }
-                  />
+                <Card title="Voltage KPI" className="col-span-12 lg:col-span-6">
+                  <KPIVoltage voltages={data?.data.generator ?? {}} />
                 </Card>
               </div>
-            </div>
-          </>
-        ) : activeTab === "ai-agent" ? (
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-              <Suspense fallback={<div className="p-8 text-center text-slate-500">Cargando asistente...</div>}>
-                <ManualsChat />
-              </Suspense>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
-              <Card
-                title="Breaker Operation Flow"
-                className="col-span-12 lg:col-span-5 h-[480px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <BreakerOperationFlowPanel
-                      breaker={data?.data.breaker}
-                      generator={data?.data.generator}
-                      busbar={data?.data.busbar}
+
+              <div className="grid grid-cols-12 gap-4 mb-4 items-start">
+                <Card title="Current" className="col-span-12 lg:col-span-6">
+                  <CurrentsChart data={corrienteData} height={364} />
+                </Card>
+
+                <Card title="Voltage" className="col-span-12 lg:col-span-6">
+                  <VoltagesChart data={voltajeData} height={364} />
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-12 gap-4 mb-4 items-start">
+                <Card
+                  title="Bearing Temperatures"
+                  className="col-span-12 lg:col-span-6"
+                >
+                  <BearingTemperatures
+                    rodamientoDelantero={
+                      data?.data.temperature?.rodamiento_delantero
+                    }
+                    rodamientoTrasero={
+                      data?.data.temperature?.rodamiento_trasero
+                    }
+                  />
+                </Card>
+
+                <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
+                  <Card title="Generator Sequences" className="flex-1">
+                    <GeneratorSequenceGauge
+                      secuenciaPositiva={
+                        data?.data.generator?.secuencia_positiva
+                      }
+                      secuenciaNegativa={
+                        data?.data.generator?.secuencia_negativa
+                      }
+                      secuenciaZero={data?.data.generator?.secuencia_zero}
                     />
-                  </Suspense>
-                </div>
-              </Card>
+                  </Card>
 
-              <Card
-                title="Busbar Sequences"
-                className="col-span-12 lg:col-span-5 h-[480px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <BusbarSequenceBars busbar={data?.data.busbar} />
-                  </Suspense>
-                </div>
-              </Card>
-
-              <Card
-                title="Busbar Frequency"
-                className="col-span-12 lg:col-span-2 h-[480px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <BusbarFrequencyGauge busbar={data?.data.busbar} />
-                  </Suspense>
-                </div>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
-              <Card
-                title="Busbar Phase Angles"
-                className="col-span-12 lg:col-span-4 h-[480px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <BusbarPhaseTriangle3D busbar={data?.data.busbar} />
-                  </Suspense>
-                </div>
-              </Card>
-
-              <Card
-                title="Breaker Status"
-                className="col-span-12 lg:col-span-4 h-[480px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <BreakerStatusPanel breakerData={data?.data.breaker ?? {}} />
-                  </Suspense>
-                </div>
-              </Card>
-
-              <Card
-                title="Generator–Busbar Voltage Δ"
-                className="col-span-12 lg:col-span-4 h-[220px]"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <DeltaBusDeltaTrend
-                      data={deltaDataRows}
-                      maxRange={10}
-                      warningThreshold={2}
-                      alarmThreshold={5}
-                      height={180}
+                  <Card title="Current Unbalance" className="flex-1">
+                    <DesbalanceCorrienteIndicator
+                      desbalance_corriente={
+                        data?.data.generator?.desbalance_corriente
+                      }
                     />
-                  </Suspense>
+                  </Card>
                 </div>
-              </Card>
-            </div>
-          </>
-        )}
+              </div>
+            </>
+
+          ) : (
+            <>
+              <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
+                <Card
+                  title="Breaker Operation Flow"
+                  className="col-span-12 lg:col-span-5 h-[480px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <BreakerOperationFlowPanel
+                        breaker={data?.data.breaker}
+                        generator={data?.data.generator}
+                        busbar={data?.data.busbar}
+                      />
+                    </Suspense>
+                  </div>
+                </Card>
+
+                <Card
+                  title="Busbar Sequences"
+                  className="col-span-12 lg:col-span-5 h-[480px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <BusbarSequenceBars busbar={data?.data.busbar} />
+                    </Suspense>
+                  </div>
+                </Card>
+
+                <Card
+                  title="Busbar Frequency"
+                  className="col-span-12 lg:col-span-2 h-[480px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <BusbarFrequencyGauge busbar={data?.data.busbar} />
+                    </Suspense>
+                  </div>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
+                <Card
+                  title="Busbar Phase Angles"
+                  className="col-span-12 lg:col-span-4 h-[480px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <BusbarPhaseTriangle3D busbar={data?.data.busbar} />
+                    </Suspense>
+                  </div>
+                </Card>
+
+                <Card
+                  title="Breaker Status"
+                  className="col-span-12 lg:col-span-4 h-[480px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <BreakerStatusPanel breakerData={data?.data.breaker ?? {}} />
+                    </Suspense>
+                  </div>
+                </Card>
+
+                <Card
+                  title="Generator–Busbar Voltage Δ"
+                  className="col-span-12 lg:col-span-4 h-[220px]"
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <DeltaBusDeltaTrend
+                        data={deltaDataRows}
+                        maxRange={10}
+                        warningThreshold={2}
+                        alarmThreshold={5}
+                        height={180}
+                      />
+                    </Suspense>
+                  </div>
+                </Card>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      <Suspense fallback={null}>
+        <ChatSidebar isOpen={chatOpen} onToggle={() => setChatOpen(!chatOpen)} />
+      </Suspense>
+    </>
   );
 }
