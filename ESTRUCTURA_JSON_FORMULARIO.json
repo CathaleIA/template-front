@@ -1,0 +1,144 @@
+{
+  "reportTitle": "Informe de Pruebas Eléctricas CT-001",
+  "codigo": "RPT-2026-001",
+  "fechaEjecucion": "2026-01-10",
+  "fechaEmision": "2026-01-14",
+  "cliente": "Empresa Energética S.A.",
+  "municipio": "Bogotá",
+  "departamento": "Cundinamarca",
+  "logoCliente": {
+    "name": "logo_empresa.png",
+    "size": 18432,
+    "type": "image/png",
+    "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+  },
+  "personalPresenteCliente": [
+    {
+      "nombre": "Juan Pérez",
+      "cargo": "Ingeniero Eléctrico"
+    },
+    {
+      "nombre": "María Rodríguez",
+      "cargo": "Supervisora de Mantenimiento"
+    }
+  ],
+  "elaboradoPor": [
+    {
+      "nombre": "Carlos Gómez",
+      "cargo": "Ingeniero Senior",
+      "empresa": "Copower",
+      "firma": {
+        "name": "firma_carlos.png",
+        "size": 15360,
+        "type": "image/png",
+        "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+      }
+    }
+  ],
+  "revisadoPor": [
+    {
+      "nombre": "Ana Martínez",
+      "cargo": "Ingeniera de Calidad",
+      "empresa": "Copower",
+      "firma": {
+        "name": "firma_ana.jpg",
+        "size": 18240,
+        "type": "image/jpeg",
+        "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD..."
+      }
+    }
+  ],
+  "aprobadoPor": [
+    {
+      "nombre": "Roberto Silva",
+      "cargo": "Director Técnico",
+      "empresa": "Copower",
+      "firma": {
+        "name": "firma_roberto.png",
+        "size": 12800,
+        "type": "image/png",
+        "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+      }
+    }
+  ],
+  "personalPresente": [
+    {
+      "nombre": "Luis Fernández",
+      "cargo": "Técnico Especializado"
+    },
+    {
+      "nombre": "Patricia López",
+      "cargo": "Técnica de Campo"
+    }
+  ],
+  "nombreDoc": "IEEE Std 43-2013",
+  "desDoc": "Práctica recomendada de IEEE para pruebas de resistencia de aislamiento de maquinaria rotativa",
+  "objetivo": "Realizar pruebas eléctricas exhaustivas en el transformador de potencia del centro de transformación CT-001, verificando el estado del aislamiento, resistencia de contacto y análisis termográfico, con el fin de garantizar su operación segura y eficiente.",
+  "centroTransformacion": "001",
+  "equipos": [
+    {
+      "marca": "Fluke",
+      "referencia": "1550C",
+      "numeroSerie": "FL-2024-5678"
+    },
+    {
+      "marca": "FLIR",
+      "referencia": "E95",
+      "numeroSerie": "FLIR-2023-1234"
+    },
+    {
+      "marca": "Megger",
+      "referencia": "DLRO10X",
+      "numeroSerie": "MG-2025-9876"
+    }
+  ],
+  "activos": [
+    {
+      "nombre": "Transformador de Potencia 500 kVA",
+      "pruebas": [
+        "Resistencia de Aislamiento",
+        "Relación de Transformación",
+        "Análisis Termográfico",
+        "Prueba de Factor de Potencia"
+      ]
+    },
+    {
+      "nombre": "Interruptor Automático 630A",
+      "pruebas": [
+        "Resistencia de Contactos",
+        "Tiempo de Operación",
+        "Termografía Infrarroja"
+      ]
+    },
+    {
+      "nombre": "Tablero de Distribución Principal",
+      "pruebas": [
+        "Inspección Visual",
+        "Análisis Termográfico",
+        "Medición de Corrientes"
+      ]
+    }
+  ],
+  "conclusiones": [
+    "El transformador de potencia presenta valores de resistencia de aislamiento dentro de los rangos aceptables según la norma IEEE 43-2013, indicando un buen estado del sistema de aislamiento.",
+    "Los análisis termográficos no revelaron puntos calientes significativos en las conexiones eléctricas, lo que demuestra una correcta instalación y funcionamiento del equipo.",
+    "La relación de transformación medida corresponde con los valores de placa del fabricante, confirmando la integridad de los devanados del transformador.",
+    "Los interruptores automáticos operan dentro de los tiempos especificados por el fabricante y no presentan calentamientos anormales en sus contactos."
+  ],
+  "observaciones": [
+    "Se detectó una leve acumulación de polvo en las superficies del transformador que podría afectar la disipación de calor a largo plazo.",
+    "El sistema de ventilación del cuarto de transformadores presenta ruido excesivo que sugiere la necesidad de mantenimiento preventivo.",
+    "Se observaron conexiones sueltas en dos terminales del tablero de distribución secundario que fueron ajustadas durante la inspección.",
+    "La iluminación del área de transformadores es insuficiente para realizar inspecciones visuales detalladas de manera adecuada.",
+    "Los registros de mantenimiento previo están incompletos, dificultando la trazabilidad histórica del equipo."
+  ],
+  "recomendaciones": [
+    "Realizar limpieza profunda del transformador de potencia y su área circundante para mejorar las condiciones de disipación de calor.",
+    "Programar mantenimiento preventivo del sistema de ventilación forzada en un plazo no mayor a 30 días.",
+    "Implementar un programa de inspección termográfica semestral para monitoreo continuo de puntos calientes.",
+    "Mejorar el sistema de iluminación del cuarto de transformadores instalando luminarias LED de mayor intensidad.",
+    "Establecer un sistema de registro digital para documentar todas las intervenciones de mantenimiento realizadas en los equipos.",
+    "Realizar pruebas de aceite dieléctrico al transformador en los próximos 6 meses para evaluar el estado del aislamiento líquido.",
+    "Verificar y ajustar todas las conexiones eléctricas del tablero de distribución secundario de manera programada cada 3 meses."
+  ]
+}

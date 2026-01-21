@@ -1,6 +1,6 @@
 'use client'
 import { useForm } from "@tanstack/react-form";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { fullSchema } from "./validation-schemas";
@@ -13,8 +13,9 @@ const stepLabels = [
   { number: 1, title: "General", description: "Información general" },
   { number: 2, title: "Cliente", description: "Datos del cliente" },
   { number: 3, title: "Responsables", description: "Personas involucradas" },
-  { number: 4, title: "Detalles", description: "Detalles del trabajo" },
-  { number: 5, title: "Personal", description: "Personal y estándares" },
+  { number: 4, title: "Personal", description: "Personal y estándares" },
+  { number: 5, title: "Detalles", description: "Detalles del trabajo" },
+  { number: 6, title: "Resultados", description: "Conclusiones y observaciones" },
 ];
 
 export function UploadForm() {
@@ -45,6 +46,14 @@ export function UploadForm() {
     handleFormSubmit,
     handleReset,
     formData,
+    uploadSuccess,
+    handleUploadAnother,
+    uploadedFiles,
+    handleNewReport,
+    formHasChanges,
+    handleFormChange,
+    logoCliente,
+    setLogoCliente,
   } = useUploadFormLogic();
 
   const form = useForm({
@@ -54,38 +63,70 @@ export function UploadForm() {
       municipio: "",
       departamento: "",
       codigo: "",
-      elaboradoPor: [{ nombre: "", cargo: "", empresa: "" }],
-      revisadoPor: [{ nombre: "", cargo: "", empresa: "" }],
-      aprobadoPor: [{ nombre: "", cargo: "", empresa: "" }],
+      elaboradoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
+      revisadoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
+      aprobadoPor: [{ nombre: "", cargo: "", empresa: "Copower", firma: null }],
       fechaEjecucion: "",
       fechaEmision: "",
-      primerNombre: "",
-      segundoNombre: "",
-      cargo: "",
-      alcance: "",
+      personalPresenteCliente: [{ nombre: "", cargo: "" }],
       objetivo: "",
-      activos: [{ nombre: "", pruebas: [""] }],
-      personalPresente: [""] as string[],
+      centroTransformacion: "",
+      activos: [{ nombre: "", pruebas: [] }],
+      equipos: [{ marca: "", referencia: "", numeroSerie: "" }],
+      personalPresente: [{ nombre: "", cargo: "" }],
       nombreDoc: "",
       desDoc: "",
-      nombreEquipo: "",
+      conclusiones: [""],
+      observaciones: [""],
+      recomendaciones: [""],
+      logoCliente: null,
     },
     onSubmit: async ({ value }) => {
-      handleFormSubmit(value);
+      // Asegurar que logoCliente esté en el formulario antes de enviar
+      const formValuesWithLogo = {
+        ...value,
+        logoCliente: logoCliente,
+      };
+      handleFormSubmit(formValuesWithLogo);
     },
   });
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
-      <div className="w-full max-w-6xl mx-auto">
-        {/* HEADER DEL STEPPER - SUPERIOR */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold mb-3 text-slate-900">Formulario Captura Datos Reporte Final</h1>
-          <p className="text-gray-600 text-lg">Completa el formulario a través de nuestro proceso de 5 pasos</p>
-        </div>
+  // Sincronizar logoCliente con el formulario
+  useEffect(() => {
+    (form.setFieldValue as any)('logoCliente', logoCliente);
+  }, [logoCliente]);
 
-        {/* INDICADORES DE PASOS - HORIZONTAL */}
-        <div className="mb-8">
+  // Detectar cambios en el formulario después de guardarlo
+  useEffect(() => {
+    if (formData) {
+      // Comparar valores actuales con los guardados, excluyendo logoCliente si ya está sincronizado
+      const currentValues = { ...form.state.values, logoCliente };
+      const hasChanges = JSON.stringify(currentValues) !== JSON.stringify(formData);
+      handleFormChange(hasChanges);
+    }
+  }, [form.state.values, formData, logoCliente]);
+
+  // ...existing code...
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+      {/* HEADER - Ocupa todo el ancho */}
+      <div className="w-full bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="px-4 sm:px-6 lg:px-12 py-3 sm:py-4">
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              Sistema de Gestión de Reportes
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+              Gestiona tus reportes a través de nuestro proceso de 6 fases
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenedor con límite de ancho para el contenido */}
+      <div className="flex-1 flex flex-col max-w-[95rem] mx-auto w-full">
+        {/* INDICADORES DE PASOS */}
+        <div className="w-full px-4 sm:px-6 lg:px-12 py-4 sm:py-6">
           <StepIndicator
             stepLabels={stepLabels}
             currentStep={currentStep}
@@ -94,76 +135,100 @@ export function UploadForm() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6">
-          {/* LEFT COLUMN - MULTI-STEP FORM */}
-          <div className="w-full">
-            <Card className="w-full shadow-lg border-0 rounded-xl">
-              <CardContent className="p-8">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    form.handleSubmit();
-                  }}
-                  className="space-y-6"
-                >
-                  {/* Contenido de los pasos */}
-                  <StepContent form={form} currentStep={currentStep} />
+        {/* CONTENIDO */}
+        <div className="flex-1 w-full px-4 sm:px-6 lg:px-12 pb-6 sm:pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4 sm:gap-6">
+              {/* LEFT COLUMN - MULTI-STEP FORM */}
+              <div className="w-full">
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg">
+                  <CardContent className="p-4 sm:p-6 lg:p-8">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      form.handleSubmit();
+                    }}
+                    className="space-y-4 sm:space-y-6"
+                  >
+                    {/* Contenido de los pasos */}
+                    <StepContent form={form} currentStep={currentStep} />
+                  </form>
 
-                  {/* Botones de navegación */}
+                  {/* Botones de navegación fuera del formulario */}
                   <NavigationButtons
                     currentStep={currentStep}
-                    totalSteps={5}
+                    totalSteps={6}
                     onPrev={handlePrevStep}
                     onNext={() => handleNextStep(form.state.values)}
                     onReset={() => handleReset(form.reset)}
                     onSubmit={() => form.handleSubmit()}
+                    formHasChanges={formHasChanges}
                   />
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* RIGHT COLUMN - ZIP UPLOAD (FIXED STICKY) */}
-          <div className="lg:sticky lg:top-4 lg:h-fit">
-            <Card className="shadow-lg border-0 rounded-xl">
-              <CardContent className="p-6">
-                {formData && Object.keys(formData).length > 0 ? (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
-                    <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
-                      Formulario completado
-                    </p>
-                    <p className="text-xs text-green-600 mt-1">Los datos se guardarán junto con el archivo</p>
-                  </div>
-                ) : (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
-                    <p className="text-sm font-semibold text-amber-700 flex items-center gap-2">
-                      Formulario incompleto
-                    </p>
-                    <p className="text-xs text-amber-600 mt-1">Completa el formulario antes de subir el archivo</p>
-                  </div>
-                )}
-                <ZipUploadSection
-                  file={file}
-                  setFile={setFile}
-                  tenantName={tenantName}
-                  setTenantName={setTenantName}
-                  userPoolName={userPoolName}
-                  setUserPoolName={setUserPoolName}
-                  fileName={fileName}
-                  setFileName={setFileName}
-                  progress={progress}
-                  message={message}
-                  error={error}
-                  loading={loading}
-                  dragActive={dragActive}
-                  setDragActive={setDragActive}
-                  onUpload={handleUpload}
-                  validateFile={validateFile}
-                  setError={setError}
-                  isFormCompleted={!!formData && Object.keys(formData).length > 0}
-                />
-              </CardContent>
-            </Card>
+              {/* RIGHT COLUMN - ZIP UPLOAD */}
+              <div className="w-full space-y-4">
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg xl:sticky xl:top-6">
+                  <CardContent className="p-4 sm:p-6">
+                  {formData && Object.keys(formData).length > 0 ? (
+                    formHasChanges ? (
+                      <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-700 rounded-md">
+                        <p className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                          Formulario modificado
+                        </p>
+                        <p className="text-xs text-orange-600 dark:text-orange-500 mt-1">
+                          Debes guardar el formulario nuevamente antes de subir el archivo
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-md">
+                        <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
+                          Formulario completado
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-500 mt-1">Los datos se guardarán junto con el archivo</p>
+                      </div>
+                    )
+                  ) : (
+                    <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-md">
+                      <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                        Formulario incompleto
+                      </p>
+                      <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">Completa el formulario antes de subir el archivo</p>
+                    </div>
+                  )}
+                  <ZipUploadSection
+                    file={file}
+                    setFile={setFile}
+                    tenantName={tenantName}
+                    setTenantName={setTenantName}
+                    userPoolName={userPoolName}
+                    setUserPoolName={setUserPoolName}
+                    fileName={fileName}
+                    setFileName={setFileName}
+                    progress={progress}
+                    message={message}
+                    error={error}
+                    loading={loading}
+                    dragActive={dragActive}
+                    setDragActive={setDragActive}
+                    onUpload={handleUpload}
+                    validateFile={validateFile}
+                    setError={setError}
+                    isFormCompleted={!!formData && Object.keys(formData).length > 0}
+                    uploadSuccess={uploadSuccess}
+                    onUploadAnother={handleUploadAnother}
+                    uploadedFiles={uploadedFiles}
+                    onNewReport={() => handleNewReport(form.reset)}
+                    formHasChanges={formHasChanges}
+                    logoCliente={logoCliente}
+                    onLogoClienteChange={setLogoCliente}
+                  />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>

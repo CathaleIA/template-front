@@ -26,8 +26,10 @@ export const tenantConfigs: Record<string, TenantConfig> = {
         isActive: false,
         items: [
           { title: "Crear", url: "/dashboard/reports" },
-          { title: "solar", url: "/dashboard/formulario-url-prefir" },
+          { title: "Solar", url: "/dashboard/formulario-url-prefir" },
           { title: "Configurar", url: "#" },
+          { title: "Tabla", url: "/dashboard/gestion-reportes" },
+ 
         ],
       },
       {

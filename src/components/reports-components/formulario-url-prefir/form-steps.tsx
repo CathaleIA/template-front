@@ -2,7 +2,7 @@ import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { FormField, FormTextarea, ResponsableArrayField } from "./form-components";
+import { FormField, FormTextarea, ResponsableArrayField, FileUploadField } from "./form-components";
 
 interface FormStepsProps {
   form: any;
@@ -11,11 +11,11 @@ interface FormStepsProps {
 
 export function FormStep1({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900"> Información General del Reporte</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Información General del Reporte</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="reportTitle">
           {(field: any) => (
             <FormField field={field} label="Título del Reporte *" placeholder="Ingrese el título del reporte" />
@@ -39,11 +39,11 @@ export function FormStep1({ form }: { form: any }) {
 
 export function FormStep2({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Información del Cliente</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Información del Cliente</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="cliente">
           {(field: any) => <FormField field={field} label="Cliente *" placeholder="Nombre del cliente" />}
         </form.Field>
@@ -55,17 +55,23 @@ export function FormStep2({ form }: { form: any }) {
             {(field: any) => <FormField field={field} label="Departamento *" placeholder="Departamento" />}
           </form.Field>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <form.Field name="primerNombre">
-            {(field: any) => <FormField field={field} label="Primer Nombre *" placeholder="Primer nombre" />}
-          </form.Field>
-          <form.Field name="segundoNombre">
-            {(field: any) => <FormField field={field} label="Segundo Nombre *" placeholder="Segundo nombre" />}
+
+        {/* Personal Presente del Cliente */}
+        <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+          <h3 className="font-semibold mb-4 text-slate-900 dark:text-slate-100">Personal Presente del Cliente</h3>
+          <form.Field name="personalPresenteCliente" mode="array">
+            {(field: any) => (
+              <ResponsableArrayField
+                field={field}
+                label="Personal del Cliente"
+                description="Personal del cliente presente durante la ejecución"
+                isExtended={false}
+                showOnlyNameAndCargo={true}
+                titlePrefix="Persona"
+              />
+            )}
           </form.Field>
         </div>
-        <form.Field name="cargo">
-          {(field: any) => <FormField field={field} label="Cargo *" placeholder="Cargo" />}
-        </form.Field>
       </FieldGroup>
     </div>
   );
@@ -73,11 +79,11 @@ export function FormStep2({ form }: { form: any }) {
 
 export function FormStep3({ form }: { form: any }) {
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Responsables del Reporte</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Responsables del Reporte</h2>
       </div>
-      <FieldGroup className="gap-6">
+      <FieldGroup className="gap-4 sm:gap-6">
         <form.Field name="elaboradoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -89,6 +95,7 @@ export function FormStep3({ form }: { form: any }) {
             />
           )}
         </form.Field>
+
         <form.Field name="revisadoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -100,6 +107,7 @@ export function FormStep3({ form }: { form: any }) {
             />
           )}
         </form.Field>
+
         <form.Field name="aprobadoPor" mode="array">
           {(field: any) => (
             <ResponsableArrayField
@@ -118,27 +126,145 @@ export function FormStep3({ form }: { form: any }) {
 
 export function FormStep4({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Detalles del Trabajo</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">Personal Presente y Estándar de la Prueba</h2>
       </div>
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-3 sm:gap-4">
+        <form.Field name="personalPresente" mode="array">
+          {(field: any) => (
+            <ResponsableArrayField
+              field={field}
+              label="Personal Presente"
+              description="Personal que intervino a la hora de hacer pruebas"
+              showOnlyNameAndCargo={true}
+              titlePrefix="Persona"
+            />
+          )}
+        </form.Field>
+        <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+          <h3 className="font-bold mb-4 text-slate-900 dark:text-slate-100">Estándar de la Prueba</h3>
+          <form.Field name="nombreDoc">
+            {(field: any) => (
+              <FormField field={field} label="Nombre Estándar *" placeholder="Nombre estándar" />
+            )}
+          </form.Field>
+          <form.Field name="desDoc">
+            {(field: any) => (
+              <FormTextarea
+                field={field}
+                label="Descripción Estándar *"
+                placeholder="Descripción del estándar"
+              />
+            )}
+          </form.Field>
+        </div>
+      </FieldGroup>
+    </div>
+  );
+}
+
+export function FormStep5({ form }: { form: any }) {
+  return (
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Detalles del Trabajo</h2>
+      </div>
+      <FieldGroup className="gap-3 sm:gap-4">
         <form.Field name="objetivo">
           {(field: any) => (
             <FormTextarea field={field} label="Objetivo *" placeholder="Describa el objetivo del reporte" />
           )}
         </form.Field>
-        <form.Field name="alcance">
+        <form.Field name="centroTransformacion">
           {(field: any) => (
-            <FormTextarea field={field} label="Alcance *" placeholder="Describa el alcance" />
+            <FormField 
+              field={field} 
+              label="Centro de Transformación (CT) *" 
+              placeholder="Ingrese solo números" 
+              type="text"
+            />
           )}
         </form.Field>
-        <form.Field name="activos" mode="array">
-          {(activosField: any) => (
+
+        {/* Equipos */}
+        <form.Field name="equipos" mode="array">
+          {(equiposField: any) => (
             <div className="space-y-4">
-              <FieldLabel>Activos *</FieldLabel>
-              {activosField.state.value.map((_: any, activoIndex: number) => (
-                <div key={activoIndex} className="p-4 border rounded-lg space-y-3 bg-slate-50">
+              <FieldLabel>Equipos Utilizados *</FieldLabel>
+              {equiposField.state.value.map((_: any, equipoIndex: number) => (
+                <div key={equipoIndex} className="p-4 border border-slate-200 dark:border-slate-700 rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/50">
+                  <form.Field name={`equipos[${equipoIndex}].marca`}>
+                    {(marcaField: any) => (
+                      <div className="space-y-1">
+                        <FieldLabel>Marca</FieldLabel>
+                        <Input
+                          value={marcaField.state.value ?? ""}
+                          onChange={(e) => marcaField.handleChange(e.target.value)}
+                          placeholder="Ej: Fluke, FLIR, Megger"
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <form.Field name={`equipos[${equipoIndex}].referencia`}>
+                      {(referenciaField: any) => (
+                        <div className="space-y-1">
+                          <FieldLabel>Referencia</FieldLabel>
+                          <Input
+                            value={referenciaField.state.value ?? ""}
+                            onChange={(e) => referenciaField.handleChange(e.target.value)}
+                            placeholder="Modelo o referencia"
+                          />
+                        </div>
+                      )}
+                    </form.Field>
+
+                    <form.Field name={`equipos[${equipoIndex}].numeroSerie`}>
+                      {(serieField: any) => (
+                        <div className="space-y-1">
+                          <FieldLabel>Número de Serie</FieldLabel>
+                          <Input
+                            value={serieField.state.value ?? ""}
+                            onChange={(e) => serieField.handleChange(e.target.value)}
+                            placeholder="Número de serie"
+                          />
+                        </div>
+                      )}
+                    </form.Field>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => equiposField.removeValue(equipoIndex)}
+                    className="text-red-600 dark:text-red-400 text-sm hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Eliminar Equipo
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => equiposField.pushValue({ marca: "", referencia: "", numeroSerie: "" })}
+              >
+                + Agregar Equipo
+              </Button>
+            </div>
+          )}
+        </form.Field>
+
+        {/* Alcance - Activos */}
+        <div className="pt-4 mt-4">
+          <h3 className="font-bold mb-4 text-slate-900 dark:text-slate-100 pb-3 border-b border-slate-200 dark:border-slate-700">Alcance</h3>
+          <form.Field name="activos" mode="array">
+            {(activosField: any) => (
+              <div className="space-y-4">
+                <FieldLabel>Activos *</FieldLabel>
+                {activosField.state.value.map((_: any, activoIndex: number) => (
+                <div key={activoIndex} className="p-4 border border-slate-200 dark:border-slate-700 rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/50">
                   <form.Field name={`activos[${activoIndex}].nombre`}>
                     {(nombreField: any) => (
                       <div className="space-y-1">
@@ -190,7 +316,7 @@ export function FormStep4({ form }: { form: any }) {
                   <button
                     type="button"
                     onClick={() => activosField.removeValue(activoIndex)}
-                    className="text-red-600 text-sm"
+                    className="text-red-600 dark:text-red-400 text-sm hover:text-red-800 dark:hover:text-red-300"
                   >
                     Eliminar Activo
                   </button>
@@ -207,53 +333,185 @@ export function FormStep4({ form }: { form: any }) {
             </div>
           )}
         </form.Field>
+        </div>
       </FieldGroup>
     </div>
   );
 }
 
-export function FormStep5({ form }: { form: any }) {
+export function FormStep6({ form }: { form: any }) {
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900"> Personal Presente y Estándar de la Prueba</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">
+          Conclusiones, Observaciones y Recomendaciones
+        </h2>
       </div>
-      <FieldGroup className="gap-4">
-        <form.Field name="personalPresente" mode="array">
+      <FieldGroup className="gap-3 sm:gap-4">
+        {/* Conclusiones */}
+        <form.Field name="conclusiones" mode="array">
           {(field: any) => (
-            <ResponsableArrayField
-              field={field}
-              label="Personal Intermediario"
-              description="Personal que intervino a la hora de hacer pruebas"
-            />
+            <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Conclusiones *
+                </FieldLabel>
+              </div>
+              {field.state.value.map((_: any, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `conclusiones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Conclusión ${index + 1}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => field.removeValue(index)}
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
+                  >
+                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => field.pushValue("")}
+                className="w-full rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+              >
+                + Agregar Conclusión
+              </Button>
+            </div>
           )}
         </form.Field>
-        <div className="border-t pt-4 mt-4">
-          <h3 className="font-bold mb-4">Estándar de la Prueba</h3>
-          <form.Field name="nombreDoc">
-            {(field: any) => (
-              <FormField field={field} label="Nombre Estándar *" placeholder="Nombre estándar" />
-            )}
-          </form.Field>
-          <form.Field name="desDoc">
-            {(field: any) => (
-              <FormTextarea
-                field={field}
-                label="Descripción Estándar *"
-                placeholder="Descripción del estándar"
-              />
-            )}
-          </form.Field>
-          <form.Field name="nombreEquipo">
-            {(field: any) => (
-              <FormTextarea
-                field={field}
-                label="Equipos Utilizados *"
-                placeholder="Descripción de equipos utilizados"
-              />
-            )}
-          </form.Field>
-        </div>
+
+        {/* Observaciones */}
+        <form.Field name="observaciones" mode="array">
+          {(field: any) => (
+            <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Observaciones *
+                </FieldLabel>
+              </div>
+              {field.state.value.map((_: any, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `observaciones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Observación ${index + 1}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => field.removeValue(index)}
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
+                  >
+                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => field.pushValue("")}
+                className="w-full rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+              >
+                + Agregar Observación
+              </Button>
+            </div>
+          )}
+        </form.Field>
+
+        {/* Recomendaciones */}
+        <form.Field name="recomendaciones" mode="array">
+          {(field: any) => (
+            <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div>
+                <FieldLabel className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                  Recomendaciones *
+                </FieldLabel>
+              </div>
+              {field.state.value.map((_: any, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <FormTextarea
+                      field={{
+                        name: `recomendaciones[${index}]`,
+                        state: {
+                          value: field.state.value[index] ?? "",
+                          meta: {
+                            isTouched: field.state.meta.isTouched,
+                            errors: field.state.meta.errors?.[index] ? [field.state.meta.errors[index]] : []
+                          }
+                        },
+                        handleChange: (value: string) => {
+                          const newValue = [...field.state.value];
+                          newValue[index] = value;
+                          field.handleChange(newValue);
+                        },
+                        handleBlur: field.handleBlur
+                      }}
+                      label=""
+                      placeholder={`Recomendación ${index + 1}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => field.removeValue(index)}
+                    className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all border border-red-200 dark:border-red-800 mt-6 shrink-0"
+                  >
+                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => field.pushValue("")}
+                className="w-full rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+              >
+                + Agregar Recomendación
+              </Button>
+            </div>
+          )}
+        </form.Field>
       </FieldGroup>
     </div>
   );
@@ -271,6 +529,8 @@ export function StepContent({ form, currentStep }: FormStepsProps) {
       return <FormStep4 form={form} />;
     case 5:
       return <FormStep5 form={form} />;
+    case 6:
+      return <FormStep6 form={form} />;
     default:
       return null;
   }
