@@ -145,16 +145,31 @@ export async function getHistoricalData(
             const listCommand = new ListObjectsV2Command({
                 Bucket: bucket,
                 Prefix: prefix,
-                MaxKeys: 100, // Aumentamos límite por día
+                MaxKeys: 1000, // Aumentar límite para capturar más archivos por día
             });
 
             const { Contents } = await s3Client.send(listCommand);
 
-            if (!Contents || Contents.length === 0) continue;
+            if (!Contents || Contents.length === 0) {
+                console.log(`📭 No files found in prefix: ${prefix}`);
+                continue;
+            }
+
+            console.log(`📦 Found ${Contents.length} objects in ${prefix}`);
+
+            // Limitar archivos para evitar timeout (tomar muestra representativa)
+            const MAX_FILES_TO_PROCESS = 200;
+            let filesToProcess = Contents.filter(obj => obj.Key?.endsWith('.json'));
+
+            if (filesToProcess.length > MAX_FILES_TO_PROCESS) {
+                // Tomar muestra distribuida uniformemente
+                const step = Math.floor(filesToProcess.length / MAX_FILES_TO_PROCESS);
+                filesToProcess = filesToProcess.filter((_, index) => index % step === 0).slice(0, MAX_FILES_TO_PROCESS);
+                console.log(`⚠️ Sampling ${filesToProcess.length} files from ${Contents.length} total (every ${step}th file)`);
+            }
 
             // Leer archivos JSON
-            for (const obj of Contents) {
-                if (!obj.Key?.endsWith('.json')) continue;
+            for (const obj of filesToProcess) {
 
                 try {
                     const getCommand = new GetObjectCommand({
@@ -176,10 +191,18 @@ export async function getHistoricalData(
                     if (dataType === 'generator' && !isGenerator) continue;
                     if (dataType === 'motor' && !isMotor) continue;
 
-                    // Filtrar por rango de fechas
+                    // Filtrar por rango de fechas (con margen de 24h para compensar zonas horarias)
                     const dataTimestamp = new Date(jsonData.timestamp);
-                    if (dataTimestamp >= startDate && dataTimestamp <= endDate) {
+                    const adjustedStart = new Date(startDate.getTime() - 24 * 60 * 60 * 1000); // 24h antes
+                    const adjustedEnd = new Date(endDate.getTime() + 24 * 60 * 60 * 1000); // 24h después
+
+                    if (dataTimestamp >= adjustedStart && dataTimestamp <= adjustedEnd) {
                         allData.push(jsonData);
+
+                        // Log solo los primeros 3 para debug
+                        if (allData.length <= 3) {
+                            console.log(`✅ Added record with timestamp: ${jsonData.timestamp}`);
+                        }
                     }
                 } catch (err) {
                     console.error(`Error reading file ${obj.Key}: `, err);

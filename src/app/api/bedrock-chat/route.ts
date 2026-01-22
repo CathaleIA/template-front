@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
 import { invokeBedrock } from '@/lib/bedrock';
-import { getHistoricalData, summarizeData } from '@/lib/s3-data';
+import { getLatestRealtimeData } from '@/lib/iot-realtime';
+import { executeAthenaQuery, getDDLScript } from '@/lib/athena-data';
 
 // Clasificador inteligente de preguntas
-function classifyQuestion(question: string): 'manuals' | 'data' {
+function classifyQuestion(question: string): 'conversation' | 'manuals' | 'data' {
     const lowerQuestion = question.toLowerCase();
+
+    // Detectar saludos y conversación general
+    const conversationKeywords = [
+        'hola', 'buenos días', 'buenas tardes', 'buenas noches',
+        'qué tal', 'cómo estás', 'ayuda', 'ayúdame',
+        'qué puedes hacer', 'qué sabes', 'quién eres',
+        'gracias', 'ok', 'entendido', 'perfecto'
+    ];
 
     const dataKeywords = [
         'temperatura', 'voltaje', 'corriente', 'potencia', 'frecuencia',
@@ -12,12 +21,17 @@ function classifyQuestion(question: string): 'manuals' | 'data' {
         'máxima', 'mínima', 'promedio', 'actual', 'ahora', 'ayer',
         'este mes', 'última', 'histórico', 'cuánto', 'cuándo',
         'estado', 'valor', 'lectura', 'dato', 'generador', 'motor',
-        'devanado', 'rodamiento', 'busbar', 'enfriamiento'
+        'devanado', 'rodamiento', 'busbar', 'enfriamiento',
+        'funcionamiento', 'falla', 'error', 'alerta', 'problema',
+        'desfase', 'máquina', 'anomalía', 'rendimiento', 'comportamiento'
     ];
 
+    const conversationScore = conversationKeywords.filter(kw => lowerQuestion.includes(kw)).length;
     const dataScore = dataKeywords.filter(kw => lowerQuestion.includes(kw)).length;
 
-    return dataScore > 0 ? 'data' : 'manuals';
+    if (conversationScore > 0) return 'conversation';
+    if (dataScore > 0) return 'data';
+    return 'manuals';
 }
 
 // Extraer rango de fechas de la pregunta
@@ -25,8 +39,15 @@ function extractDateRange(question: string): { start: Date; end: Date } {
     const now = new Date();
     const lowerQuestion = question.toLowerCase();
 
-    // Hoy / Actual / Ahora
-    if (lowerQuestion.includes('hoy') || lowerQuestion.includes('actual') || lowerQuestion.includes('ahora')) {
+    // Hoy / Día de hoy
+    if (lowerQuestion.includes('hoy') || lowerQuestion.includes('día de hoy')) {
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0); // Inicio del día (00:00:00)
+        return { start: startOfDay, end: now };
+    }
+
+    // Actual / Ahora (solo última hora para consultas de "ahora")
+    if (lowerQuestion.includes('actual') || lowerQuestion.includes('ahora')) {
         const start = new Date(now);
         start.setHours(now.getHours() - 1); // Última hora
         return { start, end: now };
@@ -82,7 +103,46 @@ export async function POST(request: Request) {
 
         const agentType = classifyQuestion(message);
 
-        // Por ahora solo manejamos datos, manuales se implementará después
+        // Manejar conversación general
+        if (agentType === 'conversation') {
+            console.log('💬 Conversational query detected');
+
+            const conversationPrompt = `Eres un asistente técnico amigable para un sistema de monitoreo industrial de generadores y motores.
+
+INSTRUCCIONES:
+- Responde de forma amigable y profesional en español
+- Si te saludan, saluda de vuelta y ofrece ayuda
+- Si te preguntan qué puedes hacer, explica que puedes:
+  • Consultar datos en tiempo real del generador (voltajes, corrientes, potencia, frecuencia)
+  • Consultar datos en tiempo real del motor (temperaturas, aceite, refrigerante)
+  • Analizar datos históricos (ayer, última semana, etc.)
+  • Calcular máximos, mínimos y promedios
+- Si te dan las gracias, responde cortésmente
+- Mantén las respuestas breves y al punto
+- Si no entiendes algo, pide aclaración`;
+
+            try {
+                const answer = await invokeBedrock(
+                    [{ role: 'user', content: message }],
+                    conversationPrompt
+                );
+
+                return NextResponse.json({
+                    answer,
+                    agentType: 'conversation',
+                    sources: [],
+                });
+            } catch (error: any) {
+                console.error('❌ Error in conversation mode:', error);
+                return NextResponse.json({
+                    answer: 'Hola, soy tu asistente de monitoreo industrial. ¿En qué puedo ayudarte hoy?',
+                    agentType: 'conversation',
+                    sources: [],
+                });
+            }
+        }
+
+        // Manejar manuales (no implementado aún)
         if (agentType === 'manuals') {
             return NextResponse.json({
                 answer: 'La funcionalidad de manuales se implementará próximamente. Por ahora, puedo ayudarte con consultas sobre datos de IoT en tiempo real e históricos del generador y motor.\n\nPuedes preguntarme sobre:\n• Potencia, voltajes y corrientes del generador\n• Temperaturas de cilindros del motor\n• Sistema de aceite y enfriamiento\n• Estado del breaker\n• Datos históricos (ayer, última semana, etc.)',
@@ -95,44 +155,121 @@ export async function POST(request: Request) {
         console.log('📊 Processing data query with Bedrock:', message);
 
         try {
-            // 1. Obtener datos de S3
-            const dateRange = extractDateRange(message);
-            console.log(`📅 Date range: ${dateRange.start.toISOString()} - ${dateRange.end.toISOString()}`);
+            // 1. Decidir fuente (WebSocket Real-Time vs S3 Historical)
+            const lowerMessage = message.toLowerCase();
 
-            const historicalData = await getHistoricalData(dateRange.start, dateRange.end);
-            console.log(`📦 Retrieved ${historicalData.length} records from S3`);
+            // Detectar si es una pregunta de agregación (máximo, mínimo, promedio, tendencia)
+            const isAggregation = lowerMessage.includes('más alto') ||
+                lowerMessage.includes('más bajo') ||
+                lowerMessage.includes('máximo') ||
+                lowerMessage.includes('mínimo') ||
+                lowerMessage.includes('promedio') ||
+                lowerMessage.includes('tendencia') ||
+                lowerMessage.includes('historial') ||
+                lowerMessage.includes('durante') ||
+                lowerMessage.includes('a lo largo');
 
-            if (historicalData.length === 0) {
-                return NextResponse.json({
-                    answer: 'No se encontraron datos para el período solicitado. Esto puede deberse a que:\n\n1. No hay datos disponibles en S3 para ese rango de fechas\n2. El sistema IoT no ha enviado datos recientemente\n3. Puede haber un problema de conectividad\n\nPor favor, intenta con un rango de fechas diferente o verifica que el sistema esté enviando datos.',
-                    agentType: 'data',
-                    sources: [{
-                        source: 'S3 Historical Data',
-                        dateRange: `${dateRange.start.toISOString()} - ${dateRange.end.toISOString()}`,
-                        recordCount: 0,
-                    }],
-                });
+            // Solo usar tiempo real si NO es agregación y pregunta por "ahora/actual"
+            const isRealTime = !isAggregation && (
+                lowerMessage.includes('ahora') ||
+                lowerMessage.includes('actual') ||
+                lowerMessage.includes('momento') ||
+                lowerMessage.includes('en este momento')
+            );
+
+            let contextData = '';
+            let dataSource = 'S3 Historical Data';
+            let recordCount = 0;
+
+            if (isRealTime) {
+                console.log('🚀 Real-time query detected. Fetching latest WebSocket data...');
+                const realtimeData = await getLatestRealtimeData(message);
+                contextData = `ESTADO ACTUAL EN TIEMPO REAL (WebSocket):\n${JSON.stringify(realtimeData, null, 2)}`;
+                dataSource = 'AWS IoT WebSocket (Real-Time)';
+                recordCount = 1;
+            } else {
+                // Modo Histórico (Athena)
+                dataSource = 'AWS Athena (Historical)';
+
+                // Calcular fechas para el prompt
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                const yesterdayDate = new Date(now);
+                yesterdayDate.setDate(now.getDate() - 1);
+                const yesterday = yesterdayDate.toISOString().split('T')[0];
+
+                // 1. Pedir a Bedrock que genere el SQL
+                const sqlGenPrompt = `Genera una consulta SQL (Presto/Athena) para responder a la pregunta: "${message}"
+                
+TABLA: iot_telemetry_db.iot_data
+COLUMNAS IMPORTANTES (Usar .value para el valor):
+- timestamp (string ISO8601, ej: '2026-01-21T16:45:34.477925Z')
+- data.generator (voltage_L1_N.value, voltage_L2_N.value, voltage_L3_N.value, corriente_L1.value, corriente_L2.value, corriente_L3.value, potencia_activa.value, frecuencia.value)
+- data.cylinders (Tem_Cyl_1.value hasta Tem_Cyl_20.value, Promedio_tem_cyl.value)
+- data.oil_system (Temperatura_aceite.value, Presion_aceite.value)
+- data.cooling_system (T_HT_ENTRADA.value, Temp_LT_salida.value)
+
+REGLAS:
+- Devuelve SOLO el código SQL, nada de explicación.
+- IMPORTANTE: Debes acceder al campo .value para obtener el número. Ejemplo: data.generator.voltage_L1_N.value
+- Usa "from_iso8601_timestamp(timestamp)" para el filtro de tiempo.
+- CRÍTICO: Athena no permite comparar un timestamp con un string directamente. Ambas partes deben ser timestamps.
+- Ejemplo correcto: WHERE from_iso8601_timestamp(timestamp) >= from_iso8601_timestamp('${yesterday}T00:00:00Z')
+- NO uses literales de string simples para comparar con timestamps.
+- Para "hoy", usa la fecha '${today}'.
+- Para "ayer", usa la fecha '${yesterday}'.
+- Ejemplo para un mes específico: WHERE from_iso8601_timestamp(timestamp) >= from_iso8601_timestamp('2025-12-01T00:00:00Z') AND from_iso8601_timestamp(timestamp) < from_iso8601_timestamp('2026-01-01T00:00:00Z')
+- LIMIT 100 si no es una agregación específica.
+`;
+
+                console.log('🤖 Asking Bedrock specifically for SQL...');
+                const generatedSQL = await invokeBedrock(
+                    [{ role: 'user', content: message }],
+                    sqlGenPrompt
+                );
+
+                // Limpiar el SQL (a veces Bedrock añade markdown)
+                const cleanSQL = generatedSQL.replace(/```sql/g, '').replace(/```/g, '').trim();
+
+                // 2. Ejecutar SQL en Athena
+                const rows = await executeAthenaQuery(cleanSQL);
+
+                if (rows.length === 0) {
+                    return NextResponse.json({
+                        answer: 'No se encontraron datos históricos en Athena para tu consulta. Asegúrate de que la tabla esté creada y tenga datos.',
+                        agentType: 'data',
+                        sources: [{ source: 'Athena', recordCount: 0 }],
+                        sql: cleanSQL
+                    });
+                }
+
+                // 3. Formatear datos para el contexto final
+                contextData = `CONSULTA REALIZADA (SQL):
+${cleanSQL}
+
+RESULTADOS OBTENIDOS (${rows.length} filas):
+${JSON.stringify(rows, null, 2)}
+
+NOTA: Los resultados arriba corresponden exactamente a los filtros de tiempo (WHERE) aplicados en la consulta SQL.`;
+                recordCount = rows.length;
             }
 
             // 2. Crear contexto para Bedrock
-            const dataSummary = summarizeData(historicalData);
-            console.log('📊 Data summary created');
+            console.log(`📊 Context created from ${dataSource}`);
 
-            const systemPrompt = `Eres un asistente técnico experto en análisis de datos de IoT para equipos industriales (generadores y motores).
-Tienes acceso a datos históricos de sensores y equipos en tiempo real.
+            const systemPrompt = `Eres un asistente técnico experto en análisis de datos de IoT para equipos industriales.
+Tu objetivo es dar respuestas DIRECTAS y SEGURAS basadas únicamente en los datos proporcionados.
 
-DATOS DISPONIBLES:
-${dataSummary}
+PERIODO DE ANÁLISIS: Se han filtrado los datos específicamente para la consulta del usuario.
+DATOS PROPORCIONADOS:
+${contextData}
 
 INSTRUCCIONES:
-- Responde en español de forma clara, concisa y profesional
-- Usa los datos proporcionados para responder con precisión
-- Si no hay datos suficientes para responder con certeza, indícalo claramente
-- Proporciona valores numéricos específicos cuando sea relevante
-- Menciona el período de tiempo analizado
-- Si detectas valores anormales o fuera de rango, menciónalos
-- Sé técnico pero comprensible
-- Si la pregunta es sobre un parámetro específico, enfócate en ese parámetro`;
+- Responde en español de forma directa. No digas "según los datos proporcionados" o "no puedo determinar el periodo". 
+- Confía en que el sistema ya filtró los datos por la fecha correcta solicitada por el usuario.
+- Da los valores técnicos inmediatamente.
+- Si los datos muestran un valor, asume que es el dato correcto para la fecha consultada.
+- No añadas advertencias sobre "falta de contexto de tiempo" a menos que no haya absolutamente ningún dato.`;
 
             // 3. Invocar Bedrock
             console.log('🤖 Invoking Bedrock...');
@@ -147,9 +284,8 @@ INSTRUCCIONES:
                 answer,
                 agentType: 'data',
                 sources: [{
-                    source: 'S3 Historical Data',
-                    dateRange: `${dateRange.start.toLocaleString('es-ES')} - ${dateRange.end.toLocaleString('es-ES')}`,
-                    recordCount: historicalData.length,
+                    source: dataSource,
+                    recordCount: recordCount,
                 }],
             });
 
