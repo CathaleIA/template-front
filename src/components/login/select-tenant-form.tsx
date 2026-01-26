@@ -131,67 +131,67 @@ export function SelectTenant() {
                 backgroundRepeat: "no-repeat"
               }}
             >
-                <CardContent>
-                  <div className="">
-                    <div className="flex flex-col pt-5 gap-8">
-                      <div className="flex flex-col items-center text-center">
-                        <h1 className="text-2xl font-bold text-white">Procesando</h1>
-                        <p className="text-md text-white">
-                          Configurando tu acceso empresarial
-                        </p>
+              <CardContent>
+                <div className="">
+                  <div className="flex flex-col pt-5 gap-8">
+                    <div className="flex flex-col items-center text-center">
+                      <h1 className="text-2xl font-bold text-white">Procesando</h1>
+                      <p className="text-md text-white">
+                        Configurando tu acceso empresarial
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm font-medium text-white">{loadingStage}</span>
+                    </div>
+
+                    <Progress value={progress} className="w-full" />
+
+                    <div className="space-y-4 text-sm">
+                      <div className="flex items-center space-x-3">
+                        <CheckCircle className={`w-4 h-4 ${progress >= 25 ? 'text-green-500' : 'text-white'}`} />
+                        <span className={progress >= 25 ? 'text-foreground' : 'text-white'}>
+                          Empresa identificada
+                        </span>
                       </div>
-
-                      <div className="flex items-center justify-center space-x-3">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm font-medium text-white">{loadingStage}</span>
+                      <div className="flex items-center space-x-3">
+                        {progress >= 50 && progress < 75 ? (
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        ) : progress >= 75 ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border-2 border-border"></div>
+                        )}
+                        <span className={progress >= 50 ? 'text-foreground' : 'text-white'}>
+                          Configurando permisos
+                        </span>
                       </div>
-
-                      <Progress value={progress} className="w-full" />
-
-                      <div className="space-y-4 text-sm">
-                        <div className="flex items-center space-x-3">
-                          <CheckCircle className={`w-4 h-4 ${progress >= 25 ? 'text-green-500' : 'text-white'}`} />
-                          <span className={progress >= 25 ? 'text-foreground' : 'text-white'}>
-                            Empresa identificada
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          {progress >= 50 && progress < 75 ? (
-                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                          ) : progress >= 75 ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <div className="w-4 h-4 rounded-full border-2 border-border"></div>
-                          )}
-                          <span className={progress >= 50 ? 'text-foreground' : 'text-white'}>
-                            Configurando permisos
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          {progress >= 75 && progress < 100 ? (
-                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                          ) : progress >= 100 ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <div className="w-4 h-4 rounded-full border-2 border-border"></div>
-                          )}
-                          <span className={progress >= 75 ? 'text-foreground' : 'text-white'}>
-                            Preparando autenticación
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="pt-6 border-t border-border">
-                        <p className="text-xs text-center text-white">
-                          Este proceso puede tomar unos segundos...
-                        </p>
+                      <div className="flex items-center space-x-3">
+                        {progress >= 75 && progress < 100 ? (
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        ) : progress >= 100 ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border-2 border-border"></div>
+                        )}
+                        <span className={progress >= 75 ? 'text-foreground' : 'text-white'}>
+                          Preparando autenticación
+                        </span>
                       </div>
                     </div>
+
+                    <div className="pt-6 border-t border-border">
+                      <p className="text-xs text-center text-white">
+                        Este proceso puede tomar unos segundos...
+                      </p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
+        </div>
       ) : (
         <div
           className="w-full max-w-md animate-fadeIn rounded-xl"

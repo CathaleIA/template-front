@@ -1,75 +1,64 @@
 # 📘 Resumen Técnico: Dashboard IoT & Asistente Inteligente AWS
 
 ## 🌐 Visión General
-Este proyecto es un dashboard de monitoreo industrial en tiempo real desarrollado con **Next.js**, integrado nativamente con servicios de **AWS**. La característica principal reciente es la implementación de un **Asistente de IA Generativa (Chatbot)** capaz de analizar telemetría histórica y responder consultas técnicas complejas.
+Este proyecto es un dashboard de monitoreo industrial en tiempo real desarrollado con **Next.js**, integrado nativamente con servicios de **AWS**. La característica principal es un **Asistente de IA Generativa** que utiliza un enfoque híbrido (WebSockets para tiempo real y AWS Athena para históricos) para analizar telemetría industrial.
 
 ---
 
 ## 🏗️ Arquitectura AWS Implementada
 
-### 1. Ingesta y Almacenamiento (Backend)
+### 1. Ingesta y Almacenamiento (Data Lake)
 - **AWS IoT Core**: Recibe la data cruda de los dispositivos (Gateway QNAP).
-- **Amazon S3**: Almacenamiento "Data Lake" de históricos.
+- **Amazon S3**: Repositorio central de históricos.
   - **Bucket**: `industrial-iot-snowflake-staging-240435918890`
-  - **Estructura**: `telemetry/YYYY/MM/DD/` (Particionado por fecha).
-  - **Formato**: Archivos JSON separados por tipo (`generador` y `motor`).
+  - **Estructura**: `telemetry/YYYY/MM/DD/HH/`
+- **AWS Athena**: Motor de consultas SQL serverless que escanea los JSON de S3 de forma masiva sin necesidad de mover los datos.
 
-### 2. Capa de Inteligencia (Nuevo)
-- **Amazon Bedrock**: Plataforma de IA serveless.
-- **Modelo**: **Claude 3 Sonnet** (`anthropic.claude-3-sonnet-20240229-v1:0`).
-- **Funcionalidad**: RAG (Retrieval-Augmented Generation) ligero sobre S3. El bot no "entrena" con los datos, sino que lee, resume e interpreta los datos en tiempo de consulta.
+### 2. Capa de Inteligencia (Generative AI)
+- **Amazon Bedrock**: Utiliza **Claude 3 Sonnet** como motor de razonamiento.
+- **Modos de Operación**:
+  - **Conversacional**: Respuestas rápidas a saludos y preguntas generales (bajo costo).
+  - **Tiempo Real**: Conexión directa a **WebSockets** para ver el estado actual del equipo.
+  - **Histórico (SQL RAG)**: El bot traduce preguntas humanas a **SQL (Presto/Athena)** para extraer datos precisos de S3.
 
 ---
 
-## 🤖 Detalles de Implementación del Bot (Bedrock)
+## 🤖 Detalles de Implementación (Bedrock + Athena)
 
-La migración de Snowflake a una arquitectura 100% AWS Serverless se logró mediante tres componentes clave:
+### A. API Route Orquestadora (`/api/bedrock-chat`)
+- **Clasificador Inteligente**: Detecta si la consulta es una charla informal, una duda sobre manuales o una petición de datos técnicos.
+- **Generación Dinámica de SQL**: Bedrock genera la consulta SQL óptima según la pregunta del usuario.
+- **Inyección de Contexto**: El bot recibe los resultados de la DB y los traduce a una explicación técnica directa y segura.
 
-### A. API Route (`/api/bedrock-chat`)
-- Actúa como orquestador seguro entre el Frontend y AWS.
-- **Clasificador de Intención**: Determina si el usuario pide datos (`"voltaje hoy"`) o información general.
-- **Extracción de Fechas**: Detecta rangos naturales (`"ayer"`, `"30 de diciembre"`) y los convierte a fechas UTC precisas para consultar S3.
+### B. Servicio Athena (`athena-data.ts`)
+- **Esquema 2026**: Adaptado para manejar estructuras JSON complejas y anidadas (donde cada métrica tiene su propio objeto `value` y `timestamp`).
+- **Performance**: Optimizado para escanear particiones por fecha, permitiendo analizar meses de datos en pocos segundos.
 
-### B. Servicio de Datos S3 (`s3-data.ts`)
-- **Búsqueda Optimizada**: Escanea prefijos de S3 a nivel de día (`/2025/12/30/`) para evitar llamadas excesivas.
-- **Resumidor Inteligente**: Lee cientos de archivos JSON y genera un "prompt de contexto" técnico. Calcula:
-  - Mínimos, Máximos y Promedios (Voltaje, Corriente, Potencia).
-  - Detección de fallas en breakers.
-  - Diferenciales térmicos en cilindros.
-
-### C. Cliente Bedrock (`bedrock.ts`)
-- Configurado con credenciales de servidor (`process.env`).
-- Inyecta el resumen de datos al modelo Claude 3 con un rol de "Ingeniero Experto".
-- Maneja la sesión stateless (cada pregunta es una nueva invocación con contexto fresco).
+### C. Tiempo Real (`iot-realtime.ts`)
+- Mantiene un caché en memoria de los últimos mensajes del motor y generador vía WebSockets, permitiendo respuestas instantáneas sobre el "ahora".
 
 ---
 
 ## ⚙️ Configuración del Entorno (`.env`)
 
-Variables críticas configuradas para el funcionamiento:
-
 ```ini
-# Bedrock & IA
+# Bedrock
 AWS_BEDROCK_REGION=us-east-1
 AWS_BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
 
-# S3 Data Lake
+# S3 & Athena
 AWS_S3_IOT_BUCKET=industrial-iot-snowflake-staging-240435918890
-AWS_S3_IOT_PREFIX=telemetry/
+# Athena utiliza el bucket anterior para guardar resultados en /athena-results/
 
-# Credenciales (Server-side only)
+# Credenciales
 AWS_ACCESS_KEY_ID=***
 AWS_SECRET_ACCESS_KEY=***
 ```
 
 ---
 
-## 🚀 Flujo de una Consulta
-
-1. **Usuario pregunta**: *"¿Cuál fue la temperatura máxima del motor ayer?"*
-2. **Next.js**: Calcula la fecha de "ayer".
-3. **S3 Service**: Lista y descarga los JSONs de esa fecha específica.
-4. **Procesamiento**: Calcula `Max(Temp_Cyl_*)` de los registros.
-5. **Prompt a Bedrock**: 
-   > "Analiza estos datos resumidos: Temp Max 600°C. Responde la pregunta del usuario."
-6. **Bedrock**: Genera la respuesta en lenguaje natural explicando el hallazgo.
+## 🚀 Flujo de una Consulta de Datos
+1. **Usuario**: "¿Cuál fue el voltaje máximo ayer?"
+2. **Bedrock (SQL Gen)**: Genera `SELECT MAX(data.generator.voltage_L1_N.value) FROM ... WHERE date >= '2026-01-21'`.
+3. **Athena**: Ejecuta la consulta sobre los miles de archivos en S3.
+4. **Bedrock (Final)**: Recibe el valor (ej: 2405V) y responde: *"El voltaje máximo ayer fue de 2405V...".* ✅

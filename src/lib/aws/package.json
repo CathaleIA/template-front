@@ -1,0 +1,19 @@
+{
+    "name": "industrial-iot-agent-lambda",
+    "version": "1.0.0",
+    "description": "Lambda function for Bedrock Agent - Industrial IoT Data Query",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "package": "npm run build && zip -r lambda-deployment.zip dist/ node_modules/"
+    },
+    "dependencies": {
+        "@aws-sdk/client-athena": "^3.490.0",
+        "@aws-sdk/client-bedrock-runtime": "^3.490.0"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.131",
+        "@types/node": "^20.11.0",
+        "typescript": "^5.3.3"
+    }
+}

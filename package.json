@@ -15,6 +15,7 @@
     "@aws-amplify/ui-react": "^6.8.1",
     "@aws-crypto/sha256-js": "^5.2.0",
     "@aws-sdk/client-athena": "^3.972.0",
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.975.0",
     "@aws-sdk/client-bedrock-runtime": "^3.969.0",
     "@aws-sdk/client-cognito-identity": "^3.918.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.823.0",

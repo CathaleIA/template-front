@@ -57,8 +57,8 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     setIsLoading(true);
 
     try {
-      // Changed endpoint to /api/bedrock-chat for GraficasDatos2
-      const response = await fetch('/api/bedrock-chat', {
+      // Using Bedrock Agent endpoint for advanced reasoning and tool use
+      const response = await fetch('/api/agent-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
@@ -133,7 +133,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
           </div>
           <div>
             <h2 className="font-semibold text-sm">Asistente IA</h2>
-            <p className="text-xs opacity-80">Bedrock + Datos Tiempo Real</p>
+            <p className="text-xs opacity-80">Bedrock Agent + Umbrales</p>
           </div>
         </div>
         <button

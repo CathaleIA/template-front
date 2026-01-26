@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   // Lista de cookies que quieres eliminar (basado en tu middleware)
   const cookiesToDelete = [
     "cognito_access_token",
-    "cognito_id_token", 
+    "cognito_id_token",
     "cognito_expires_at",
     "cognito_refresh_token",
     "userPoolDomain",

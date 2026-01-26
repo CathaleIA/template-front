@@ -1,0 +1,150 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Industrial IoT Data Query API",
+    "version": "1.0.0",
+    "description": "API para consultar datos de IoT industrial, verificar umbrales y analizar tendencias"
+  },
+  "paths": {
+    "/queryData": {
+      "post": {
+        "summary": "Consultar datos de IoT usando lenguaje natural",
+        "description": "Genera y ejecuta una consulta SQL en Athena basada en una pregunta en lenguaje natural. Puede consultar voltajes, corrientes, temperaturas, presiones, frecuencias y otros parámetros industriales.",
+        "operationId": "queryData",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "Pregunta en lenguaje natural sobre los datos de IoT. Ejemplos: '¿Cuál fue el voltaje máximo ayer?', '¿Hubo temperaturas fuera de umbral hoy?', '¿Cuál es el promedio de corriente de la última semana?'"
+                  }
+                },
+                "required": ["question"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultados de la consulta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sql": {
+                      "type": "string",
+                      "description": "Consulta SQL generada"
+                    },
+                    "rowCount": {
+                      "type": "integer",
+                      "description": "Número de filas devueltas"
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "Resultados de la consulta (máximo 50 filas)",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getThresholds": {
+      "get": {
+        "summary": "Obtener umbrales de operación",
+        "description": "Devuelve los umbrales configurados para todas las variables industriales (voltajes, temperaturas, presiones, etc.)",
+        "operationId": "getThresholds",
+        "responses": {
+          "200": {
+            "description": "Umbrales de operación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "thresholds": {
+                      "type": "object",
+                      "description": "Objeto con todos los umbrales organizados por categoría (generator, engine)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checkThreshold": {
+      "post": {
+        "summary": "Verificar si un valor está fuera de umbral",
+        "description": "Compara un valor específico con los umbrales configurados para determinar si está fuera de rango, cerca del límite o en estado normal",
+        "operationId": "checkThreshold",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "variable": {
+                    "type": "string",
+                    "description": "Ruta de la variable en el objeto de umbrales. Ejemplos: 'generator.voltage_L_N', 'engine.cylinders.temp', 'engine.oil_system.pressure'"
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "Valor a verificar"
+                  }
+                },
+                "required": ["variable", "value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado del valor respecto al umbral",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "number",
+                      "description": "Valor verificado"
+                    },
+                    "threshold": {
+                      "type": "object",
+                      "description": "Umbrales aplicables"
+                    },
+                    "isOutOfRange": {
+                      "type": "boolean",
+                      "description": "Si el valor está fuera del rango permitido"
+                    },
+                    "isNearLimit": {
+                      "type": "boolean",
+                      "description": "Si el valor está cerca del límite de advertencia"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Mensaje descriptivo del estado"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

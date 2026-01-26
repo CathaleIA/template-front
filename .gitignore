@@ -41,3 +41,9 @@ next-env.d.ts
 # .amplify
 # amplify_outputs*
 # amplifyconfiguration*
+
+# Lambda deployment artifacts
+src/lib/aws/node_modules/
+src/lib/aws/dist/
+src/lib/aws/lambda-deployment.zip
+src/lib/aws/package-lock.json

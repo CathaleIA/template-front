@@ -3,13 +3,14 @@ import type { Metadata } from "next"
 import { Noto_Sans } from 'next/font/google';
 import { ThemeProvider } from "@/context/theme-provider"
 import { ApolloHook } from '@/hooks/apollo-provider'
+import GlobalChatProvider from '@/components/GlobalChatProvider'
 
 import "@/app/styles/globals.css"
 import { UserProvider } from "@/context/UserContext"
 
-const notoSans = Noto_Sans({ 
-  subsets: ["latin"], 
-  variable: "--font-noto-sans" 
+const notoSans = Noto_Sans({
+  subsets: ["latin"],
+  variable: "--font-noto-sans"
 });
 
 export const metadata: Metadata = {
@@ -31,13 +32,15 @@ export default function RootLayout({
         className={`${notoSans.variable} font-sans`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <UserProvider>
-              <ApolloHook>
+          <UserProvider>
+            <ApolloHook>
+              <GlobalChatProvider>
                 <div className="min-h-screen bg-background">
                   <main>{children}</main>
                 </div>
-              </ApolloHook>
-            </UserProvider>
+              </GlobalChatProvider>
+            </ApolloHook>
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

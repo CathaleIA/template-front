@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     //Construir la URL dinámicamente usando userPoolDomain
     const region = userPoolId.split("_")[0] || "us-east-1"
-    const cognitoTokenEndpoint = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/oauth2/token` 
+    const cognitoTokenEndpoint = `https://${userPoolDomain}.auth.${region}.amazoncognito.com/oauth2/token`
 
     // 🔄 Hacer el intercambio de código por tokens
     const response = await fetch(cognitoTokenEndpoint, {
