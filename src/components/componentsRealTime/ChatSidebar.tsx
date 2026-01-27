@@ -67,7 +67,13 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       const data = await response.json();
 
       if (data.error) {
-        throw new Error(data.error);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.answer || `Error: ${data.error}`,
+          timestamp: new Date()
+        }]);
+        setIsLoading(false);
+        return;
       }
 
       const responseText = typeof data === 'string'
@@ -81,11 +87,11 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         agentType: data.agentType,
         timestamp: new Date()
       }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error querying agent:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Hubo un error al consultar el agente. Por favor intenta de nuevo.',
+        content: 'Hubo un error técnico al conectar con el servidor. Por favor intenta de nuevo.',
         timestamp: new Date()
       }]);
     } finally {

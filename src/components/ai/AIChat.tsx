@@ -57,7 +57,15 @@ export default function AIChat() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get response');
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: errorData.answer || errorData.error || 'error al procesar mensaje',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        setIsLoading(false);
+        return;
       }
 
       const data = await response.json();
@@ -65,19 +73,19 @@ export default function AIChat() {
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: data.response,
+        content: data.answer || data.response || 'No se recibió respuesta.',
         hasManualContext: data.hasManualContext,
         sources: data.sources,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: '❌ Error al procesar tu mensaje. Por favor, intenta de nuevo.',
+        content: 'Error técnico de conexión. Por favor, intenta de nuevo.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -147,11 +155,10 @@ export default function AIChat() {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md ${
-                msg.role === 'user'
-                  ? 'bg-[var(--green-dark)] text-white'
-                  : 'bg-white text-gray-900 border border-gray-200'
-              }`}
+              className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md ${msg.role === 'user'
+                ? 'bg-[var(--green-dark)] text-white'
+                : 'bg-white text-gray-900 border border-gray-200'
+                }`}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
 
