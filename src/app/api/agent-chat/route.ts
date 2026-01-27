@@ -81,7 +81,11 @@ export async function GET() {
             region: process.env.BEDROCK_REGION || 'not set',
             hasAccessKey: !!(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_ACCESS_KEY_ID.trim() !== ''),
             hasSecretKey: !!(process.env.NEXT_AWS_SECRET_ACCESS_KEY && process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim() !== ''),
-            nodeEnv: process.env.NODE_ENV
+            nodeEnv: process.env.NODE_ENV,
+            // Información del entorno de ejecución
+            executionEnv: process.env.AWS_EXECUTION_ENV || 'local/unknown',
+            hasAwsSessionToken: !!process.env.AWS_SESSION_TOKEN,
+            roleName: process.env.AWS_ROLE_NAME || 'not explicitly set'
         },
         features: [
             'Natural language data queries',
