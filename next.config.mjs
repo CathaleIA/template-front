@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    BEDROCK_REGION: process.env.BEDROCK_REGION,
+    BEDROCK_AGENT_ID: process.env.BEDROCK_AGENT_ID,
+    BEDROCK_AGENT_ALIAS_ID: process.env.BEDROCK_AGENT_ALIAS_ID,
+    S3_IOT_BUCKET: process.env.S3_IOT_BUCKET,
+    REGION: process.env.REGION,
+  },
   webpack(config, { isServer }) {
     // Encontrar la regla existente para archivos
     const fileLoaderRule = config.module.rules.find((rule) =>

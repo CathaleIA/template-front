@@ -75,7 +75,13 @@ export async function GET() {
         status: 'ok',
         message: 'Bedrock Agent Chat API is ready',
         backend: 'AWS Bedrock Agent',
-        agentId: process.env.BEDROCK_AGENT_ID || 'not configured',
+        config: {
+            agentId: process.env.BEDROCK_AGENT_ID ? `${process.env.BEDROCK_AGENT_ID.substring(0, 4)}...` : 'not configured',
+            region: process.env.BEDROCK_REGION || 'not set',
+            hasAccessKey: !!process.env.NEXT_AWS_ACCESS_KEY_ID,
+            hasSecretKey: !!process.env.NEXT_AWS_SECRET_ACCESS_KEY,
+            nodeEnv: process.env.NODE_ENV
+        },
         features: [
             'Natural language data queries',
             'Threshold monitoring',
