@@ -79,8 +79,8 @@ export async function GET() {
         config: {
             agentId: process.env.BEDROCK_AGENT_ID ? `${process.env.BEDROCK_AGENT_ID.substring(0, 4)}...` : 'not configured',
             region: process.env.BEDROCK_REGION || 'not set',
-            hasAccessKey: !!process.env.NEXT_AWS_ACCESS_KEY_ID,
-            hasSecretKey: !!process.env.NEXT_AWS_SECRET_ACCESS_KEY,
+            hasAccessKey: !!(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_ACCESS_KEY_ID.trim() !== ''),
+            hasSecretKey: !!(process.env.NEXT_AWS_SECRET_ACCESS_KEY && process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim() !== ''),
             nodeEnv: process.env.NODE_ENV
         },
         features: [

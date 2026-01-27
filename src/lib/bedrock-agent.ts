@@ -2,10 +2,12 @@ import { BedrockAgentRuntimeClient, InvokeAgentCommand } from '@aws-sdk/client-b
 
 const client = new BedrockAgentRuntimeClient({
     region: process.env.BEDROCK_REGION || process.env.REGION || 'us-east-1',
-    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_SECRET_ACCESS_KEY ? {
+    // Solo usar credenciales si existen y no son strings vacíos
+    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_ACCESS_KEY_ID.trim() !== '' &&
+        process.env.NEXT_AWS_SECRET_ACCESS_KEY && process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim() !== '' ? {
         credentials: {
-            accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY,
+            accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID.trim(),
+            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim(),
         }
     } : {}),
 });
