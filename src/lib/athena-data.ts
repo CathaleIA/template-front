@@ -6,13 +6,13 @@ import {
     QueryExecutionState
 } from "@aws-sdk/client-athena";
 
-const region = process.env.AWS_BEDROCK_REGION || 'us-east-1';
-const bucket = process.env.AWS_S3_IOT_BUCKET!;
+const region = process.env.BEDROCK_REGION || process.env.REGION || 'us-east-1';
+const bucket = process.env.S3_IOT_BUCKET!;
 const athenaClient = new AthenaClient({
     region,
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+        accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY!
     }
 });
 

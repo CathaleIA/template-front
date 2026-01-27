@@ -23,7 +23,7 @@ export async function invokeBedrock(
   messages: BedrockMessage[],
   systemPrompt?: string
 ): Promise<string> {
-  const modelId = process.env.AWS_BEDROCK_MODEL_ID ||
+  const modelId = process.env.BEDROCK_MODEL_ID ||
     'anthropic.claude-3-haiku-20240307-v1:0';
 
   // Validar que los mensajes no estén vacíos
