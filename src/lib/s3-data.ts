@@ -126,7 +126,7 @@ export async function getHistoricalData(
     endDate: Date,
     dataType?: 'generator' | 'motor'
 ): Promise<IoTData[]> {
-    const bucket = process.env.AWS_S3_IOT_BUCKET!;
+    const bucket = process.env.S3_IOT_BUCKET!;
     const prefixes = buildS3Prefixes(startDate, endDate);
 
     const allData: IoTData[] = [];

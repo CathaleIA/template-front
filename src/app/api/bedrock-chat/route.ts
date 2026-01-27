@@ -344,7 +344,7 @@ export async function GET() {
         message: 'Bedrock Chat API is ready',
         agents: ['data'],
         backend: 'AWS Bedrock + S3',
-        model: process.env.AWS_BEDROCK_MODEL_ID || 'claude-3-sonnet',
-        s3_bucket: process.env.AWS_S3_IOT_BUCKET || 'not configured',
+        model: process.env.BEDROCK_MODEL_ID || 'claude-3-sonnet',
+        s3_bucket: process.env.S3_IOT_BUCKET || 'not configured',
     });
 }
