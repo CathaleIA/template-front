@@ -62,8 +62,9 @@ export async function POST(request: Request) {
         return NextResponse.json(
             {
                 error: 'Failed to process query',
-                details: error.message,
-                answer: 'Lo siento, hubo un error al procesar tu consulta. Por favor, intenta de nuevo.'
+                message: error.message,
+                details: error.name || 'UnknownError',
+                answer: `Error técnico: ${error.message}. Por favor, verifica los permisos de IAM o la configuración del agente.`
             },
             { status: 500 }
         );
