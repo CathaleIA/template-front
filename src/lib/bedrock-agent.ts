@@ -2,10 +2,12 @@ import { BedrockAgentRuntimeClient, InvokeAgentCommand } from '@aws-sdk/client-b
 
 const client = new BedrockAgentRuntimeClient({
     region: process.env.BEDROCK_REGION || process.env.REGION || 'us-east-1',
-    credentials: {
-        accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY || '',
-    },
+    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_SECRET_ACCESS_KEY ? {
+        credentials: {
+            accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY,
+        }
+    } : {}),
 });
 
 export interface AgentResponse {

@@ -10,10 +10,12 @@ const region = process.env.BEDROCK_REGION || process.env.REGION || 'us-east-1';
 const bucket = process.env.S3_IOT_BUCKET!;
 const athenaClient = new AthenaClient({
     region,
-    credentials: {
-        accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY!
-    }
+    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_SECRET_ACCESS_KEY ? {
+        credentials: {
+            accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY
+        }
+    } : {})
 });
 
 const DATABASE = 'iot_telemetry_db'; // Nombre de tu base de datos en Athena
