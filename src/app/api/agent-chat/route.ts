@@ -72,6 +72,17 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+    // Diagnóstico de variables de entorno AWS
+    const awsEnvVars = Object.keys(process.env)
+        .filter(key => key.startsWith('AWS_') || key.startsWith('AMPLIFY_'))
+        .reduce((acc, key) => {
+            // Ocultar valores sensibles, mostrar solo primeros/últimos caracteres o longitud
+            const val = process.env[key] || '';
+            const isSensitive = key.includes('SECRET') || key.includes('TOKEN') || key.includes('KEY');
+            acc[key] = isSensitive ? `${val.substring(0, 4)}... (len=${val.length})` : val;
+            return acc;
+        }, {} as Record<string, string>);
+
     return NextResponse.json({
         status: 'ok',
         message: 'Bedrock Agent Chat API is ready',
@@ -84,8 +95,7 @@ export async function GET() {
             nodeEnv: process.env.NODE_ENV,
             // Información del entorno de ejecución
             executionEnv: process.env.AWS_EXECUTION_ENV || 'local/unknown',
-            hasAwsSessionToken: !!process.env.AWS_SESSION_TOKEN,
-            roleName: process.env.AWS_ROLE_NAME || 'not explicitly set'
+            awsEnvVars: awsEnvVars // Lista las variables AWS detectadas
         },
         features: [
             'Natural language data queries',
