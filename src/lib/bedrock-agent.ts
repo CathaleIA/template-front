@@ -1,17 +1,15 @@
 import { BedrockAgentRuntimeClient, InvokeAgentCommand } from '@aws-sdk/client-bedrock-agent-runtime';
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 const client = new BedrockAgentRuntimeClient({
     region: process.env.BEDROCK_REGION || process.env.REGION || 'us-east-1',
-    // Si hay keys explicitas, úsalas. Si no, usa la cadena de proveedores de Node (IAM, etc)
-    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_ACCESS_KEY_ID.trim() !== '' ? {
+    // Solo usar credenciales si existen y no son strings vacíos
+    ...(process.env.NEXT_AWS_ACCESS_KEY_ID && process.env.NEXT_AWS_ACCESS_KEY_ID.trim() !== '' &&
+        process.env.NEXT_AWS_SECRET_ACCESS_KEY && process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim() !== '' ? {
         credentials: {
             accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID.trim(),
-            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY?.trim() || '',
+            secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY.trim(),
         }
-    } : {
-        credentials: fromNodeProviderChain()
-    }),
+    } : {}),
 });
 
 export interface AgentResponse {
