@@ -6,6 +6,9 @@ const nextConfig = {
     BEDROCK_AGENT_ALIAS_ID: process.env.BEDROCK_AGENT_ALIAS_ID,
     S3_IOT_BUCKET: process.env.S3_IOT_BUCKET,
     REGION: process.env.REGION,
+    // Injectar credenciales explícitamente al build de Next.js
+    NEXT_AWS_ACCESS_KEY_ID: process.env.NEXT_AWS_ACCESS_KEY_ID,
+    NEXT_AWS_SECRET_ACCESS_KEY: process.env.NEXT_AWS_SECRET_ACCESS_KEY,
   },
   webpack(config, { isServer }) {
     // Encontrar la regla existente para archivos
