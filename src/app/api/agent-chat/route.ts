@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
  * Este endpoint reemplaza la lógica manual de route.ts con el Bedrock Agent,
  * que tiene acceso a Action Groups (Lambda) para consultar datos y verificar umbrales.
  */
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
