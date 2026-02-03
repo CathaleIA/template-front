@@ -57,7 +57,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     setIsLoading(true);
 
     try {
-      // Using Bedrock Agent endpoint for advanced reasoning and tool use
+      // Paso 1: Iniciar el job
       const response = await fetch('/api/agent-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,17 +76,78 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         return;
       }
 
-      const responseText = typeof data === 'string'
-        ? data
-        : (data.answer || data.response || 'Lo siento, no pude encontrar una respuesta.');
+      // Si no devuelve jobId, es una respuesta directa (backward compatibility)
+      if (!data.jobId) {
+        const responseText = typeof data === 'string'
+          ? data
+          : (data.answer || data.response || 'Lo siento, no pude encontrar una respuesta.');
 
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: responseText,
-        sources: data.sources,
-        agentType: data.agentType,
-        timestamp: new Date()
-      }]);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: responseText,
+          sources: data.sources,
+          agentType: data.agentType,
+          timestamp: new Date()
+        }]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Paso 2: Polling - consultar estado cada 2 segundos
+      const jobId = data.jobId;
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`/api/agent-chat?jobId=${jobId}`);
+          const jobData = await statusResponse.json();
+
+          if (jobData.status === 'completed') {
+            clearInterval(pollInterval);
+            setIsLoading(false);
+
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: jobData.result?.answer || 'Respuesta recibida.',
+              sources: jobData.result?.sources,
+              agentType: jobData.result?.agentType,
+              timestamp: new Date()
+            }]);
+          } else if (jobData.status === 'error') {
+            clearInterval(pollInterval);
+            setIsLoading(false);
+
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: jobData.result?.answer || 'Hubo un error al procesar tu consulta.',
+              timestamp: new Date()
+            }]);
+          }
+          // Si status es 'pending' o 'processing', continuar esperando
+        } catch (pollError) {
+          console.error('Error polling job status:', pollError);
+          clearInterval(pollInterval);
+          setIsLoading(false);
+
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: 'Error al verificar el estado de la consulta. Por favor intenta de nuevo.',
+            timestamp: new Date()
+          }]);
+        }
+      }, 2000); // Poll cada 2 segundos
+
+      // Timeout de seguridad (2 minutos)
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (isLoading) {
+          setIsLoading(false);
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: 'La consulta tardó demasiado. Por favor intenta de nuevo.',
+            timestamp: new Date()
+          }]);
+        }
+      }, 120000);
+
     } catch (error: any) {
       console.error('Error querying agent:', error);
       setMessages(prev => [...prev, {
@@ -94,7 +155,6 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         content: 'Hubo un error técnico al conectar con el servidor. Por favor intenta de nuevo.',
         timestamp: new Date()
       }]);
-    } finally {
       setIsLoading(false);
     }
   };
