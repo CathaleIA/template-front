@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { invokeAgent, generateSessionId } from '@/lib/bedrock-agent';
 
+// Configuración para extender el timeout en Amplify/Vercel
+export const maxDuration = 60; // segundos
+export const dynamic = 'force-dynamic';
+
 /**
  * API Route para el nuevo Bedrock Agent
  * Ruta: /api/agent-chat
