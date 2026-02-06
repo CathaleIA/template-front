@@ -13,10 +13,12 @@
 import { Handler } from 'aws-lambda';
 import { AthenaClient, StartQueryExecutionCommand, GetQueryExecutionCommand, GetQueryResultsCommand } from '@aws-sdk/client-athena';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { IoTDataPlaneClient, GetThingShadowCommand } from '@aws-sdk/client-iot-data-plane';
 
 // Configuración de clientes AWS
 const athenaClient = new AthenaClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_BEDROCK_REGION || 'us-east-1' });
+const iotDataClient = new IoTDataPlaneClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 // Umbrales (deberían coincidir con src/config/thresholds.ts)
 const THRESHOLDS = {
@@ -276,6 +278,40 @@ export const handler: Handler = async (event: any) => {
                 rowCount: results.length,
                 data: results.slice(0, 50)
             });
+        }
+
+        // Acción: Obtener estado en tiempo real (Simulado via Athena/S3)
+        if (apiPath === '/getRealTimeStatus') {
+            console.log(`Action: getRealTimeStatus (via Athena)`);
+
+            try {
+                // Consulta para obtener el ÚLTIMO registro insertado en S3
+                // Usamos LIMIT 1 ordenado por timestamp descendente
+                const sql = "SELECT * FROM iot_telemetry_db.iot_data ORDER BY timestamp DESC LIMIT 1";
+                console.log('Executing RealTime Athena Query:', sql);
+
+                const results = await executeAthenaQuery(sql);
+
+                if (results.length === 0) {
+                    return createSuccessResponse(event, {
+                        message: "No se encontraron datos recientes en el histórico."
+                    });
+                }
+
+                // Tomamos el primer (y único) registro
+                const latestRecord = results[0];
+
+                return createSuccessResponse(event, {
+                    thingName: params.thingName || 'qnap-gateway-001',
+                    timestamp: latestRecord.timestamp || new Date().toISOString(),
+                    state: latestRecord, // Devolvemos todo el registro plano como el estado
+                    source: 'Athena/S3 (Historical Data)'
+                });
+
+            } catch (athenaError: any) {
+                console.error('Error fetching RealTime status via Athena:', athenaError);
+                return createErrorResponse(event, 500, `Failed to fetch latest status from S3: ${athenaError.message}`);
+            }
         }
 
         // Acción: Obtener umbrales

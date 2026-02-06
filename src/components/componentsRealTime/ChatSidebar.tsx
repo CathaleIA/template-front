@@ -20,7 +20,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: any[];
-  agentType?: 'manuals' | 'data';
   timestamp: Date;
 }
 
@@ -86,7 +85,6 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
           role: 'assistant',
           content: responseText,
           sources: data.sources,
-          agentType: data.agentType,
           timestamp: new Date()
         }]);
         setIsLoading(false);
@@ -108,7 +106,6 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
               role: 'assistant',
               content: jobData.result?.answer || 'Respuesta recibida.',
               sources: jobData.result?.sources,
-              agentType: jobData.result?.agentType,
               timestamp: new Date()
             }]);
           } else if (jobData.status === 'error') {
@@ -199,7 +196,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
           </div>
           <div>
             <h2 className="font-semibold text-sm">Asistente IA</h2>
-            <p className="text-xs opacity-80">Bedrock Agent + Umbrales</p>
+            <p className="text-xs opacity-80">Bedrock Agent + Tiempo Real</p>
           </div>
         </div>
         <button
@@ -249,23 +246,6 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
                 ? 'bg-[var(--green-dark)] text-white'
                 : 'bg-white text-slate-800 border border-slate-200 shadow-sm'
                 }`}>
-                {/* Agent Type Badge */}
-                {msg.role === 'assistant' && msg.agentType && (
-                  <div className="mb-2 flex items-center gap-1">
-                    {msg.agentType === 'data' ? (
-                      <>
-                        <BarChart3 className="w-3 h-3 text-green-600" />
-                        <span className="text-xs font-medium text-green-600">Datos</span>
-                      </>
-                    ) : (
-                      <>
-                        <BookOpen className="w-3 h-3 text-blue-600" />
-                        <span className="text-xs font-medium text-blue-600">Manuales</span>
-                      </>
-                    )}
-                  </div>
-                )}
-
                 <div
                   className="text-sm leading-relaxed prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
@@ -284,7 +264,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
                     <div className="space-y-1">
                       {msg.sources.map((source: any, i: number) => (
                         <div key={i} className="text-[10px] bg-slate-100 p-1 rounded text-slate-600">
-                          {source.source || source.doc}
+                          {source.source || source.doc || source.text || 'Documento técnico'}
                         </div>
                       ))}
                     </div>
@@ -309,7 +289,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             </div>
             <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-2 shadow-sm">
               <Loader2 className="w-4 h-4 text-[var(--green-dark)] animate-spin" />
-              <span className="text-sm text-slate-500">Pensando...</span>
+              <span className="text-sm text-slate-500">Procesando...</span>
             </div>
           </div>
         )}

@@ -59,6 +59,44 @@
         }
       }
     },
+    "/getRealTimeStatus": {
+      "get": {
+        "summary": "Obtener el estado actual (real-time) de un equipo industrial",
+        "description": "Consulta el Shadow de AWS IoT Core para obtener los valores más recientes reportados por el equipo. Úsalo cuando el usuario pregunte '¿qué está pasando ahora?', 'dame el estado actual' o pregunte por valores en tiempo real.",
+        "operationId": "getRealTimeStatus",
+        "parameters": [
+          {
+            "name": "thingName",
+            "in": "query",
+            "description": "El nombre del equipo (Thing Name) en AWS IoT. Si no se especifica, se usará el predeterminado.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado actual del equipo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "thingName": { "type": "string" },
+                    "timestamp": { "type": "string" },
+                    "state": {
+                      "type": "object",
+                      "description": "Valores reportados por el equipo (voltaje, corriente, temperatura, etc.)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/getThresholds": {
       "get": {
         "summary": "Obtener umbrales de operación",
