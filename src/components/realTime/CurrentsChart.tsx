@@ -62,8 +62,8 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
         <button
           type="button"
           onClick={onToggleBand}
-    title={bandActive ? "Hide band" : "Show band"}
-    aria-label={bandActive ? "Hide band" : "Show band"}
+          title={bandActive ? "Hide band" : "Show band"}
+          aria-label={bandActive ? "Hide band" : "Show band"}
           aria-pressed={bandActive}
           className="inline-flex items-center justify-center select-none rounded-[4px] h-[26px] px-2 text-[12px] font-medium transition-colors border outline-none focus-visible:ring-2 focus-visible:ring-offset-0"
           style={{
@@ -83,10 +83,10 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
 function ExpandButton({ onOpen }: { onOpen: () => void }) {
   return (
     <button
-  type="button"
-  onClick={onOpen}
-  title="Expand"
-  aria-label="Expand"
+      type="button"
+      onClick={onOpen}
+      title="Expand"
+      aria-label="Expand"
       className="flex items-center justify-center rounded-md border border-gray-300 bg-white/70 w-[34px] h-[34px] text-gray-700 hover:bg-white hover:shadow-sm transition"
       style={{ pointerEvents: "auto" }}
     >
@@ -180,8 +180,8 @@ export default function CurrentsChart({
     return [yMin - pad, yMax + pad];
   }, [yMin, yMax]);
 
-  // --- Ventanas (por defecto 1m) ---
-  const [followSec, setFollowSec] = useState<number | null>(60); // 1m inicial
+  // --- Ventanas (por defecto muestra Todo el historial) ---
+  const [followSec, setFollowSec] = useState<number | null>(null); // Mostrar todo por defecto
   const xRangeFollow: [Date, Date] | undefined = useMemo(() => {
     if (followSec == null || xDates.length === 0) return undefined;
     const maxDate = xDates[xDates.length - 1];
@@ -516,9 +516,8 @@ export default function CurrentsChart({
   // --- Layout base (normal) ---
   const baseLayout: Partial<Layout> = useMemo(() => {
     return {
-      uirevision: `currents_v7_${yMin}_${yMax}_fs${followSec ?? "auto"}_${
-        forcedY ? "forced" : initialClamp ? "init" : "dyn"
-      }_${forceNonce}`,
+      uirevision: `currents_v7_${yMin}_${yMax}_fs${followSec ?? "auto"}_${forcedY ? "forced" : initialClamp ? "init" : "dyn"
+        }_${forceNonce}`,
       margin: { l: 60, r: 70, t: 40, b: 10 },
       autosize: true,
       paper_bgcolor: colors.paper,
@@ -861,7 +860,7 @@ export default function CurrentsChart({
               Corrientes (Tiempo Real) — Vista ampliada
             </div>
             <div className="flex items-center gap-2">
-                <button
+              <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
                 className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] leading-none border border-white/10 bg-transparent hover:border-white/25 hover:bg-white/5 transition-colors text-gray-100"
@@ -932,10 +931,10 @@ export default function CurrentsChart({
                       ev &&
                       (("yaxis.autorange" in ev &&
                         (ev as Record<string, unknown>)["yaxis.autorange"] ===
-                          true) ||
+                        true) ||
                         ("autorange" in ev &&
                           (ev as Record<string, unknown>)["autorange"] ===
-                            true))
+                          true))
                     ) {
                       const xr = getCurrentXRangeMs(fsGraphRef.current);
                       if (xr) {
@@ -1097,7 +1096,7 @@ export default function CurrentsChart({
                 ev &&
                 (("yaxis.autorange" in ev &&
                   (ev as Record<string, unknown>)["yaxis.autorange"] ===
-                    true) ||
+                  true) ||
                   ("autorange" in ev &&
                     (ev as Record<string, unknown>)["autorange"] === true))
               ) {
