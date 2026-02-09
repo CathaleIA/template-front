@@ -39,7 +39,7 @@ export default function DesbalanceCorrienteIndicator({
   const statusLabel = getStatusLabel(value);
 
   return (
-    <div className="w-full p-4 rounded-xl bg-[var(--third-paper)] flex flex-col gap-3">
+    <div className="w-full p-4 rounded-xl bg-slate-50 flex flex-col gap-3">
       {/* Valor y estado */}
       <div className="flex items-end justify-between">
         <div className="flex flex-col">
