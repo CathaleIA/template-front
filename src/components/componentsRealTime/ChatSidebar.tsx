@@ -187,7 +187,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   }
 
   return (
-    <aside className="fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-[9999]">
+    <aside className="fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-white flex flex-col shadow-2xl z-[9999]">
       {/* Header */}
       <div className="bg-[var(--green-dark)] text-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
