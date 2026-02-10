@@ -202,7 +202,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
       {/* Lado izquierdo: Gauge triple radial */}
       <div className="flex-1 flex flex-col items-center justify-center">
         {/* Leyenda compacta de colores arriba del medidor */}
-        <div className="flex items-center justify-center gap-3 mb-2 text-[10px] text-slate-600">
+        <div className="flex items-center justify-center gap-3 mb-2 text-[10px] text-muted-foreground">
           <div className="flex items-center gap-1">
             <span
               className="w-2 h-2 rounded-full"
@@ -228,24 +228,27 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
 
         <div className="relative w-48 h-32 md:w-60 md:h-40">
           <svg viewBox="0 0 200 120" className="w-full h-full">
-            {/* Pistas de fondo gris para cada anillo */}
+            {/* Pistas de fondo para cada anillo */}
             <path
               d={createArcPath(cx, cy, outerRadius, startAngle, endAngleFull)}
-              stroke="#e5e7eb"
+              stroke="currentColor"
+              className="text-gray-200 dark:text-gray-800"
               strokeWidth={7}
               fill="none"
               strokeLinecap="round"
             />
             <path
               d={createArcPath(cx, cy, middleRadius, startAngle, endAngleFull)}
-              stroke="#e5e7eb"
+              stroke="currentColor"
+              className="text-gray-200 dark:text-gray-800"
               strokeWidth={7}
               fill="none"
               strokeLinecap="round"
             />
             <path
               d={createArcPath(cx, cy, innerRadius, startAngle, endAngleFull)}
-              stroke="#e5e7eb"
+              stroke="currentColor"
+              className="text-gray-200 dark:text-gray-800"
               strokeWidth={7}
               fill="none"
               strokeLinecap="round"
@@ -396,7 +399,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
               x={cx}
               y={cy - 4}
               textAnchor="middle"
-              className="fill-slate-500"
+              className="fill-muted-foreground"
               style={{
                 fontSize: 9,
                 letterSpacing: "0.2em",
@@ -411,7 +414,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
               x={pLabelPoint.x}
               y={pLabelPoint.y + 4}
               textAnchor="middle"
-              className="fill-slate-500"
+              className="fill-muted-foreground"
               style={{ fontSize: 9, fontWeight: 600 }}
             >
               P
@@ -420,7 +423,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
               x={nLabelPoint.x}
               y={nLabelPoint.y + 4}
               textAnchor="middle"
-              className="fill-slate-500"
+              className="fill-muted-foreground"
               style={{ fontSize: 9, fontWeight: 600 }}
             >
               N
@@ -429,7 +432,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
               x={zLabelPoint.x}
               y={zLabelPoint.y + 4}
               textAnchor="middle"
-              className="fill-slate-500"
+              className="fill-muted-foreground"
               style={{ fontSize: 9, fontWeight: 600 }}
             >
               Z
@@ -442,16 +445,16 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
       <div className="flex-1 flex flex-col justify-center gap-4 px-2 md:px-4">
         {/* Positive */}
         <div className="space-y-1">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-slate-600">
+          <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             Positive sequence
           </div>
           <div className="flex items-baseline gap-2">
-            <div className="text-3xl md:text-4xl font-bold text-slate-900 tabular-nums">
+            <div className="text-3xl md:text-4xl font-bold text-foreground tabular-nums">
               {rawPositiva !== null && rawPositiva !== undefined
                 ? rawPositiva.toFixed(1)
                 : "--"}
             </div>
-            <span className="text-lg md:text-xl font-semibold text-slate-700">
+            <span className="text-lg md:text-xl font-semibold text-muted-foreground/80">
               %
             </span>
             <div className="ml-auto">
@@ -461,15 +464,15 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
         </div>
 
         {/* Negative & Zero en fila compacta */}
-        <div className="grid grid-cols-2 gap-3 text-xs md:text-sm text-slate-700">
+        <div className="grid grid-cols-2 gap-3 text-xs md:text-sm text-foreground">
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-slate-600">
+              <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-muted-foreground">
                 Negative
               </span>
               <StatusChip color={negativeColor} label={negativeStatus} />
             </div>
-            <div className="text-base md:text-lg font-semibold text-slate-900 tabular-nums">
+            <div className="text-base md:text-lg font-semibold text-foreground tabular-nums">
               {rawNegativa !== null && rawNegativa !== undefined
                 ? rawNegativa.toFixed(2)
                 : "--"}{" "}
@@ -479,12 +482,12 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
 
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-slate-600">
+              <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-muted-foreground">
                 Zero
               </span>
               <StatusChip color={zeroColor} label={zeroStatus} />
             </div>
-            <div className="text-base md:text-lg font-semibold text-slate-900 tabular-nums">
+            <div className="text-base md:text-lg font-semibold text-foreground tabular-nums">
               {rawZero !== null && rawZero !== undefined
                 ? rawZero.toFixed(2)
                 : "--"}{" "}
@@ -494,7 +497,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
         </div>
 
         {/* referencia corta */}
-        <div className="text-[10px] text-slate-500 mt-1">
+        <div className="text-[10px] text-muted-foreground mt-1">
           Ref: Pos ≥ 95% · Neg ≤ {NEG_WARNING}% · Zero ≤ {ZERO_WARNING}%.
         </div>
       </div>

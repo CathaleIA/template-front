@@ -27,12 +27,12 @@ type StepState = "inactive" | "active" | "blocked";
 
 function getStepClasses(state: StepState): string {
   if (state === "blocked") {
-    return "bg-red-500 border-red-600 text-white";
+    return "bg-red-500 border-red-600 dark:border-red-400 text-white";
   }
   if (state === "active") {
-    return "bg-[var(--green-dark)] border-[var(--green-dark)] text-white";
+    return "bg-[var(--green-dark)] border-[var(--green-dark)] text-white dark:bg-[var(--green-medium)] dark:border-[var(--green-medium)]";
   }
-  return "bg-gray-100 border-gray-300 text-gray-500";
+  return "bg-muted border-border text-muted-foreground";
 }
 
 const BreakerOperationFlowPanel: React.FC<Props> = ({
@@ -59,93 +59,92 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
   const stepReadyToClose: StepState = fault
     ? "blocked"
     : readyToClose
-    ? "active"
-    : "inactive";
+      ? "active"
+      : "inactive";
 
   const stepSync: StepState = fault
     ? "blocked"
     : syncInProgress
-    ? "active"
-    : "inactive";
+      ? "active"
+      : "inactive";
 
   const stepClosed: StepState = fault
     ? "blocked"
     : closed
-    ? "active"
-    : "inactive";
+      ? "active"
+      : "inactive";
 
   const stepReadyToOpen: StepState = fault
     ? "blocked"
     : readyToOpen
-    ? "active"
-    : "inactive";
+      ? "active"
+      : "inactive";
 
   // --- Estado textual abierto/cerrado ---
   const stateLabel = fault
     ? "FAULT"
     : closed
-    ? "CLOSED"
-    : opened
-    ? "OPENED"
-    : "INTERMEDIATE";
+      ? "CLOSED"
+      : opened
+        ? "OPENED"
+        : "INTERMEDIATE";
 
   const stateColorClass = fault
     ? "bg-red-600 text-white"
     : closed
-    ? "bg-[var(--green-dark)] text-white"
-    : opened
-    ? "bg-gray-100 text-gray-800"
-    : "bg-amber-400 text-black";
+      ? "bg-[var(--green-dark)] text-white dark:bg-[var(--green-medium)]"
+      : opened
+        ? "bg-muted text-foreground"
+        : "bg-amber-400 text-black";
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 text-xs text-gray-700">
+    <div className="flex h-full w-full flex-col gap-3 text-xs text-foreground">
       {/* Resumen superior: frecuencias + estado general */}
       <div className="grid grid-cols-12 gap-2">
         {/* GEN / BUS / Δf */}
         <div className="col-span-7 grid grid-cols-3 gap-2">
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+          <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <Zap className="h-3 w-3" />
               <span>GEN FREQ</span>
             </div>
-            <div className="mt-1 text-sm font-semibold text-gray-900">
+            <div className="mt-1 text-sm font-semibold text-foreground">
               {genFreq !== null ? `${genFreq.toFixed(2)} Hz` : "--"}
             </div>
           </div>
 
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+          <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <Zap className="h-3 w-3" />
               <span>BUS FREQ</span>
             </div>
-            <div className="mt-1 text-sm font-semibold text-gray-900">
+            <div className="mt-1 text-sm font-semibold text-foreground">
               {busFreq !== null ? `${busFreq.toFixed(2)} Hz` : "--"}
             </div>
           </div>
 
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+          <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <ArrowRightLeft className="h-3 w-3" />
               <span>ΔF GEN-BUS</span>
             </div>
-            <div className="mt-1 text-sm font-semibold text-gray-900">
+            <div className="mt-1 text-sm font-semibold text-foreground">
               {deltaFreq !== null ? `${deltaFreq.toFixed(2)} Hz` : "--"}
             </div>
           </div>
         </div>
 
         {/* Estado principal del breaker */}
-        <div className="col-span-5 flex flex-col rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5">
-          <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide text-gray-500">
+        <div className="col-span-5 flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+          <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Power className="h-3 w-3" />
               Breaker State
             </span>
             <span className="inline-flex items-center gap-1">
               <CheckCircle2
-                className={`h-3 w-3 ${
-                  voltageOk ? "text-[var(--green-dark)]" : "text-gray-400"
-                }`}
+                className={`h-3 w-3 ${voltageOk ? "text-[var(--green-live)]" : "text-muted-foreground/50"
+                  }`}
               />
               <span className="text-[10px]">
                 {voltageOk ? "V/F OK" : "V/F NOT OK"}
@@ -159,7 +158,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               {stateLabel}
             </span>
             {fault && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-900/20 px-2 py-0.5 text-[11px] font-medium text-red-600 dark:text-red-400">
                 <AlertTriangle className="h-3 w-3" />
                 FAULT ACTIVE
               </span>
@@ -169,8 +168,8 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
       </div>
 
       {/* Línea de pasos de operación */}
-      <div className="mt-1 rounded-xl border border-gray-200 bg-white px-3 py-2">
-        <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+      <div className="mt-1 rounded-xl border border-border bg-card/50 px-3 py-2">
+        <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Operation Sequence
         </div>
         <div className="flex items-center justify-between gap-3">
@@ -183,12 +182,12 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
             >
               <CheckCircle2 className="h-4 w-4" />
             </div>
-            <span className="text-[11px] font-medium text-gray-700">
+            <span className="text-[11px] font-medium text-foreground/80">
               Ready to Close
             </span>
           </div>
 
-          <div className="h-px flex-1 bg-gray-300" />
+          <div className="h-px flex-1 bg-border" />
 
           {/* Paso 2: Sync in Progress */}
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
@@ -199,12 +198,12 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
             >
               <ArrowRightLeft className="h-4 w-4" />
             </div>
-            <span className="text-[11px] font-medium text-gray-700">
+            <span className="text-[11px] font-medium text-foreground/80">
               Sync in Progress
             </span>
           </div>
 
-          <div className="h-px flex-1 bg-gray-300" />
+          <div className="h-px flex-1 bg-border" />
 
           {/* Paso 3: Closed */}
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
@@ -215,12 +214,12 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
             >
               <Power className="h-4 w-4" />
             </div>
-            <span className="text-[11px] font-medium text-gray-700">
+            <span className="text-[11px] font-medium text-foreground/80">
               Closed
             </span>
           </div>
 
-          <div className="h-px flex-1 bg-gray-300" />
+          <div className="h-px flex-1 bg-border" />
 
           {/* Paso 4: Ready to Open */}
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
@@ -231,27 +230,25 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
             >
               <Power className="h-4 w-4 rotate-180" />
             </div>
-            <span className="text-[11px] font-medium text-gray-700">
+            <span className="text-[11px] font-medium text-foreground/80">
               Ready to Open
             </span>
           </div>
         </div>
 
         {/* Indicadores inferiores: OPENED / CLOSED flags brutos */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[11px] text-gray-600">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <span
-              className={`h-2 w-2 rounded-full ${
-                opened ? "bg-[var(--green-dark)]" : "bg-gray-300"
-              }`}
+              className={`h-2 w-2 rounded-full ${opened ? "bg-[var(--green-live)]" : "bg-muted"
+                }`}
             />
             OPENED FLAG
           </span>
           <span className="inline-flex items-center gap-1">
             <span
-              className={`h-2 w-2 rounded-full ${
-                closed ? "bg-[var(--green-dark)]" : "bg-gray-300"
-              }`}
+              className={`h-2 w-2 rounded-full ${closed ? "bg-[var(--green-live)]" : "bg-muted"
+                }`}
             />
             CLOSED FLAG
           </span>

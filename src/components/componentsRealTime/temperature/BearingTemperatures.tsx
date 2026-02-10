@@ -107,7 +107,7 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
   return (
     <div className="flex-1 flex flex-col items-center">
       {/* Título del gauge */}
-      <div className="mb-2 text-[11px] md:text-xs font-semibold tracking-[0.18em] uppercase text-slate-800">
+      <div className="mb-2 text-[11px] md:text-xs font-semibold tracking-[0.18em] uppercase text-foreground">
         {label}
       </div>
 
@@ -117,7 +117,8 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
           {/* Fondo gris del arco */}
           <path
             d={createArcPath(cx, cy, radius, -90, 90)}
-            stroke="#e5e7eb"
+            stroke="currentColor"
+            className="text-muted/30"
             strokeWidth={16}
             fill="none"
             strokeLinecap="round"
@@ -156,20 +157,22 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
             y1={cy}
             x2={needleEnd.x}
             y2={needleEnd.y}
-            stroke="#111827"
+            stroke="currentColor"
+            className="text-foreground"
             strokeWidth={4}
             strokeLinecap="round"
           />
 
           {/* Centro de la aguja */}
-          <circle cx={cx} cy={cy} r={6} fill="#111827" />
+          <circle cx={cx} cy={cy} r={6} fill="currentColor" className="text-foreground" />
 
           {/* Marcas 0 y 90 */}
           <text
             x="32"
             y="112"
             fontSize="10"
-            fill="#374151"
+            fill="currentColor"
+            className="text-muted-foreground"
             textAnchor="middle"
           >
             0
@@ -178,7 +181,8 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
             x="168"
             y="112"
             fontSize="10"
-            fill="#374151"
+            fill="currentColor"
+            className="text-muted-foreground"
             textAnchor="middle"
           >
             90
@@ -188,14 +192,14 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
 
       {/* Valor numérico */}
       <div className="mt-2 text-center">
-        <div className="text-xs uppercase tracking-[0.16em] text-slate-600">
+        <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
           {label}
         </div>
-        <div className="text-2xl md:text-3xl font-bold text-slate-900 tabular-nums">
+        <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">
           {value !== null && value !== undefined
             ? clampTemp(value).toFixed(1)
             : "--"}{" "}
-          <span className="text-base md:text-lg font-semibold text-slate-700">
+          <span className="text-base md:text-lg font-semibold text-muted-foreground">
             °C
           </span>
         </div>
@@ -237,7 +241,7 @@ const BearingTemperatures: React.FC<Props> = ({
       {/* Zona inferior: leyenda + ΔT + estado global */}
       <div className="mt-1 flex flex-col items-center gap-3">
         {/* Leyenda de rangos */}
-        <div className="flex flex-wrap justify-center gap-4 text-[11px] md:text-xs text-slate-700">
+        <div className="flex flex-wrap justify-center gap-4 text-[11px] md:text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <span className="inline-block w-3 h-2 rounded-full bg-[#22c55e]" />
             <span>0–{WARNING_TEMP} °C · Normal</span>
@@ -258,15 +262,15 @@ const BearingTemperatures: React.FC<Props> = ({
 
         {/* Banda de diagnóstico compacta */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] md:text-xs">
-          <div className="flex items-baseline gap-2 text-slate-700">
+          <div className="flex items-baseline gap-2 text-muted-foreground">
             <span className="uppercase tracking-[0.16em]">
               ΔT Front–Rear
             </span>
-            <span className="text-sm md:text-base font-semibold text-slate-900 tabular-nums">
+            <span className="text-sm md:text-base font-semibold text-foreground tabular-nums">
               {deltaT !== null ? deltaT.toFixed(1) : "--"} °C
             </span>
           </div>
-          <div className="flex items-center gap-2 text-slate-700">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <span className="uppercase tracking-[0.16em]">Status</span>
             <span
               className={[

@@ -8,6 +8,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import type { Layout, Data, Shape, PlotlyHTMLElement } from "plotly.js";
@@ -63,8 +64,8 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
         <button
           type="button"
           onClick={onToggleBand}
-    title={bandActive ? "Hide band" : "Show band"}
-    aria-label={bandActive ? "Hide band" : "Show band"}
+          title={bandActive ? "Hide band" : "Show band"}
+          aria-label={bandActive ? "Hide band" : "Show band"}
           aria-pressed={bandActive}
           className="inline-flex items-center justify-center select-none rounded-[4px] h-[26px] px-2 text-[12px] font-medium transition-colors border outline-none focus-visible:ring-2 focus-visible:ring-offset-0"
           style={{
@@ -84,11 +85,11 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
 function ExpandButton({ onOpen }: { onOpen: () => void }) {
   return (
     <button
-  type="button"
-  onClick={onOpen}
-  title="Expand"
-  aria-label="Expand"
-      className="flex items-center justify-center rounded-md border border-gray-300 bg-white/70 w-[34px] h-[34px] text-gray-700 hover:bg-white hover:shadow-sm transition"
+      type="button"
+      onClick={onOpen}
+      title="Expand"
+      aria-label="Expand"
+      className="flex items-center justify-center rounded-md border border-border bg-card/70 w-[34px] h-[34px] text-foreground hover:bg-card hover:shadow-sm transition"
       style={{ pointerEvents: "auto" }}
     >
       {/* Ícono 4 flechas desde el centro */}
@@ -137,22 +138,21 @@ export default function VoltagesChart({
   const [fsHeight, setFsHeight] = useState<number>(720);
   const fsGraphRef = useRef<PlotlyHTMLElement | null>(null);
 
+  const { theme } = useTheme();
+
   // --- Colores (SOLO estilos) ---
   const colors = useMemo(() => {
-    const css =
-      typeof window !== "undefined"
-        ? getComputedStyle(document.documentElement)
-        : null;
+    const isDark = theme === "dark";
     return {
-      paper: css?.getPropertyValue("--color-panel-bg").trim() || "#f8f9fa",
-      plot: "#F5F5F5",
-      text: "#374151",
-      grid: "#e2e8f0",
-      range: "#e5e7eb",
-      rangeActive: "#d1d5db",
-      rangeStroke: "rgba(0,0,0,0.15)",
+      paper: isDark ? "#09090b" : "#ffffff", // --background
+      plot: isDark ? "#09090b" : "#ffffff",  // --card
+      text: isDark ? "#fafafa" : "#09090b",  // --foreground
+      grid: isDark ? "#27272a" : "#e4e4e7",  // --border
+      range: isDark ? "#27272a" : "#f4f4f5", // --muted
+      rangeActive: isDark ? "#3f3f46" : "#e4e4e7", // --accent
+      rangeStroke: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)",
     };
-  }, []);
+  }, [theme]);
 
   // --- Fechas X ---
   const xDates = useMemo(() => {
@@ -500,9 +500,9 @@ export default function VoltagesChart({
       xanchor: "left" as const,
       xshift: 6,
       showarrow: false,
-      font: { size: 11, color: "#374151" },
-      bgcolor: "rgba(0,0,0,0.35)",
-      bordercolor: "#e5e7eb",
+      font: { size: 11, color: colors.text },
+      bgcolor: colors.plot,
+      bordercolor: colors.grid,
       borderwidth: 1,
       borderpad: 3,
     };
@@ -515,9 +515,8 @@ export default function VoltagesChart({
   // --- Layout base (normal) — igual a Currents (leyenda abajo horizontal) ---
   const baseLayout: Partial<Layout> = useMemo(() => {
     return {
-      uirevision: `voltages_v7_${yMin}_${yMax}_fs${followSec ?? "auto"}_${
-        forcedY ? "forced" : initialClamp ? "init" : "dyn"
-      }_${forceNonce}`,
+      uirevision: `voltages_v7_${yMin}_${yMax}_fs${followSec ?? "auto"}_${forcedY ? "forced" : initialClamp ? "init" : "dyn"
+        }_${forceNonce}`,
       margin: { l: 60, r: 70, t: 40, b: 10 },
       autosize: true,
       paper_bgcolor: colors.paper,
@@ -597,8 +596,8 @@ export default function VoltagesChart({
         yanchor: "top",
         traceorder: "normal",
         font: { size: 11, color: colors.text },
-        bgcolor: "rgba(255,255,255,0.85)",
-        bordercolor: "#d1d5db",
+        bgcolor: colors.plot,
+        bordercolor: colors.grid,
         borderwidth: 1,
         itemsizing: "constant",
         itemwidth: 68,
@@ -856,7 +855,7 @@ export default function VoltagesChart({
               Voltajes (Tiempo Real) — Vista ampliada
             </div>
             <div className="flex items-center gap-2">
-                <button
+              <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
                 className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] leading-none border border-white/10 bg-transparent hover:border-white/25 hover:bg-white/5 transition-colors text-gray-100"

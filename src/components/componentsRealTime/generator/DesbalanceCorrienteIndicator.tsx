@@ -39,11 +39,11 @@ export default function DesbalanceCorrienteIndicator({
   const statusLabel = getStatusLabel(value);
 
   return (
-    <div className="w-full p-4 rounded-xl bg-slate-50 flex flex-col gap-3">
+    <div className="w-full p-4 rounded-xl bg-muted/30 flex flex-col gap-3">
       {/* Valor y estado */}
       <div className="flex items-end justify-between">
         <div className="flex flex-col">
-          <span className="text-3xl font-semibold text-gray-900">
+          <span className="text-3xl font-semibold text-foreground">
             {value.toFixed(1)}%
           </span>
         </div>
@@ -57,7 +57,7 @@ export default function DesbalanceCorrienteIndicator({
 
       {/* Barra con banda de alerta */}
       <div className="w-full">
-        <div className="relative w-full h-4 rounded-full overflow-hidden bg-gray-300">
+        <div className="relative w-full h-4 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-700">
           {/* Banda de referencia (verde / ámbar / rojo) */}
           <div className="absolute inset-0 flex">
             {/* 0–5% → verde */}
@@ -76,7 +76,7 @@ export default function DesbalanceCorrienteIndicator({
         </div>
 
         {/* Marcas numéricas debajo */}
-        <div className="mt-1 flex justify-between text-[10px] text-gray-600">
+        <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
           <span>0%</span>
           <span>5%</span>
           <span>10%</span>
@@ -85,7 +85,7 @@ export default function DesbalanceCorrienteIndicator({
       </div>
 
       {/* Leyenda de la banda */}
-      <div className="flex gap-3 text-[11px] text-gray-600 mt-1">
+      <div className="flex gap-3 text-[11px] text-muted-foreground mt-1">
         <div className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
           <span>≤ 5% OK</span>

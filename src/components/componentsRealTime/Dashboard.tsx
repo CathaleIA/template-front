@@ -77,26 +77,27 @@ function Card({
   return (
     <div
       className={[
-        "bg-white rounded-2xl",
-        "border border-[var(--color-panel-border)]",
+        "bg-card rounded-2xl",
+        "border border-border",
         "overflow-hidden",
         "shadow-[8px_8px_20px_rgba(0,0,0,0.18)]",
-        "hover:shadow-[10px_10px_25px_rgba(0,0,0,0.25)] transition-shadow duration-300",
+        "dark:shadow-[8px_8px_20px_rgba(0,0,0,0.4)]",
+        "hover:shadow-[10px_10px_25px_rgba(0,0,0,0.25)] transition-all duration-300",
         "flex flex-col h-full",
         className,
       ].join(" ")}
     >
       <div className="px-0 py-0">
         <div className="relative flex items-stretch h-8 w-full">
-          {/* Banda principal: ocupa ~60% del ancho del card */}
-          <div className="bg-[var(--green-dark)] text-white h-8 flex items-center border-b-4 border-gray-400 w-3/5 min-w-[160px] max-w-full px-3 md:px-4">
+          {/* Banda principal */}
+          <div className="bg-[var(--green-dark)] text-white h-8 flex items-center border-b-4 border-gray-400 dark:border-gray-600 w-3/5 min-w-[160px] max-w-full px-3 md:px-4">
             <h3 className="text-[13px] font-bold uppercase tracking-wider leading-none">
               {title}
             </h3>
           </div>
 
           {/* “Cola” curva a la derecha */}
-          <div className="-ml-px h-8 w-9 bg-[var(--green-dark)] border-b-4 border-r-4 border-gray-400 rounded-br-[9999px]" />
+          <div className="-ml-px h-8 w-9 bg-[var(--green-dark)] border-b-4 border-r-4 border-gray-400 dark:border-gray-600 rounded-br-[9999px]" />
         </div>
       </div>
 
@@ -159,13 +160,13 @@ export default function GPC300Dashboard() {
 
   return (
     <>
-      <div className={`p-4 md:p-6 bg-slate-50 min-h-screen font-sans text-slate-800 transition-all duration-300 ${chatOpen ? 'mr-80' : ''}`}>
+      <div className={`p-4 md:p-6 bg-background min-h-screen font-sans text-foreground transition-all duration-300 ${chatOpen ? 'mr-80' : ''}`}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               GPC-300 Dashboard
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Industrial Generator Monitoring System
             </p>
           </div>
@@ -176,12 +177,12 @@ export default function GPC300Dashboard() {
           />
         </div>
 
-        <div className="flex space-x-1 bg-slate-200 p-1 rounded-lg mb-6 w-fit">
+        <div className="flex space-x-1 bg-muted p-1 rounded-lg mb-6 w-fit">
           <button
             onClick={() => setActiveTab("main")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "main"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-slate-300/20"
               }`}
           >
             Main View
@@ -189,8 +190,8 @@ export default function GPC300Dashboard() {
           <button
             onClick={() => setActiveTab("extras")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "extras"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-slate-300/20"
               }`}
           >
             Detailed Analysis

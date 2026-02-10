@@ -187,7 +187,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   }
 
   return (
-    <aside className="fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-white flex flex-col shadow-2xl z-[9999]">
+    <aside className="fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[9999] border-l border-border transition-colors duration-300">
       {/* Header */}
       <div className="bg-[var(--green-dark)] text-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -209,21 +209,21 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20">
         {messages.length === 0 ? (
           <div className="text-center mt-8">
-            <Sparkles className="w-12 h-12 mx-auto mb-3 text-[var(--green-dark)]" />
-            <p className="text-sm font-semibold text-slate-700 mb-2">¡Hola! Soy tu asistente IA</p>
-            <p className="text-xs text-slate-500 mb-4">
+            <Sparkles className="w-12 h-12 mx-auto mb-3 text-[var(--green-dark)] dark:text-[var(--green-medium)]" />
+            <p className="text-sm font-semibold text-foreground mb-2">¡Hola! Soy tu asistente IA</p>
+            <p className="text-xs text-muted-foreground mb-4">
               Puedo ayudarte con consultas técnicas y análisis de datos usando AWS Bedrock
             </p>
             <div className="space-y-2">
-              <p className="text-xs text-slate-400 mb-2">Preguntas sugeridas:</p>
+              <p className="text-xs text-muted-foreground/60 mb-2">Preguntas sugeridas:</p>
               {exampleQuestions.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => setInput(q)}
-                  className="w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-[var(--green-dark)] hover:bg-green-50 transition-all text-xs text-slate-700"
+                  className="w-full text-left bg-card border border-border rounded-lg p-3 hover:border-[var(--green-dark)] hover:bg-[var(--green-dark)]/5 transition-all text-xs text-foreground"
                 >
                   {q}
                 </button>
@@ -244,10 +244,10 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
 
               <div className={`max-w-[85%] rounded-lg p-3 ${msg.role === 'user'
                 ? 'bg-[var(--green-dark)] text-white'
-                : 'bg-white text-slate-800 border border-slate-200 shadow-sm'
+                : 'bg-card text-foreground border border-border shadow-sm'
                 }`}>
                 <div
-                  className="text-sm leading-relaxed prose prose-sm max-w-none"
+                  className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                 />
 
@@ -255,15 +255,15 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
 
-                {/* Sources Citation adapted for light mode */}
+                {/* Sources Citation adapted for both modes */}
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-slate-100">
+                  <div className="mt-2 pt-2 border-t border-border">
                     <p className="text-[10px] font-semibold opacity-70 mb-1 flex items-center gap-1">
                       <BookOpen className="w-3 h-3" /> Fuentes:
                     </p>
                     <div className="space-y-1">
                       {msg.sources.map((source: any, i: number) => (
-                        <div key={i} className="text-[10px] bg-slate-100 p-1 rounded text-slate-600">
+                        <div key={i} className="text-[10px] bg-muted p-1 rounded text-muted-foreground">
                           {source.source || source.doc || source.text || 'Documento técnico'}
                         </div>
                       ))}
@@ -274,8 +274,8 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
               </div>
 
               {msg.role === 'user' && (
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-slate-600" />
+                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                  <User className="w-4 h-4 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -287,9 +287,9 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             <div className="w-7 h-7 rounded-full bg-[var(--green-dark)] flex items-center justify-center">
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-2 shadow-sm">
+            <div className="bg-card border border-border rounded-lg p-3 flex items-center gap-2 shadow-sm">
               <Loader2 className="w-4 h-4 text-[var(--green-dark)] animate-spin" />
-              <span className="text-sm text-slate-500">Procesando...</span>
+              <span className="text-sm text-muted-foreground">Procesando...</span>
             </div>
           </div>
         )}
@@ -297,7 +297,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-slate-200 bg-white">
+      <div className="p-4 border-t border-border bg-card">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             type="text"
@@ -305,15 +305,15 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Escribe tu pregunta..."
-            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[var(--green-dark)] focus:ring-1 focus:ring-[var(--green-dark)] text-sm text-slate-900 placeholder:text-slate-400"
+            className="flex-1 px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-[var(--green-dark)] focus:ring-1 focus:ring-[var(--green-dark)] text-sm text-foreground placeholder:text-muted-foreground"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
             className={`p-2 rounded-lg transition-colors ${input.trim() && !isLoading
-              ? 'bg-[var(--green-dark)] text-white hover:bg-[var(--green-light)]'
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              ? 'bg-[var(--green-dark)] text-white hover:bg-[var(--green-medium)]'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
           >
             {isLoading ? (
@@ -323,7 +323,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             )}
           </button>
         </form>
-        <p className="text-xs text-slate-400 mt-2 text-center">
+        <p className="text-xs text-muted-foreground/60 mt-2 text-center">
           Presiona Enter para enviar
         </p>
       </div>
