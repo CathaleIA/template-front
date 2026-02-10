@@ -243,19 +243,21 @@ export function useUploadFormLogic() {
     return data.url;
   };
 
+  // Subida directa a S3 usando la presignedUrl
   const uploadToS3 = async (presignedUrl: string, fileToUpload: File) => {
-    const formDataToSend = new FormData();
-    formDataToSend.append("file", fileToUpload);
-    formDataToSend.append("presignedUrl", presignedUrl);
-    
-    const response = await fetch("/api/public/upload", {
+    const response = await fetch(presignedUrl, {
       method: "PUT",
-      body: formDataToSend,
+      headers: {
+        "Content-Type": "application/zip",
+      },
+      body: fileToUpload,
     });
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Error ${response.status}: ${errorData.error}`);
+      const text = await response.text();
+      throw new Error(`Error subiendo a S3: ${response.status} - ${text}`);
     }
+
     setProgress(100);
   };
 
