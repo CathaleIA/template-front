@@ -1,5 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Report } from "@/types/solar";
+import { Button } from "@/components/ui/button";
 
 export const columns: ColumnDef<Report>[] = [
   {
@@ -22,7 +23,7 @@ export const columns: ColumnDef<Report>[] = [
       return new Date(Number(value)).toLocaleString();
     },
   },
-   {
+  {
     accessorKey: "NombreArchivo",
     header: "Nombre del archivo",
     cell: ({ row }) => {
@@ -36,14 +37,19 @@ export const columns: ColumnDef<Report>[] = [
     header: "Reporte",
     cell: ({ row }) => {
       const path = row.getValue("pathFile") as string;
+      console.log("Path del archivo para reporte:", path);
+      const handleClick = async () => {
+        const response = await fetch(
+          `/api/pdf-solar-get-url?path=${encodeURIComponent(path)}`
+        );
+
+        const data = await response.json();
+
+        window.open(data.url, "_blank");
+      };
+
       return (
-        <a
-          href={`https://solar-reports-prod-1762831693.s3.us-east-1.amazonaws.com/${path}`}
-          target="_blank"
-          className="text-blue-600 underline"
-        >
-          Ver reporte
-        </a>
+        <Button onClick={handleClick}>Ver reporte</Button>
       );
     },
   },
