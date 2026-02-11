@@ -29,7 +29,7 @@ export function ReportsTable() {
 
         if (data?.username && data?.userPoolDomain) {
           setTenantName(data.userPoolDomain);
-          setUserName(data.userPoolId);
+          setUserName(data.username);
         } else {
           setError("No se encontraron datos de tenant");
         }

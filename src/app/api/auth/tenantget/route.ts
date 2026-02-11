@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
   if (accessToken2) {
     const payload = decodeJWT(accessToken2);
     username = payload['cognito:username'] || payload['sub'];
+    console.log('Decoded username from id_token:', username);
   }
 
   return Response.json({
