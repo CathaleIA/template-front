@@ -12,7 +12,7 @@ export const columns: ColumnDef<Report>[] = [
   },
   {
     accessorKey: "userPoolId",
-    header: "User Pool",
+    header: "Usuario",
   },
   {
     accessorKey: "timestamp",
@@ -20,6 +20,15 @@ export const columns: ColumnDef<Report>[] = [
     cell: ({ row }) => {
       const value = row.getValue("timestamp") as string;
       return new Date(Number(value)).toLocaleString();
+    },
+  },
+   {
+    accessorKey: "NombreArchivo",
+    header: "Nombre del archivo",
+    cell: ({ row }) => {
+      const value = row.getValue("pathFile") as string;
+      const nombreArchivo = value.split("/").slice(-1)[0]; // 
+      return nombreArchivo.replace(/\.html$/, ".pdf");
     },
   },
   {
