@@ -11,7 +11,7 @@ export function ReportsTable() {
   const [error, setError] = useState<string | null>(null);
 
   const [tenantName, setTenantName] = useState<string | null>(null);
-  const [userPoolId, setUserPoolId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   /**
    * 1️⃣ Obtener tenant desde cookies / API
@@ -27,9 +27,9 @@ export function ReportsTable() {
 
         const data = await res.json();
 
-        if (data?.userPoolId && data?.userPoolDomain) {
+        if (data?.username && data?.userPoolDomain) {
           setTenantName(data.userPoolDomain);
-          setUserPoolId(data.userPoolId);
+          setUsername(data.username);
         } else {
           setError("No se encontraron datos de tenant");
         }
@@ -46,7 +46,7 @@ export function ReportsTable() {
    * 2️⃣ Obtener reportes CUANDO el tenant esté listo
    */
   useEffect(() => {
-    if (!tenantName || !userPoolId) return;
+    if (!tenantName || !username) return;
 
     async function fetchReports() {
       try {
@@ -59,7 +59,7 @@ export function ReportsTable() {
           },
           body: JSON.stringify({
             tenantName,
-            userPoolName: userPoolId,
+            userPoolName: username,
           }),
         });
 
@@ -79,7 +79,7 @@ export function ReportsTable() {
     }
 
     fetchReports();
-  }, [tenantName, userPoolId]);
+  }, [tenantName, username]);
   if (loading) return <p>Cargando reportes...</p>;
 
   return <DataTable columns={columns} data={data} />;
