@@ -11,7 +11,7 @@ export function ReportsTable() {
   const [error, setError] = useState<string | null>(null);
 
   const [tenantName, setTenantName] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   /**
    * 1️⃣ Obtener tenant desde cookies / API
@@ -29,7 +29,7 @@ export function ReportsTable() {
 
         if (data?.username && data?.userPoolDomain) {
           setTenantName(data.userPoolDomain);
-          setUsername(data.username);
+          setUserName(data.userPoolId);
         } else {
           setError("No se encontraron datos de tenant");
         }
@@ -46,11 +46,15 @@ export function ReportsTable() {
    * 2️⃣ Obtener reportes CUANDO el tenant esté listo
    */
   useEffect(() => {
-    if (!tenantName || !username) return;
+    if (!tenantName || !userName) return;
 
     async function fetchReports() {
       try {
         setLoading(true);
+
+        // Log para ver tenantName y userName
+        console.log("tenantName desde fetchReports:", tenantName);
+        console.log("userName desde fetchReports:", userName);
 
         const res = await fetch("/api/pdf-solar-down", {
           method: "POST",
@@ -59,7 +63,7 @@ export function ReportsTable() {
           },
           body: JSON.stringify({
             tenantName,
-            userPoolName: username,
+            userPoolName: userName,
           }),
         });
 
@@ -79,7 +83,7 @@ export function ReportsTable() {
     }
 
     fetchReports();
-  }, [tenantName, username]);
+  }, [tenantName, userName]);
   if (loading) return <p>Cargando reportes...</p>;
 
   return <DataTable columns={columns} data={data} />;
