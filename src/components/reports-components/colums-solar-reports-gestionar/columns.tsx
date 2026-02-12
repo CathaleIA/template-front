@@ -39,14 +39,34 @@ export const columns: ColumnDef<Report>[] = [
       const path = row.getValue("pathFile") as string;
       console.log("Path del archivo para reporte:", path);
       const handleClick = async () => {
-        const response = await fetch(
-          `/api/pdf-solar-get-url?path=${encodeURIComponent(path)}`
-        );
+        try {
+          const response = await fetch(
+            `/api/pdf-solar-get-url?path=${encodeURIComponent(path)}`
+          );
 
-        const data = await response.json();
+          if (!response.ok) {
+            const text = await response.text();
+            console.error("API error:", text);
+            alert("Error generando el reporte");
+            return;
+          }
 
-        window.open(data.url, "_blank");
+          const data = await response.json();
+
+          if (!data.url) {
+            console.error("No URL returned:", data);
+            alert("No se pudo generar la URL");
+            return;
+          }
+
+          window.open(data.url, "_blank");
+
+        } catch (error) {
+          console.error("Fetch error:", error);
+          alert("Error inesperado");
+        }
       };
+
 
       return (
         <Button onClick={handleClick}>Ver reporte</Button>
