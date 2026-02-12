@@ -5,7 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
 
 const s3 = new S3Client({
-  region: "us-east-1",
+  region: process.env.AWS_REGION || "us-east-1",
 });
 
 export async function GET(req: Request) {
