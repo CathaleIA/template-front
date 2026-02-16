@@ -5,6 +5,7 @@ import { MessageSquare, ChevronRight, Send, Bot, User, Loader2, BookOpen, BarCha
 import { useIoTData } from '@/context/IoTDataContext';
 import { INDUSTRIAL_THRESHOLDS } from '@/config/thresholds';
 import { getNumericValue } from '@/types/iot.types';
+import { useUser } from '@/context/UserContext';
 
 // Simple markdown renderer for chat messages
 function renderMarkdown(text: string) {
@@ -39,6 +40,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: iotData } = useIoTData();
+  const { userr } = useUser();
 
   // Función para detectar alarmas activas basadas en las reglas de AWS
   const getActiveAlarms = () => {
@@ -126,7 +128,10 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       const response = await fetch('/api/agent-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: userMessage,
+          userId: userr?.userName || 'anonymous'
+        }),
       });
 
       const data = await response.json();

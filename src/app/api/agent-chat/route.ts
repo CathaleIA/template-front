@@ -45,7 +45,7 @@ setInterval(() => {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { message, sessionId } = body;
+        const { message, sessionId, userId } = body;
 
         if (!message) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 
         // Generar jobId único
         const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const finalSessionId = sessionId || generateSessionId();
+        const finalSessionId = sessionId || generateSessionId(userId);
 
         // Crear job en estado pending
         jobs.set(jobId, {
