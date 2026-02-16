@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, ChevronRight, Send, Bot, User, Loader2, BookOpen, BarChart3, Sparkles } from 'lucide-react';
+import { MessageSquare, ChevronRight, Send, Bot, User, Loader2, BookOpen, BarChart3, Sparkles, AlertTriangle } from 'lucide-react';
+import { useIoTData } from '@/context/IoTDataContext';
+import { INDUSTRIAL_THRESHOLDS } from '@/config/thresholds';
+import { getNumericValue } from '@/types/iot.types';
 
 // Simple markdown renderer for chat messages
 function renderMarkdown(text: string) {
@@ -32,7 +35,70 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasNotifiedAlarms, setHasNotifiedAlarms] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: iotData } = useIoTData();
+
+  // Función para detectar alarmas activas basadas en las reglas de AWS
+  const getActiveAlarms = () => {
+    if (!iotData?.data) return [];
+
+    const alarms = [];
+    const rules = INDUSTRIAL_THRESHOLDS.ALARM_RULES;
+
+    for (const rule of rules) {
+      // Helper para obtener valor anidado similar a la Lambda
+      const getValue = (obj: any, path: string) => {
+        return path.split('.').reduce((curr, key) => curr?.[key], obj);
+      };
+
+      const val = getValue(iotData, rule.path);
+      if (val === undefined || val === null) continue;
+
+      let violates = false;
+      const numVal = typeof val === 'object' && 'value' in val ? val.value : val;
+
+      switch (rule.operator) {
+        case '>': violates = numVal > rule.threshold; break;
+        case '<': violates = numVal < rule.threshold; break;
+        case '==': violates = numVal === rule.threshold; break;
+      }
+
+      if (violates) {
+        alarms.push({ ...rule, currentVal: numVal });
+      }
+    }
+    return alarms;
+  };
+
+  const activeAlarms = getActiveAlarms();
+  const hasAlarms = activeAlarms.length > 0;
+
+  // Auto-diagnóstico al abrir el chat
+  useEffect(() => {
+    if (isOpen && hasAlarms && !hasNotifiedAlarms) {
+      const alarmList = activeAlarms.map(a =>
+        `- **${a.id}**: ${a.currentVal} (Umbral ${a.operator} ${a.threshold}) - ${a.message}`
+      ).join('\n');
+
+      const diagnosisMessage: Message = {
+        role: 'assistant',
+        content: `⚠️ **¡ATENCIÓN! ANOMALÍA DETECTADA**\n\nHe detectado que las siguientes variables están fuera de los umbrales de seguridad operativos:\n\n${alarmList}\n\n¿Deseas que profundice en el análisis de alguna de estas variables?`,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, diagnosisMessage]);
+      setHasNotifiedAlarms(true);
+    }
+  }, [isOpen, hasAlarms, hasNotifiedAlarms, activeAlarms]);
+
+  // Resetear notificación si las alarmas desaparecen por un tiempo (opcional)
+  useEffect(() => {
+    if (!hasAlarms) {
+      setHasNotifiedAlarms(false);
+    }
+  }, [hasAlarms]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -175,28 +241,39 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     return (
       <button
         onClick={onToggle}
-        className="fixed right-0 top-1/2 -translate-y-1/2 bg-[var(--green-dark)] text-white p-3 rounded-l-lg shadow-lg hover:brightness-110 transition-all z-[9999] group"
-        title="Abrir Asistente IA"
+        className={`fixed right-0 top-1/2 -translate-y-1/2 text-white p-3 rounded-l-lg shadow-lg transition-all z-[9999] group 
+          ${hasAlarms
+            ? 'bg-red-600 animate-[pulse_2s_infinite]'
+            : 'bg-[var(--green-dark)] hover:brightness-110'}`}
+        title={hasAlarms ? "¡Alerta en el sistema!" : "Abrir Asistente IA"}
       >
-        <MessageSquare className="w-5 h-5" />
+        <style jsx>{`
+          @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+          }
+        `}</style>
+        {hasAlarms ? <AlertTriangle className="w-5 h-5" /> : <MessageSquare className="w-5 h-5" />}
         <span className="absolute right-full mr-2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          Asistente IA
+          {hasAlarms ? '⚠️ Alarmas detectadas' : 'Asistente IA'}
         </span>
       </button>
     );
   }
 
   return (
-    <aside className="fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[9999] border-l border-border transition-colors duration-300">
+    <aside className={`fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[9999] border-l transition-colors duration-300
+      ${hasAlarms ? 'border-red-500/50' : 'border-border'}`}>
       {/* Header */}
-      <div className="bg-[var(--green-dark)] text-white p-4 flex items-center justify-between">
+      <div className={`${hasAlarms ? 'bg-red-700' : 'bg-[var(--green-dark)]'} text-white p-4 flex items-center justify-between transition-colors duration-500`}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-white/10 rounded-lg">
-            <Bot className="w-5 h-5" />
+            {hasAlarms ? <AlertTriangle className="w-5 h-5 animate-pulse" /> : <Bot className="w-5 h-5" />}
           </div>
           <div>
-            <h2 className="font-semibold text-sm">Asistente IA</h2>
-            <p className="text-xs opacity-80">Bedrock Agent + Tiempo Real</p>
+            <h2 className="font-semibold text-sm">{hasAlarms ? 'Diagnóstico Crítico' : 'Asistente IA'}</h2>
+            <p className="text-xs opacity-80">{hasAlarms ? `${activeAlarms.length} Alertas Activas` : 'Bedrock Agent + Tiempo Real'}</p>
           </div>
         </div>
         <button
