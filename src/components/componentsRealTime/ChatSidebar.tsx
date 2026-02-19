@@ -12,6 +12,12 @@ function renderMarkdown(text: string) {
   return text
     // Bold
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Markdown Links [text](url)
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-blue-500 hover:underline font-semibold">$1</a>')
+    // Linkify raw paths like /dashboard/reports/... (more robust)
+    .replace(/(^|[\s(])(\/dashboard\/[^\s)]+)(?=[.,!?]?(\s|$|\)))/g, '$1<a href="$2" target="_blank" class="text-blue-500 hover:underline font-semibold underline-offset-4">$2</a>')
+    // Raw URLs (http/https)
+    .replace(/(^|\s)(https?:\/\/[^\s]+)/g, '$1<a href="$2" target="_blank" class="text-blue-500 hover:underline">$2</a>')
     // Lists
     .replace(/^- (.+)$/gm, '<li>$1</li>')
     // Wrap consecutive <li> in <ul>

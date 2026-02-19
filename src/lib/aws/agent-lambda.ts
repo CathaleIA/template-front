@@ -14,11 +14,14 @@ import { Handler } from 'aws-lambda';
 import { AthenaClient, StartQueryExecutionCommand, GetQueryExecutionCommand, GetQueryResultsCommand } from '@aws-sdk/client-athena';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { IoTDataPlaneClient, GetThingShadowCommand } from '@aws-sdk/client-iot-data-plane';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuidv4 } from 'uuid';
 
 // Configuración de clientes AWS
 const athenaClient = new AthenaClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_BEDROCK_REGION || 'us-east-1' });
 const iotDataClient = new IoTDataPlaneClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
 // Umbrales (deberían coincidir con src/config/thresholds.ts)
 const THRESHOLDS = {
@@ -71,14 +74,14 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
     // Esperar a que complete
     let status = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 400; // Aumentado a 120 segundos (400 * 300ms) para consultas pesadas
 
     while (status === 'RUNNING' || status === 'QUEUED') {
         if (attempts++ > maxAttempts) {
             throw new Error('Athena query timeout');
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 300)); // Polling más rápido para Bedrock
 
         const getCommand = new GetQueryExecutionCommand({ QueryExecutionId });
         const execution = await athenaClient.send(getCommand);
@@ -116,8 +119,14 @@ async function generateSQL(userQuestion: string): Promise<string> {
     yesterdayDate.setDate(now.getDate() - 1);
     const yesterday = yesterdayDate.toISOString().split('T')[0];
 
+    const currentDateStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+
     const prompt = `Genera una consulta SQL (Presto/Athena) para responder a la pregunta: "${userQuestion}"
                  
+CONVENCIÓN TEMPORAL:
+- La fecha de HOY es: ${today} (${currentDateStr})
+- Si el usuario dice "enero", se refiere al año ${now.getFullYear()}.
+
 TABLA: iot_telemetry_db.iot_data
 COLUMNAS IMPORTANTES (Usar .value para el valor):
 - timestamp (string ISO8601, ej: '2026-01-21T16:45:34.477925Z')
@@ -132,13 +141,13 @@ ${JSON.stringify(THRESHOLDS, null, 2)}
 REGLAS:
 - Devuelve SOLO el código SQL, nada de explicación.
 - IMPORTANTE: Debes acceder al campo .value para obtener el número. Ejemplo: data.generator.voltage_L1_N.value
-- Usa "from_iso8601_timestamp(timestamp)" para el filtro de tiempo.
-- CRÍTICO: Athena no permite comparar un timestamp con un string directamente. Ambas partes deben ser timestamps.
-- Ejemplo correcto: WHERE from_iso8601_timestamp(timestamp) >= from_iso8601_timestamp('${yesterday}T00:00:00Z')
-- Para "hoy", usa la fecha '${today}'.
-- Para "ayer", usa la fecha '${yesterday}'.
-- LIMIT 100 si no es una agregación específica.
-- Si la pregunta menciona "fuera de umbral" o "sobre el límite", usa los umbrales proporcionados arriba en la cláusula WHERE.`;
+- USA SOLO las columnas listadas arriba. SI el usuario pide algo que NO está en la lista, ignóralo.
+- FILTRO DE TIEMPO: La columna 'timestamp' es un STRING. USA COMPARACIÓN DE STRINGS DIRECTA para que sea rápido.
+- Ejemplo correcto: WHERE timestamp >= '${yesterday}T00:00:00Z' AND timestamp <= '${yesterday}T23:59:59Z'
+- REPORTES: Si el usuario pide un "informe", "resumen" o "gráfico" de un mes o semana, GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas) para obtener una serie de tiempo real.
+- Año: Si estamos en ${now.getFullYear()} y pide "diciembre", usa el rango "${now.getFullYear() - 1}-12-01T00:00:00Z" al "${now.getFullYear() - 1}-12-31T23:59:59Z".
+- LIMIT 50 si no es una agregación específica.
+- Si la pregunta menciona "fuera de umbral", usa los umbrales proporcionados arriba.`;
 
     const payload = {
         anthropic_version: 'bedrock-2023-05-31',
@@ -170,26 +179,35 @@ REGLAS:
  * Parsea los parámetros del formato de Bedrock Agent
  */
 function parseAgentParameters(event: any): any {
+    const params: any = {};
     try {
-        const properties = event.requestBody?.content?.['application/json']?.properties || [];
-        const params: any = {};
-
-        for (const prop of properties) {
-            params[prop.name] = prop.value;
-        }
-
-        // También intentar obtener de 'parameters' (otra forma en que Bedrock envía datos)
+        // 1. Intentar obtener de parameters (formato estándar GET/POST simple)
         if (event.parameters && Array.isArray(event.parameters)) {
             for (const param of event.parameters) {
                 params[param.name] = param.value;
             }
         }
 
-        return params;
+        // 2. Intentar obtener de requestBody (formato POST con JSON)
+        const content = event.requestBody?.content?.['application/json'];
+        if (content) {
+            // A veces es un array de {name, type, value}
+            if (Array.isArray(content)) {
+                for (const item of content) {
+                    params[item.name] = item.value;
+                }
+            }
+            // A veces es un objeto directo con properties
+            else if (content.properties && Array.isArray(content.properties)) {
+                for (const prop of content.properties) {
+                    params[prop.name] = prop.value;
+                }
+            }
+        }
     } catch (error) {
         console.error('Error parsing agent parameters:', error);
-        return {};
     }
+    return params;
 }
 
 /**
@@ -199,13 +217,13 @@ function createSuccessResponse(event: any, body: any) {
     return {
         messageVersion: '1.0',
         response: {
-            actionGroup: event.actionGroup,
-            apiPath: event.apiPath,
-            httpMethod: event.httpMethod,
+            actionGroup: event.actionGroup || 'IndustrialDataQuery',
+            apiPath: event.apiPath || '/unknown',
+            httpMethod: event.httpMethod || 'POST',
             httpStatusCode: 200,
             responseBody: {
                 'application/json': {
-                    body: JSON.stringify(body)
+                    body: typeof body === 'string' ? body : JSON.stringify(body)
                 }
             }
         }
@@ -219,13 +237,17 @@ function createErrorResponse(event: any, statusCode: number, message: string) {
     return {
         messageVersion: '1.0',
         response: {
-            actionGroup: event.actionGroup,
-            apiPath: event.apiPath,
-            httpMethod: event.httpMethod,
-            httpStatusCode: statusCode,
+            actionGroup: event.actionGroup || 'IndustrialDataQuery',
+            apiPath: event.apiPath || '/error',
+            httpMethod: event.httpMethod || 'POST',
+            httpStatusCode: 200, // Siempre 200 para que el Agente no "muera" y pueda dar feedback
             responseBody: {
                 'application/json': {
-                    body: JSON.stringify({ error: message })
+                    body: JSON.stringify({
+                        status: 'error',
+                        error: message,
+                        message: 'Lo siento, hubo un problema técnico. ' + message
+                    })
                 }
             }
         }
@@ -240,9 +262,10 @@ export const handler: Handler = async (event: any) => {
         console.log('--- Agent Execution Start ---');
         console.log('Event structure:', JSON.stringify(event, null, 2));
 
-        const { apiPath } = event;
+        const { apiPath: rawPath } = event;
+        const apiPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
         const params = parseAgentParameters(event);
-        console.log('Parsed parameters:', JSON.stringify(params, null, 2));
+        console.log(`Action: ${apiPath} | Parsed parameters:`, JSON.stringify(params, null, 2));
 
         // Acción: Consultar datos
         if (apiPath === '/queryData') {
@@ -255,29 +278,31 @@ export const handler: Handler = async (event: any) => {
 
             console.log('Action: queryData | Question:', question);
 
-            // 1. Generar SQL
-            const sql = await generateSQL(question);
-            console.log('Generated SQL:', sql);
+            try {
+                // 1. Generar SQL
+                const sql = await generateSQL(question);
+                console.log('Generated SQL:', sql);
 
-            // 2. Ejecutar SQL
-            const results = await executeAthenaQuery(sql);
-            console.log('Query results count:', results.length);
+                // 2. Ejecutar SQL
+                const results = await executeAthenaQuery(sql);
+                console.log('Query results count:', results.length);
 
-            // Si no hay resultados, devolver mensaje amigable
-            if (results.length === 0) {
                 return createSuccessResponse(event, {
                     sql,
+                    rowCount: results.length,
+                    data: results.slice(0, 20)
+                });
+            } catch (queryError: any) {
+                console.error('Error in queryData execution:', queryError);
+                // Devolvemos una estructura que Bedrock NO rechace (campos esperados)
+                return createSuccessResponse(event, {
+                    sql: 'Error en consulta',
                     rowCount: 0,
                     data: [],
-                    message: 'No se encontraron datos para el período consultado. Es posible que no haya datos históricos disponibles para esas fechas.'
+                    error: queryError.message,
+                    status: 'error'
                 });
             }
-
-            return createSuccessResponse(event, {
-                sql,
-                rowCount: results.length,
-                data: results.slice(0, 50)
-            });
         }
 
         // Acción: Obtener estado en tiempo real (Simulado via Athena/S3)
@@ -365,21 +390,49 @@ export const handler: Handler = async (event: any) => {
             return createSuccessResponse(event, status);
         }
 
+        // Acción: Crear un reporte web dinámico
+        if (apiPath === '/createReport') {
+            const reportData = params.reportData || event.requestBody?.content?.['application/json']?.body;
+
+            console.log('Action: createReport');
+
+            if (!reportData) {
+                return createErrorResponse(event, 400, 'Missing report data');
+            }
+
+            const reportId = uuidv4();
+            const bucket = process.env.S3_IOT_BUCKET || process.env.AWS_S3_IOT_BUCKET || '';
+            const key = `web-reports/${reportId}.json`;
+
+            await s3Client.send(new PutObjectCommand({
+                Bucket: bucket,
+                Key: key,
+                Body: typeof reportData === 'string' ? reportData : JSON.stringify(reportData),
+                ContentType: 'application/json'
+            }));
+
+            console.log(`✅ Web report saved to S3: ${key}`);
+
+            return createSuccessResponse(event, {
+                reportId,
+                status: 'created',
+                link: `/reports/${reportId}`,
+                message: 'Reporte generado con éxito. El usuario puede acceder mediante el link proporcionado.'
+            });
+        }
+
         console.error(`Unknown path: ${apiPath}`);
         return createErrorResponse(event, 404, 'Unknown action');
 
     } catch (globalError: any) {
         console.error('CRITICAL LAMBDA ERROR:', globalError);
-        console.error('Stack trace:', globalError.stack);
-
-        // Intentar devolver un error estructurado incluso en fallo catastrófico
         return {
             messageVersion: '1.0',
             response: {
-                actionGroup: event?.actionGroup || 'Unknown',
-                apiPath: event?.apiPath || 'Unknown',
+                actionGroup: event?.actionGroup || 'IndustrialDataQuery',
+                apiPath: event?.apiPath || '/error',
                 httpMethod: event?.httpMethod || 'POST',
-                httpStatusCode: 500,
+                httpStatusCode: 200,
                 responseBody: {
                     'application/json': {
                         body: JSON.stringify({
