@@ -246,7 +246,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     return (
       <button
         onClick={onToggle}
-        className={`fixed right-0 top-1/2 -translate-y-1/2 text-white p-3 rounded-l-lg shadow-lg transition-all z-[9999] group 
+        className={`fixed right-0 top-1/2 -translate-y-1/2 text-white p-3 rounded-l-lg shadow-lg transition-all z-[99999] group 
           ${hasAlarms
             ? 'bg-red-600 animate-[pulse_2s_infinite]'
             : 'bg-[var(--green-dark)] hover:brightness-110'}`}
@@ -268,7 +268,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   }
 
   return (
-    <aside className={`fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[9999] border-l transition-colors duration-300
+    <aside className={`fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[99999] border-l transition-colors duration-300
       ${hasAlarms ? 'border-red-500/50' : 'border-border'}`}>
       {/* Header */}
       <div className={`${hasAlarms ? 'bg-red-700' : 'bg-[var(--green-dark)]'} text-white p-4 flex items-center justify-between transition-colors duration-500`}>

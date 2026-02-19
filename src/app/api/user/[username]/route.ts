@@ -17,22 +17,27 @@ export async function GET(
   const { username } = await params;
 
   try {
+    console.log(`[API] Fetching user from: ${API_BASE_URL}/user/${username}`);
     const response = await fetch(`${API_BASE_URL}/user/${username}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${TOKEN_ID}`,
+        'Content-Type': 'application/json',
       },
-      cache: "force-cache",
+      cache: "no-store",
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching user: ${username}`);
+      const errorText = await response.text();
+      console.error(`[API] Upstream error for user ${username}: Status ${response.status} | Body: ${errorText}`);
+      throw new Error(`Upstream API Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: 'Error fetching user' }, { status: 500 });
+    console.error(`[API] Error in GET /api/user/${(await params).username}:`, error);
+    return NextResponse.json({ error: 'Error fetching user', details: String(error) }, { status: 500 });
   }
 }
 
