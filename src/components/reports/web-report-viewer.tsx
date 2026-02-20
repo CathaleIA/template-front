@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { Download, FileText, Share2, Printer, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react"
+import { Download, FileText, Share2, Printer, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Gauge, Activity, Cpu, Zap, Thermometer, Droplets, Monitor, ShieldCheck } from "lucide-react"
 import dynamic from "next/dynamic"
 
 // Importar Plotly dinámicamente para evitar problemas de SSR
@@ -18,6 +18,13 @@ interface WebReportViewerProps {
         title: string
         date?: string
         summary: string
+        kpis?: Array<{
+            label: string
+            value: string
+            unit?: string
+            trend?: 'up' | 'down' | 'stable'
+            color?: string
+        }>
         conclusions?: string[]
         anomalies?: Array<{
             severity: 'critical' | 'warning' | 'info'
@@ -42,148 +49,171 @@ export function WebReportViewer({ reportId, data }: WebReportViewerProps) {
     if (!mounted) return null
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Header del Reporte */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <Badge variant="outline" className="mb-2 border-primary/50 text-primary uppercase tracking-wider text-[10px]">
-                        Reporte generado por AI
-                    </Badge>
-                    <h2 className="text-3xl font-bold tracking-tight text-foreground">{data.title}</h2>
-                    <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                        <FileText className="w-4 h-4" />
-                        ID: {reportId}{data.date ? ` | Generado el ${data.date}` : ''}
+        <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20">
+            {/* Header del Reporte - Más discreto y elegante */}
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-primary/10 pb-6">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-8 bg-primary rounded-full" />
+                        <h2 className="text-4xl font-extrabold tracking-tight text-foreground/90 leading-none">
+                            {data.title}
+                        </h2>
+                    </div>
+                    <p className="text-muted-foreground font-medium flex items-center gap-2 ml-5">
+                        <FileText className="w-4 h-4 opacity-50" />
+                        Referencia: {reportId} {data.date && <span className="text-primary/40 ml-2">| {data.date}</span>}
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2 border-primary/20 hover:bg-primary/5">
-                        <Share2 className="w-4 h-4" /> Compartir
+                <div className="flex gap-3 no-print">
+                    <Button variant="outline" size="sm" className="rounded-full px-4 border-primary/20 hover:bg-primary/5 transition-all active:scale-95 text-xs font-semibold tracking-wide uppercase">
+                        <Share2 className="w-3.5 h-3.5 mr-2" /> Compartir
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-primary/20 hover:bg-primary/5">
-                        <Printer className="w-4 h-4" /> Imprimir
-                    </Button>
-                    <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-                        <Download className="w-4 h-4" /> Exportar PDF
+                    <Button size="sm" className="rounded-full px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-95 text-xs font-semibold tracking-wide uppercase">
+                        <Download className="w-3.5 h-3.5 mr-2" /> PDF Corporativo
                     </Button>
                 </div>
             </div>
 
-            <Separator className="bg-primary/10" />
+            {/* KPI Grid - Resumen de Alto Nivel */}
+            {Array.isArray(data.kpis) && data.kpis.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {data.kpis.map((kpi, idx) => (
+                        <Card key={idx} className="border-border bg-card shadow-none hover:border-primary/50 transition-colors">
+                            <CardContent className="p-4 flex flex-col items-start">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-1.5 rounded-md bg-primary/5 text-primary">
+                                        {kpi.label.toLowerCase().includes('volt') ? <Zap className="w-3.5 h-3.5" /> :
+                                            kpi.label.toLowerCase().includes('temp') ? <Thermometer className="w-3.5 h-3.5" /> :
+                                                kpi.label.toLowerCase().includes('pres') ? <Gauge className="w-3.5 h-3.5" /> :
+                                                    kpi.label.toLowerCase().includes('eficiencia') ? <Activity className="w-3.5 h-3.5" /> :
+                                                        <Monitor className="w-3.5 h-3.5" />}
+                                    </div>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                        {kpi.label}
+                                    </p>
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-xl font-mono font-bold text-foreground">
+                                        {kpi.value}
+                                    </span>
+                                    {kpi.unit && <span className="text-xs font-medium text-muted-foreground/70">{kpi.unit}</span>}
+                                </div>
+                                {kpi.trend && (
+                                    <div className={`mt-2 flex items-center gap-1 text-[10px] font-bold ${kpi.trend === 'up' ? 'text-emerald-500' :
+                                        kpi.trend === 'down' ? 'text-red-500' :
+                                            'text-blue-500'
+                                        }`}>
+                                        {kpi.trend === 'up' ? <TrendingUp className="w-3 h-3" /> :
+                                            kpi.trend === 'down' ? <TrendingDown className="w-3 h-3" /> : null}
+                                        {kpi.trend.toUpperCase()}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
 
-            {/* Grid de Resumen y Alertas */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Resumen Ejecutivo */}
-                <Card className="lg:col-span-2 border-primary/10 bg-card/50 backdrop-blur-sm">
-                    <CardHeader>
-                        <CardTitle className="text-xl flex items-center gap-2 text-primary">
-                            <TrendingUp className="w-5 h-5" />
-                            Resumen Ejecutivo
-                        </CardTitle>
-                        <CardDescription>
-                            Análisis consolidado del comportamiento del equipo.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-foreground/90 leading-relaxed italic border-l-4 border-primary/30 pl-4 py-2 bg-primary/5 rounded-r-lg">
-                            "{data.summary}"
-                        </p>
-                    </CardContent>
-                </Card>
+            {/* Análisis y Diagnóstico */}
+            <div className="space-y-8">
+                {/* Resumen Ejecutivo Ampliado */}
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 text-foreground border-l-4 border-primary pl-4">
+                        <h3 className="text-lg font-black uppercase tracking-tighter italic">I. Resumen Operativo</h3>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-8 shadow-sm leading-relaxed text-foreground/90 text-sm md:text-base font-medium whitespace-pre-wrap">
+                        {data.summary || "No se proporcionó un análisis operativo detallado."}
+                    </div>
+                </section>
 
-                {/* Estado de Salud / Anomalías */}
-                <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
-                    <CardHeader>
-                        <CardTitle className="text-xl flex items-center gap-2 text-primary">
-                            <AlertTriangle className="w-5 h-5" />
-                            Estado de Salud
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {(data.anomalies ?? []).length > 0 ? (
-                            (data.anomalies ?? []).map((anomaly, idx) => (
-                                <div key={idx} className={`p-3 rounded-lg border flex gap-3 ${anomaly.severity === 'critical' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                    anomaly.severity === 'warning' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' :
-                                        'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                                    }`}>
-                                    <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-                                    <div className="text-sm">
-                                        <p className="font-semibold uppercase text-[10px] tracking-widest mb-1">{anomaly.severity}</p>
-                                        <p className="text-foreground/80">{anomaly.message}</p>
+                {/* Hallazgos y Conclusiones Técnicas */}
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 text-foreground border-l-4 border-primary pl-4">
+                        <h3 className="text-lg font-black uppercase tracking-tighter italic">II. Diagnóstico y Hallazgos</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                        {Array.isArray(data.conclusions) && data.conclusions.map((conclusion, idx) => (
+                            <div key={idx} className="flex items-start gap-4 p-5 rounded-lg bg-muted/30 border border-border group hover:border-primary/30 transition-all">
+                                <div className="mt-1 flex-shrink-0 w-6 h-6 rounded bg-primary/10 text-primary flex items-center justify-center font-mono text-xs font-bold">
+                                    {String(idx + 1).padStart(2, '0')}
+                                </div>
+                                <p className="text-sm font-semibold text-foreground/80 leading-snug">{conclusion}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Sección de Anomalías (Solo si existen) */}
+                {Array.isArray(data.anomalies) && data.anomalies.length > 0 && (
+                    <section className="space-y-4">
+                        <div className="flex items-center gap-2 text-red-500 border-l-4 border-red-500 pl-4">
+                            <h3 className="text-lg font-black uppercase tracking-tighter italic">III. Alertas de Integridad</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {data.anomalies.map((anomaly, idx) => (
+                                <div key={idx} className="flex gap-4 p-4 rounded-lg bg-red-500/5 border border-red-500/20 text-red-500 items-center">
+                                    <AlertTriangle className="w-5 h-5 shrink-0" />
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">{anomaly.variable}</p>
+                                        <p className="text-sm font-bold">{anomaly.message}</p>
                                     </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex gap-3 text-green-500">
-                                <CheckCircle2 className="w-6 h-6 shrink-0" />
-                                <p className="text-sm">Operación dentro de los límites normales. No se detectaron anomalías en el periodo.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
 
-            {/* Visualización de Datos (Gráficas) */}
-            <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl text-primary">Comportamiento Histórico (S3)</CardTitle>
-                    <CardDescription>Visualización interactiva de variables críticas.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-10">
-                        {(data.charts ?? []).map((chart, idx) => (
-                            <div key={idx} className="space-y-4">
-                                <h3 className="text-lg font-medium text-foreground/80 pl-4 border-l-2 border-primary/50">
-                                    {chart.title || chart.layout?.title || `Gráfico ${idx + 1}`}
-                                </h3>
-                                <div className="w-full h-[400px] bg-background/40 rounded-xl overflow-hidden border border-primary/5 flex items-center justify-center">
+            {/* Visualización de Datos de Alto IMPACTO */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-3 text-primary">
+                    <TrendingUp className="w-5 h-5" />
+                    <h3 className="text-lg font-bold uppercase tracking-widest underline decoration-primary/30 decoration-4 underline-offset-8">Visualización Analítica</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {Array.isArray(data.charts) && data.charts.map((chart, idx) => (
+                        <Card key={idx} className="border-primary/10 bg-card/40 overflow-hidden rounded-3xl group shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+                            <CardHeader className="bg-primary/5 py-4">
+                                <CardTitle className="text-sm font-bold uppercase tracking-wider text-primary/80 flex justify-between items-center">
+                                    {chart.title || chart.layout?.title || `Parámetro Industrial ${idx + 1}`}
+                                    <TrendingUp className="w-4 h-4 opacity-30" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="w-full h-[320px] pt-4">
                                     <Plot
-                                        data={chart.data}
+                                        data={Array.isArray(chart.data) ? chart.data : []}
                                         layout={{
                                             ...chart.layout,
                                             autosize: true,
                                             paper_bgcolor: 'rgba(0,0,0,0)',
                                             plot_bgcolor: 'rgba(0,0,0,0)',
-                                            font: { color: '#888' },
-                                            xaxis: { gridcolor: 'rgba(128,128,128,0.1)', zerolinecolor: 'rgba(128,128,128,0.2)' },
-                                            yaxis: { gridcolor: 'rgba(128,128,128,0.1)', zerolinecolor: 'rgba(128,128,128,0.2)' },
-                                            margin: { t: 30, b: 40, l: 60, r: 20 },
+                                            font: { color: '#888', family: 'Inter, sans-serif' },
+                                            xaxis: {
+                                                gridcolor: 'rgba(128,128,128,0.05)',
+                                                zerolinecolor: 'rgba(128,128,128,0.1)',
+                                                tickfont: { size: 10 }
+                                            },
+                                            yaxis: {
+                                                gridcolor: 'rgba(128,128,128,0.05)',
+                                                zerolinecolor: 'rgba(128,128,128,0.1)',
+                                                tickfont: { size: 10 }
+                                            },
+                                            margin: { t: 20, b: 40, l: 40, r: 20 },
+                                            showlegend: true,
+                                            legend: { orientation: 'h', y: -0.2, font: { size: 9 } }
                                         }}
+                                        config={{ displayModeBar: false, responsive: true }}
                                         useResizeHandler={true}
                                         className="w-full h-full"
                                     />
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Conclusiones Técnicas Detalladas */}
-            <Card className="border-primary/10 bg-card/50 backdrop-blur-sm overflow-hidden">
-                <div className="h-2 bg-gradient-to-r from-primary/20 via-primary to-primary/20" />
-                <CardHeader>
-                    <CardTitle className="text-2xl text-primary">Conclusiones y Recomendaciones</CardTitle>
-                    <CardDescription>Basado en el análisis de inteligencia artificial sobre datos históricos.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(data.conclusions ?? []).map((conclusion, idx) => (
-                            <div key={idx} className="p-4 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/30 transition-all flex gap-3">
-                                <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
-                                    {idx + 1}
-                                </div>
-                                <p className="text-sm text-foreground/90">{conclusion}</p>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="text-center py-10">
-                <p className="text-xs text-muted-foreground uppercase tracking-[0.2em]">
-                    Fin del Reporte • Generado bajo demanda por Bedrock Intelligence System
-                </p>
-            </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </section>
         </div>
     )
 }

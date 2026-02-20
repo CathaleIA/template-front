@@ -159,25 +159,32 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte/i.test(message);
 
         const reportProtocol = `
+        [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
+        - Si el usuario pide un "reporte", "resumen" o "gráfica" para un mes o semana, usa GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas).
+        - AGREGACIONES: SI USAS GROUP BY, TODAS las columnas del SELECT deben ser agregaciones (AVG, MAX, MIN) o estar en el GROUP BY.
+        - EFICIENCIA: No intentes fórmulas complejas de eficiencia en el SQL. Solo trae los promedios de voltaje y corriente.
+        - VERACIDAD: NUNCA inventes datos. Si no hay registros para un día, no lo incluyas en los resultados.
+        - LIMIT 50 si no es una agregación específica.
+
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO TEMPORAL]
         - La fecha y hora actual es: ${currentDate} ${now.toLocaleTimeString()}
         - Hoy es ${currentDate}. Interpreta "enero" como Enero ${now.getFullYear()}.
 
-        ${isReportRequest ? `[MODO: GENERACIÓN DE REPORTE VISUAL]
-        El usuario ha pedido un INFORME. Debes:
-        1. Consultar los datos con queryData.
-        2. Escribir un resumen BREVE en el chat (2-3 párrafos).
-        3. Al FINAL, generar un bloque <report_data>...</report_data> con el JSON real del reporte.
+        ${isReportRequest ? `[MODO: GENERACIÓN DE REPORTE TÉCNICO INDUSTRIAL]
+        El usuario ha solicitado un análisis técnico profundo. Debes:
+        1. Consultar Athena para el periodo solicitado.
+        2. Escribir un resumen profesional en el chat.
+        3. Generar un bloque <report_data> con un JSON que incluya:
+           - "title": Título técnico descriptivo.
+           - "kpis": Mínimo 6 KPIs técnicos (Voltajes, Eficiencia, Temperatura Promedio, Presión de Aceite, Factor de Carga).
+           - "summary": Análisis NARRATIVO EXTENSO (mínimo 4 párrafos). Detalla hallazgos por sistema (Cilindros, Lubricación, Enfriamiento).
+           - "charts": Series de tiempo Plotly (x, y). MÁXIMO 2 charts, 5 puntos cada uno.
+           - "conclusions": Diagnóstico profundo y recomendaciones técnicas (Array de strings).
         
-        REGLAS CRÍTICAS PARA EL JSON (MUY IMPORTANTE - límite de tokens):
-        - El bloque <report_data> debe contener UN JSON VÁLIDO directamente, NO una referencia a él.
-        - INCORRECTO: "los datos se encuentran en el bloque <report_data>"
-        - CORRECTO: <report_data>{ "title": "...", "summary": "...", "conclusions": [...], "charts": [...] }</report_data>
-        - LÍMITE ESTRICTO: MÁXIMO 2 gráficos en total, MÁXIMO 5 puntos por serie de datos.
-        - Para los charts, usa formato Plotly: { "type": "bar", "layout": { "title": "..." }, "data": [{ "x": [...], "y": [...], "name": "...", "type": "bar" }] }
-        - Colores: verde #22c55e para valores normales, rojo #ef4444 para alertas.
-        - USA SOLO los datos reales de la consulta, no valores inventados.
-        - El JSON DEBE cerrar todas las llaves y corchetes correctamente. Si no cabe, reduce los datos.`
+        REGLAS DE ORO:
+        - EXTENSIÓN: Sé lo más extenso y detallado posible en el "summary". No uses bullet points ahí; úsalos en "conclusions".
+        - LOS CHARTS DEBEN TENER LA LLAVE "data" COMO UN ARRAY.
+        - Si no hay datos para un día, refléjalo en el análisis técnico, no lo ocultes.`
                 : `[MODO: CONSULTA SIMPLE]
         El usuario hace una pregunta directa. Responde con texto claro y conciso.
         NO generes bloques <report_data> ni JSON. Solo responde la pregunta.` }
@@ -194,49 +201,70 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         // 1. Extraer datos del texto o del TRACE (Bedrock suele esconderlo si cree que es metadata)
         let reportDataMatch = finalAnswer.match(/<report_data>([\s\S]*?)(?:<\/report_data>|$)/);
 
+        // VALIDACIÓN CRÍTICA: Si el match NO contiene un JSON real (sin '{'), es solo una mención textual.
+        // Descartarlo para que la búsqueda en traces encuentre el JSON real.
+        if (reportDataMatch && !reportDataMatch[1]?.includes('{')) {
+            console.log("⚠️ report_data match in finalAnswer is a text mention, not actual JSON. Discarding.");
+            reportDataMatch = null;
+        }
+
         if (!reportDataMatch && agentResponse.trace) {
             console.log("🔍 Looking for report data in traces...");
             // Buscar en TODOS los campos posibles de cada trace event
             for (const t of agentResponse.trace) {
                 // Serializar todo el trace event a string y buscar ahí
                 const fullTraceStr = JSON.stringify(t);
+
+                // SKIP: modelInvocationInput traces solo contienen instrucciones del sistema
+                const isInputTrace = t.trace?.orchestrationTrace?.modelInvocationInput
+                    || t.orchestrationTrace?.modelInvocationInput;
+                if (isInputTrace) continue;
+
                 if (fullTraceStr.includes('report_data')) {
                     console.log("🔍 Found 'report_data' keyword in trace event, extracting...");
 
-                    // Intentar extraer de campos específicos primero
+                    // Intentar extraer de campos específicos (cubrir ambas rutas posibles)
                     const candidates = [
+                        t.trace?.orchestrationTrace?.rationale?.text,
                         t.orchestrationTrace?.rationale?.text,
+                        t.trace?.orchestrationTrace?.modelInvocationOutput?.rawResponse?.content,
                         t.orchestrationTrace?.modelInvocationOutput?.rawResponse?.content,
-                        // El rawResponse.content a veces es un string con todo  
-                        typeof t.orchestrationTrace?.modelInvocationOutput?.rawResponse?.content === 'string'
-                            ? t.orchestrationTrace.modelInvocationOutput.rawResponse.content
-                            : null,
+                        t.trace?.orchestrationTrace?.observation?.finalResponse?.text,
+                        t.orchestrationTrace?.observation?.finalResponse?.text,
                     ].filter(Boolean);
 
+                    console.log(`🔍 Found ${candidates.length} candidate fields to search in trace.`);
+
                     for (const candidate of candidates) {
+                        if (typeof candidate !== 'string') continue;
                         const m = candidate.match(/<report_data>([\s\S]*?)(?:<\/report_data>|$)/);
-                        if (m) {
+                        if (m && m[1]?.includes('{')) {
                             reportDataMatch = m;
                             console.log("✅ Report data recovered from trace field!");
                             break;
                         }
                     }
 
-                    // Si no encontramos en campos específicos, buscar en el string completo
+                    // Fallback: Buscar en el string serializado limpiando escapes unicode
                     if (!reportDataMatch) {
-                        // Deserializar el JSON del trace y buscar el bloque <report_data>
-                        const fullMatch = fullTraceStr.match(/report_data>([\s\S]*?)(?:<\/?report_data>|$)/);
+                        let searchStr = fullTraceStr;
+                        searchStr = searchStr.replace(/\\u003c/g, '<').replace(/\\u003e/g, '>');
+                        const fullMatch = searchStr.match(/<report_data>([\s\S]*?)(?:<\/report_data>|$)/);
                         if (fullMatch) {
-                            // Limpiar escapes de JSON
-                            let cleanedJson = fullMatch[1]
-                                .replace(/\\n/g, '\n')
-                                .replace(/\\"/g, '"')
-                                .replace(/\\\\/g, '\\')
-                                .trim();
-                            // Remover el cierre de tag si quedó
-                            cleanedJson = cleanedJson.replace(/<\/report_data>[\s\S]*$/, '').trim();
-                            reportDataMatch = [fullMatch[0], cleanedJson];
-                            console.log("✅ Report data recovered from full trace serialization!");
+                            let content = fullMatch[1];
+                            if (content.includes('\\"')) {
+                                content = content.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+                            }
+                            const firstBrace = content.indexOf('{');
+                            if (firstBrace !== -1) content = content.substring(firstBrace);
+
+                            // VALIDACIÓN: solo aceptar si contiene "title" (es JSON real, no texto de instrucción)
+                            if (content.includes('"title"')) {
+                                reportDataMatch = [content, content];
+                                console.log("✅ Report data recovered from full trace serialization (decoded unicode escapes)!");
+                            } else {
+                                console.log("⚠️ Fallback match is instruction text, not report JSON. Skipping.");
+                            }
                         }
                     }
 
@@ -246,7 +274,23 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         }
 
         if (reportDataMatch) {
-            console.log("📊 Report data found! Length:", reportDataMatch[1]?.length || 0);
+            let rawCandidate = reportDataMatch[1] || "";
+            // Limpieza extrema de escapes de serialización
+            if (rawCandidate.includes('\\"')) {
+                rawCandidate = rawCandidate.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
+            }
+
+            // Recortar a primer '{' y último '}'
+            const startIdx = rawCandidate.indexOf('{');
+            const endIdx = rawCandidate.lastIndexOf('}');
+
+            if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+                const cleanJson = rawCandidate.substring(startIdx, endIdx + 1);
+                reportDataMatch = [cleanJson, cleanJson];
+                console.log("📊 Report data cleaned and isolated. Length:", cleanJson.length);
+            } else {
+                console.log("⚠️ Report data structure is problematic (missing braces).");
+            }
         } else {
             console.log("⚠️ No report_data found in answer or traces.");
         }
@@ -277,13 +321,39 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                 let reportData;
 
                 if (reportDataMatch) {
-                    let rawJson = reportDataMatch[1].trim();
+                    let rawJson = reportDataMatch[1];
+
+                    // SANITIZACIÓN CRÍTICA: Escapar caracteres de control dentro de strings JSON.
+                    // El agente emite newlines reales en campos como "summary" que son ilegales en JSON.
+                    function sanitizeJsonControlChars(str: string): string {
+                        let result = '';
+                        let inString = false;
+                        let escaped = false;
+                        for (let i = 0; i < str.length; i++) {
+                            const ch = str[i];
+                            const code = str.charCodeAt(i);
+                            if (escaped) { result += ch; escaped = false; continue; }
+                            if (ch === '\\' && inString) { result += ch; escaped = true; continue; }
+                            if (ch === '"') { inString = !inString; result += ch; continue; }
+                            if (inString && code < 32) {
+                                if (code === 10) result += '\\n';
+                                else if (code === 13) result += '\\r';
+                                else if (code === 9) result += '\\t';
+                                else result += '\\u' + code.toString(16).padStart(4, '0');
+                            } else {
+                                result += ch;
+                            }
+                        }
+                        return result;
+                    }
+
+                    rawJson = sanitizeJsonControlChars(rawJson);
+
                     try {
-                        // Intentar parsear normal
-                        reportData = JSON.parse(rawJson.endsWith('</report_data>') ? rawJson.replace('</report_data>', '') : rawJson);
+                        reportData = JSON.parse(rawJson);
+                        console.log("✅ JSON parsed successfully!");
                     } catch (e) {
-                        console.error("❌ Truncated JSON detected, attempting repair...");
-                        // Reparación básica de JSON truncado (cerrar llaves y corchetes)
+                        console.error("❌ Standard parse failed, attempting brace repair...", e);
                         let repaired = rawJson;
                         const openBraces = (repaired.match(/\{/g) || []).length;
                         const closeBraces = (repaired.match(/\}/g) || []).length;
@@ -312,11 +382,47 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                     // Generar data básica si solo vino el flag o falló el JSON
                     reportData = {
                         title: "Análisis Automático de Operación",
-                        summary: finalAnswer.substring(0, 300) + "...",
-                        conclusions: [finalAnswer.substring(0, 100)],
+                        summary: finalAnswer, // Sin truncamiento
+                        conclusions: [finalAnswer], // Sin truncamiento
                         anomalies: [],
                         charts: []
                     };
+                }
+
+                // NORMALIZACIÓN DE KPIs: El agente a veces envía formato comparativo {name, feb5, feb6}
+                // en lugar del esperado {label, value, unit}. Convertir automáticamente.
+                if (Array.isArray(reportData.kpis) && reportData.kpis.length > 0) {
+                    const firstKpi = reportData.kpis[0];
+                    if (firstKpi.name && !firstKpi.label) {
+                        console.log("🔄 Normalizing KPIs from comparative format to standard format...");
+                        const dateKeys = Object.keys(firstKpi).filter(k => k !== 'name' && k !== 'unit');
+                        const normalizedKpis: any[] = [];
+
+                        for (const kpi of reportData.kpis) {
+                            if (dateKeys.length >= 2) {
+                                const [day1Key, day2Key] = dateKeys;
+                                const val1 = Number(kpi[day1Key]);
+                                const val2 = Number(kpi[day2Key]);
+                                const diff = val2 - val1;
+
+                                normalizedKpis.push({
+                                    label: kpi.name,
+                                    value: !isNaN(val2) ? val2.toFixed(2) : String(kpi[day2Key]),
+                                    unit: kpi.unit || '',
+                                    trend: diff > 0.01 ? 'up' : diff < -0.01 ? 'down' : 'stable'
+                                });
+                            } else {
+                                const valKey = dateKeys[0];
+                                normalizedKpis.push({
+                                    label: kpi.name,
+                                    value: String(kpi[valKey]),
+                                    unit: kpi.unit || '',
+                                    trend: 'stable'
+                                });
+                            }
+                        }
+                        reportData.kpis = normalizedKpis;
+                    }
                 }
 
                 generatedReportId = await saveWebReport(reportData);

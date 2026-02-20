@@ -4,6 +4,33 @@ Este documento explica el funcionamiento, la arquitectura y los procedimientos d
 
 ---
 
+## 🚀 Alcance y Capacidades del Agente
+
+El Agente Bedrock no es un simple chatbot de texto; es un analista industrial inteligente con las siguientes capacidades activas:
+
+### 1. Naturaleza Conversacional
+El bot es capaz de mantener el contexto de la charla. Si le preguntas "¿Cuál fue el voltaje de ayer?" y luego dices "Grafícalo", el bot entiende que te refieres al voltaje de ayer sin necesidad de repetir los detalles.
+
+### 2. Análisis de Datos Históricos (S3 + Athena)
+A diferencia de un LLM estándar, este agente tiene acceso directo al **Data Lake en S3**. Puede realizar consultas complejas sobre años de telemetría para encontrar:
+- Valores máximos, mínimos y promedios en rangos de tiempo específicos.
+- Tendencias de comportamiento de variables críticas.
+- Correlaciones entre variables (ej: voltaje vs temperatura).
+
+### 3. Generación de Reportes Ejecutivos
+Cuando detecta palabras clave (ej: "informe", "resumen mensual"), el agente activa el **Protocolo de Reporte Visual**:
+- **Formato**: Crea un archivo JSON persistente que se renderiza como una página web dedicada (`/reports/[id]`).
+- **Estructura del Informe**:
+    - **Resumen Ejecutivo**: Análisis narrativo de los hallazgos principales.
+    - **Semáforo de Anomalías**: Clasificación de eventos en Críticos, Advertencias o Informativos.
+    - **Gráficas Interactivas**: Visualizaciones de series de tiempo usando Plotly.
+    - **Conclusiones y Recomendaciones**: Pasos sugeridos basados en la IA.
+
+### 4. Inteligencia de Umbrales (Thresholds)
+El agente conoce los límites técnicos de operación (ej: qué voltaje es demasiado alto) y puede alertar proactivamente en sus respuestas si detecta que los datos consultados superan estos límites.
+
+---
+
 ## 🏗️ Arquitectura General: "Cerebro y Manos"
 
 El sistema opera bajo un modelo de desacoplamiento entre el procesamiento de lenguaje y la ejecución de acciones:

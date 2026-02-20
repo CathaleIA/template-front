@@ -144,8 +144,11 @@ REGLAS:
 - USA SOLO las columnas listadas arriba. SI el usuario pide algo que NO está en la lista, ignóralo.
 - FILTRO DE TIEMPO: La columna 'timestamp' es un STRING. USA COMPARACIÓN DE STRINGS DIRECTA para que sea rápido.
 - Ejemplo correcto: WHERE timestamp >= '${yesterday}T00:00:00Z' AND timestamp <= '${yesterday}T23:59:59Z'
-- REPORTES: Si el usuario pide un "informe", "resumen" o "gráfico" de un mes o semana, GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas) para obtener una serie de tiempo real.
-- Año: Si estamos en ${now.getFullYear()} y pide "diciembre", usa el rango "${now.getFullYear() - 1}-12-01T00:00:00Z" al "${now.getFullYear() - 1}-12-31T23:59:59Z".
+- REPORTES: Si el usuario pide un "reporte", "resumen" o "gráfica", usa GROUP BY substr(timestamp, 1, 10).
+- AGREGACIONES (CRÍTICO): SI USAS GROUP BY, TODAS las columnas del SELECT y CUALQUIER operación matemática debe estar envuelta en funciones de agregación (AVG, SUM, MAX).
+- INCORRECTO: AVG(potencia) / (voltaje1 + voltaje2)
+- CORRECTO: AVG(potencia) / (AVG(voltaje1) + AVG(voltaje2) + AVG(voltaje3))
+- VERACIDAD: NUNCA inventes datos. Si no hay registros para una fecha, ignora ese día en los resultados o indícalo.
 - LIMIT 50 si no es una agregación específica.
 - Si la pregunta menciona "fuera de umbral", usa los umbrales proporcionados arriba.`;
 
