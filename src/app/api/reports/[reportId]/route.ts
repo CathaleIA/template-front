@@ -3,7 +3,7 @@ import { getWebReport } from '@/lib/reports-store';
 
 export async function GET(
     request: Request,
-    { params }: { params: { reportId: string } }
+    { params }: { params: Promise<{ reportId: string }> }
 ) {
     const paramsData = await params;
     const reportId = paramsData.reportId;
