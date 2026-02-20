@@ -63,8 +63,8 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
         <button
           type="button"
           onClick={onToggleBand}
-          title={bandActive ? "Hide band" : "Show band"}
-          aria-label={bandActive ? "Hide band" : "Show band"}
+          title={bandActive ? "Ocultar banda" : "Mostrar banda"}
+          aria-label={bandActive ? "Ocultar banda" : "Mostrar banda"}
           aria-pressed={bandActive}
           className="inline-flex items-center justify-center select-none rounded-[4px] h-[26px] px-2 text-[12px] font-medium transition-colors border outline-none focus-visible:ring-2 focus-visible:ring-offset-0"
           style={{
@@ -74,7 +74,7 @@ function Toolbar({ onToggleBand, bandActive, hostRef, palette }: ToolbarProps) {
             boxShadow: bandActive ? "inset 0 0 0 1px rgba(0,0,0,0.06)" : "none",
           }}
         >
-          <span className="leading-none">Band</span>
+          <span className="leading-none">Banda</span>
         </button>
       </div>
     </div>
@@ -86,8 +86,8 @@ function ExpandButton({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      title="Expand"
-      aria-label="Expand"
+      title="Ampliar"
+      aria-label="Ampliar"
       className="flex items-center justify-center rounded-md border border-border bg-card/70 w-[34px] h-[34px] text-foreground hover:bg-card hover:shadow-sm transition"
       style={{ pointerEvents: "auto" }}
     >
@@ -865,7 +865,7 @@ export default function CurrentsChart({
                 onClick={() => setIsFullscreen(false)}
                 className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] leading-none border border-white/10 bg-transparent hover:border-white/25 hover:bg-white/5 transition-colors text-gray-100"
               >
-                Close (Esc)
+                Cerrar (Esc)
               </button>
             </div>
           </div>

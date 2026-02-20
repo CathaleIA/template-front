@@ -14,17 +14,17 @@ export default function GeneralStatusCard({ activa, reactiva, aparente, fp }: Pr
   return (
     <>
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
-        <Zap className="w-5 h-5 text-yellow-400" /> INDICATORS
+        <Zap className="w-5 h-5 text-yellow-400" /> INDICADORES
       </h2>
 
       {/* 3 filas, 4 columnas */}
       <div className="grid grid-cols-4 gap-y-2 text-center">
 
         {/* ---------- TITULOS ---------- */}
-        <p className="text-sm font-semibold text-muted-foreground">Active Power</p>
-        <p className="text-sm font-semibold text-muted-foreground">Reactive Power</p>
-        <p className="text-sm font-semibold text-muted-foreground">Apparent Power</p>
-        <p className="text-sm font-semibold text-muted-foreground">Power Factor</p>
+        <p className="text-sm font-semibold text-muted-foreground">Potencia Activa</p>
+        <p className="text-sm font-semibold text-muted-foreground">Potencia Reactiva</p>
+        <p className="text-sm font-semibold text-muted-foreground">Potencia Aparente</p>
+        <p className="text-sm font-semibold text-muted-foreground">Factor de Potencia</p>
 
         {/* ---------- VALORES ---------- */}
         <h3 className="text-3xl font-bold text-foreground">{(activa ?? 0).toFixed(0)}</h3>

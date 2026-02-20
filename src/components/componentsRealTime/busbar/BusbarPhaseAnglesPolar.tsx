@@ -151,7 +151,7 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
       {/* Fila superior: estado global + referencia nominal */}
       <div className="flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground font-medium">Phase balance</span>
+          <span className="text-muted-foreground font-medium">Equilibrio de fases</span>
           <span
             className="px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide transition-colors duration-200"
             style={{
@@ -159,7 +159,7 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
               color: globalStatusColor,
             }}
           >
-            {globalStatus}
+            {globalStatus === "OK" ? "NORMAL" : globalStatus === "WARN" ? "ATENCIÓN" : "ALARMA"}
           </span>
         </div>
         <span className="text-muted-foreground/50">

@@ -82,12 +82,12 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
 
   // --- Estado textual abierto/cerrado ---
   const stateLabel = fault
-    ? "FAULT"
+    ? "FALLA"
     : closed
-      ? "CLOSED"
+      ? "CERRADO"
       : opened
-        ? "OPENED"
-        : "INTERMEDIATE";
+        ? "ABIERTO"
+        : "INTERMEDIO";
 
   const stateColorClass = fault
     ? "bg-red-600 text-white"
@@ -106,7 +106,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
           <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
             <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <Zap className="h-3 w-3" />
-              <span>GEN FREQ</span>
+              <span>FREQ GEN</span>
             </div>
             <div className="mt-1 text-sm font-semibold text-foreground">
               {genFreq !== null ? `${genFreq.toFixed(2)} Hz` : "--"}
@@ -116,7 +116,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
           <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
             <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <Zap className="h-3 w-3" />
-              <span>BUS FREQ</span>
+              <span>FREQ BARRA</span>
             </div>
             <div className="mt-1 text-sm font-semibold text-foreground">
               {busFreq !== null ? `${busFreq.toFixed(2)} Hz` : "--"}
@@ -126,7 +126,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
           <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
             <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <ArrowRightLeft className="h-3 w-3" />
-              <span>ΔF GEN-BUS</span>
+              <span>ΔF GEN-BARRA</span>
             </div>
             <div className="mt-1 text-sm font-semibold text-foreground">
               {deltaFreq !== null ? `${deltaFreq.toFixed(2)} Hz` : "--"}
@@ -139,7 +139,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
           <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Power className="h-3 w-3" />
-              Breaker State
+              Estado del Interruptor
             </span>
             <span className="inline-flex items-center gap-1">
               <CheckCircle2
@@ -147,7 +147,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
                   }`}
               />
               <span className="text-[10px]">
-                {voltageOk ? "V/F OK" : "V/F NOT OK"}
+                {voltageOk ? "V/F OK" : "V/F NO OK"}
               </span>
             </span>
           </div>
@@ -160,7 +160,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
             {fault && (
               <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-900/20 px-2 py-0.5 text-[11px] font-medium text-red-600 dark:text-red-400">
                 <AlertTriangle className="h-3 w-3" />
-                FAULT ACTIVE
+                FALLA ACTIVA
               </span>
             )}
           </div>
@@ -170,7 +170,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
       {/* Línea de pasos de operación */}
       <div className="mt-1 rounded-xl border border-border bg-card/50 px-3 py-2">
         <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          Operation Sequence
+          Secuencia de Operación
         </div>
         <div className="flex items-center justify-between gap-3">
           {/* Paso 1: Ready to Close */}
@@ -183,7 +183,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               <CheckCircle2 className="h-4 w-4" />
             </div>
             <span className="text-[11px] font-medium text-foreground/80">
-              Ready to Close
+              Listo para Cerrar
             </span>
           </div>
 
@@ -199,7 +199,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               <ArrowRightLeft className="h-4 w-4" />
             </div>
             <span className="text-[11px] font-medium text-foreground/80">
-              Sync in Progress
+              Sincronización en Curso
             </span>
           </div>
 
@@ -215,7 +215,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               <Power className="h-4 w-4" />
             </div>
             <span className="text-[11px] font-medium text-foreground/80">
-              Closed
+              Cerrado
             </span>
           </div>
 
@@ -231,7 +231,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               <Power className="h-4 w-4 rotate-180" />
             </div>
             <span className="text-[11px] font-medium text-foreground/80">
-              Ready to Open
+              Listo para Abrir
             </span>
           </div>
         </div>
@@ -243,14 +243,14 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
               className={`h-2 w-2 rounded-full ${opened ? "bg-[var(--green-live)]" : "bg-muted"
                 }`}
             />
-            OPENED FLAG
+            INDICADOR ABIERTO
           </span>
           <span className="inline-flex items-center gap-1">
             <span
               className={`h-2 w-2 rounded-full ${closed ? "bg-[var(--green-live)]" : "bg-muted"
                 }`}
             />
-            CLOSED FLAG
+            INDICADOR CERRADO
           </span>
         </div>
       </div>

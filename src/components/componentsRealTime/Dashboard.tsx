@@ -164,10 +164,10 @@ export default function GPC300Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              GPC-300 Dashboard
+              Dashboard GPC-300
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Industrial Generator Monitoring System
+              Sistema de Monitoreo de Generador Industrial
             </p>
           </div>
           <HeaderStatus
@@ -185,7 +185,7 @@ export default function GPC300Dashboard() {
               : "text-muted-foreground hover:text-foreground hover:bg-slate-300/20"
               }`}
           >
-            Main View
+            Vista Principal
           </button>
           <button
             onClick={() => setActiveTab("extras")}
@@ -194,7 +194,7 @@ export default function GPC300Dashboard() {
               : "text-muted-foreground hover:text-foreground hover:bg-slate-300/20"
               }`}
           >
-            Detailed Analysis
+            Análisis Detallado
           </button>
 
         </div>
@@ -203,7 +203,7 @@ export default function GPC300Dashboard() {
           {activeTab === "main" ? (
             <>
               <div className="grid grid-cols-12 gap-4 mb-4 items-start">
-                <Card title="General Status" className="col-span-12 lg:col-span-6">
+                <Card title="Estado General" className="col-span-12 lg:col-span-6">
                   <GeneralStatusCard
                     activa={getNumericValue(data?.data.generator?.potencia_activa) ?? 0}
                     reactiva={getNumericValue(data?.data.generator?.potencia_reactiva) ?? 0}
@@ -212,24 +212,24 @@ export default function GPC300Dashboard() {
                   />
                 </Card>
 
-                <Card title="Voltage KPI" className="col-span-12 lg:col-span-6">
+                <Card title="KPI de Voltaje" className="col-span-12 lg:col-span-6">
                   <KPIVoltage voltages={data?.data.generator ?? {}} />
                 </Card>
               </div>
 
               <div className="grid grid-cols-12 gap-4 mb-4 items-start">
-                <Card title="Current" className="col-span-12 lg:col-span-6">
+                <Card title="Corriente" className="col-span-12 lg:col-span-6">
                   <CurrentsChart data={corrienteData} height={364} />
                 </Card>
 
-                <Card title="Voltage" className="col-span-12 lg:col-span-6">
+                <Card title="Voltaje" className="col-span-12 lg:col-span-6">
                   <VoltagesChart data={voltajeData} height={364} />
                 </Card>
               </div>
 
               <div className="grid grid-cols-12 gap-4 mb-4 items-start">
                 <Card
-                  title="Bearing Temperatures"
+                  title="Temperaturas de Rodamientos"
                   className="col-span-12 lg:col-span-6"
                 >
                   <BearingTemperatures
@@ -243,7 +243,7 @@ export default function GPC300Dashboard() {
                 </Card>
 
                 <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
-                  <Card title="Generator Sequences" className="flex-1">
+                  <Card title="Secuencias del Generador" className="flex-1">
                     <GeneratorSequenceGauge
                       secuenciaPositiva={
                         data?.data.generator?.secuencia_positiva
@@ -255,7 +255,7 @@ export default function GPC300Dashboard() {
                     />
                   </Card>
 
-                  <Card title="Current Unbalance" className="flex-1">
+                  <Card title="Desbalance de Corriente" className="flex-1">
                     <DesbalanceCorrienteIndicator
                       desbalance_corriente={
                         data?.data.generator?.desbalance_corriente
@@ -270,11 +270,11 @@ export default function GPC300Dashboard() {
             <>
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
-                  title="Breaker Operation Flow"
+                  title="Flujo de Operación del Interruptor"
                   className="col-span-12 lg:col-span-5 h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <BreakerOperationFlowPanel
                         breaker={data?.data.breaker}
                         generator={data?.data.generator}
@@ -285,22 +285,22 @@ export default function GPC300Dashboard() {
                 </Card>
 
                 <Card
-                  title="Busbar Sequences"
+                  title="Secuencias de Barra de Bus"
                   className="col-span-12 lg:col-span-5 h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <BusbarSequenceBars busbar={data?.data.busbar} />
                     </Suspense>
                   </div>
                 </Card>
 
                 <Card
-                  title="Busbar Frequency"
+                  title="Frecuencia de Barra de Bus"
                   className="col-span-12 lg:col-span-2 h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <BusbarFrequencyGauge busbar={data?.data.busbar} />
                     </Suspense>
                   </div>
@@ -309,33 +309,33 @@ export default function GPC300Dashboard() {
 
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
-                  title="Busbar Phase Angles"
+                  title="Ángulos de Fase de Barra de Bus"
                   className="col-span-12 lg:col-span-4 h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <BusbarPhaseTriangle3D busbar={data?.data.busbar} />
                     </Suspense>
                   </div>
                 </Card>
 
                 <Card
-                  title="Breaker Status"
+                  title="Estado del Interruptor"
                   className="col-span-12 lg:col-span-4 h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <BreakerStatusPanel breakerData={data?.data.breaker ?? {}} />
                     </Suspense>
                   </div>
                 </Card>
 
                 <Card
-                  title="Generator–Busbar Voltage Δ"
+                  title="Δ de Voltaje Generador–Barra"
                   className="col-span-12 lg:col-span-4 h-[220px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div>Cargando...</div>}>
                       <DeltaBusDeltaTrend
                         data={deltaDataRows}
                         maxRange={10}

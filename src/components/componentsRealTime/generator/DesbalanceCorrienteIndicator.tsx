@@ -19,9 +19,9 @@ function getStatusColor(value: number): string {
 }
 
 function getStatusLabel(value: number): string {
-  if (value <= NORMAL_MAX) return "OK";
-  if (value <= WARNING_MAX) return "Warning";
-  return "Alarm";
+  if (value <= NORMAL_MAX) return "Normal";
+  if (value <= WARNING_MAX) return "Atención";
+  return "Alarma";
 }
 
 export default function DesbalanceCorrienteIndicator({
@@ -88,15 +88,15 @@ export default function DesbalanceCorrienteIndicator({
       <div className="flex gap-3 text-[11px] text-muted-foreground mt-1">
         <div className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-          <span>≤ 5% OK</span>
+          <span>≤ 5% Normal</span>
         </div>
         <div className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
-          <span>≤ 10% Warning</span>
+          <span>≤ 10% Atención</span>
         </div>
         <div className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-          <span>&gt; 10% Alarm</span>
+          <span>&gt; 10% Alarma</span>
         </div>
       </div>
     </div>

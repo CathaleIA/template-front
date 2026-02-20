@@ -27,12 +27,12 @@ export default function HeaderStatus({ connected, lastUpdate, error, subtitle }:
           ) : connected ? (
             <>
               <Wifi className="w-4 h-4" />
-              <span className="text-sm font-medium">Online</span>
+              <span className="text-sm font-medium">En Línea</span>
             </>
           ) : (
             <>
               <WifiOff className="w-4 h-4" />
-              <span className="text-sm font-medium">Connecting...</span>
+              <span className="text-sm font-medium">Conectando...</span>
             </>
           )}
         </div>
@@ -41,7 +41,7 @@ export default function HeaderStatus({ connected, lastUpdate, error, subtitle }:
       <div className="text-right">
         {subtitle && <p className="text-xs text-muted-foreground mb-0.5">{subtitle}</p>}
         <p className="text-xs text-muted-foreground/60 font-mono">
-          Last update: {lastUpdate ? lastUpdate.toLocaleTimeString() : '--:--:--'}
+          Última actualización: {lastUpdate ? lastUpdate.toLocaleTimeString() : '--:--:--'}
         </p>
       </div>
     </div>

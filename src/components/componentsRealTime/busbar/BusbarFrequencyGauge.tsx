@@ -139,11 +139,11 @@ export default function BusbarFrequencyGauge({
         }}
       >
         {status === "normal"
-          ? "OK"
+          ? "Normal"
           : status === "warning"
-            ? "WARN"
+            ? "ATENCIÓN"
             : status === "danger"
-              ? "ALARM"
+              ? "ALARMA"
               : "—"}
       </span>
     </div>
@@ -154,7 +154,7 @@ export default function BusbarFrequencyGauge({
     <div className="mt-1 w-full flex flex-col items-center text-[9px] text-muted-foreground text-center leading-tight">
       <div>Nom: {nominal} Hz</div>
       <div>
-        ±{warningTolerancePercent}% OK · ±{dangerTolerancePercent}% Alert
+        ±{warningTolerancePercent}% Normal · ±{dangerTolerancePercent}% Alerta
       </div>
     </div>
   );

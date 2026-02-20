@@ -103,24 +103,24 @@ function getZeroColor(v: number | null): string {
 
 /** Etiquetas de estado según valor */
 function getPositiveStatusLabel(v: number | null): string {
-  if (v === null || Number.isNaN(v)) return "No data";
-  if (v >= 95) return "OK";
-  if (v >= 90) return "Warning";
-  return "Alarm";
+  if (v === null || Number.isNaN(v)) return "Sin datos";
+  if (v >= 95) return "Normal";
+  if (v >= 90) return "Atención";
+  return "Alarma";
 }
 
 function getNegativeStatusLabel(v: number | null): string {
-  if (v === null || Number.isNaN(v)) return "No data";
-  if (v <= NEG_WARNING) return "OK";
-  if (v <= NEG_DANGER) return "Warning";
-  return "Alarm";
+  if (v === null || Number.isNaN(v)) return "Sin datos";
+  if (v <= NEG_WARNING) return "Normal";
+  if (v <= NEG_DANGER) return "Atención";
+  return "Alarma";
 }
 
 function getZeroStatusLabel(v: number | null): string {
-  if (v === null || Number.isNaN(v)) return "No data";
-  if (v <= ZERO_WARNING) return "OK";
-  if (v <= ZERO_DANGER) return "Warning";
-  return "Alarm";
+  if (v === null || Number.isNaN(v)) return "Sin datos";
+  if (v <= ZERO_WARNING) return "Normal";
+  if (v <= ZERO_DANGER) return "Atención";
+  return "Alarma";
 }
 
 /** Chip de estado compacto con color */
@@ -208,21 +208,21 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: "#16a34a" }}
             />
-            <span>OK</span>
+            <span>Normal</span>
           </div>
           <div className="flex items-center gap-1">
             <span
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: "#eab308" }}
             />
-            <span>Warning</span>
+            <span>Atención</span>
           </div>
           <div className="flex items-center gap-1">
             <span
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: "#dc2626" }}
             />
-            <span>Alarm</span>
+            <span>Alarma</span>
           </div>
         </div>
 
@@ -406,7 +406,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
                 textTransform: "uppercase",
               }}
             >
-              SEQUENCES
+              SECUENCIAS
             </text>
 
             {/* Letras P / N / Z, un poco separadas del arco */}
@@ -446,7 +446,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
         {/* Positive */}
         <div className="space-y-1">
           <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            Positive sequence
+            Secuencia positiva
           </div>
           <div className="flex items-baseline gap-2">
             <div className="text-3xl md:text-4xl font-bold text-foreground tabular-nums">
@@ -468,7 +468,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-muted-foreground">
-                Negative
+                Negativa
               </span>
               <StatusChip color={negativeColor} label={negativeStatus} />
             </div>
@@ -483,7 +483,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold uppercase tracking-[0.12em] text-[11px] text-muted-foreground">
-                Zero
+                Cero
               </span>
               <StatusChip color={zeroColor} label={zeroStatus} />
             </div>
@@ -498,7 +498,7 @@ const GeneratorSequenceGauge: React.FC<Props> = ({
 
         {/* referencia corta */}
         <div className="text-[10px] text-muted-foreground mt-1">
-          Ref: Pos ≥ 95% · Neg ≤ {NEG_WARNING}% · Zero ≤ {ZERO_WARNING}%.
+          Ref: Pos ≥ 95% · Neg ≤ {NEG_WARNING}% · Cero ≤ {ZERO_WARNING}%.
         </div>
       </div>
     </div>

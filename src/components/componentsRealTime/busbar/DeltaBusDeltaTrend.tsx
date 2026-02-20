@@ -182,12 +182,12 @@ export default function DeltaBusDeltaTrend({
 
           <div className="flex items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-yellow-400 dark:bg-amber-400" />
-            <span>Warning ({warningThreshold}–{alarmThreshold} V)</span>
+            <span>Atención ({warningThreshold}–{alarmThreshold} V)</span>
           </div>
 
           <div className="flex items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-red-500 dark:bg-rose-500" />
-            <span>Alarm (≥ {alarmThreshold} V)</span>
+            <span>Alarma (≥ {alarmThreshold} V)</span>
           </div>
         </div>
       </div>

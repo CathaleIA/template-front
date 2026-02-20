@@ -67,10 +67,10 @@ function createArcPath(
   ].join(" ");
 }
 
-function tempToStatusLabel(temp: number): "OK" | "Warning" | "Alarm" {
-  if (temp >= DANGER_TEMP) return "Alarm";
-  if (temp >= WARNING_TEMP) return "Warning";
-  return "OK";
+function tempToStatusLabel(temp: number): "Normal" | "Atención" | "Alarma" {
+  if (temp >= DANGER_TEMP) return "Alarma";
+  if (temp >= WARNING_TEMP) return "Atención";
+  return "Normal";
 }
 
 function tempToStatusClass(temp: number): string {
@@ -234,8 +234,8 @@ const BearingTemperatures: React.FC<Props> = ({
     <div className="flex flex-col gap-4 items-stretch">
       {/* Dos medidores: izquierda front, derecha rear */}
       <div className="flex flex-col md:flex-row gap-6 items-stretch">
-        <BearingGauge label="Front Bearing" value={frontValue} />
-        <BearingGauge label="Rear Bearing" value={rearValue} />
+        <BearingGauge label="Rodamiento Delantero" value={frontValue} />
+        <BearingGauge label="Rodamiento Trasero" value={rearValue} />
       </div>
 
       {/* Zona inferior: leyenda + ΔT + estado global */}
@@ -264,14 +264,14 @@ const BearingTemperatures: React.FC<Props> = ({
         <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] md:text-xs">
           <div className="flex items-baseline gap-2 text-muted-foreground">
             <span className="uppercase tracking-[0.16em]">
-              ΔT Front–Rear
+              ΔT Delantero–Trasero
             </span>
             <span className="text-sm md:text-base font-semibold text-foreground tabular-nums">
               {deltaT !== null ? deltaT.toFixed(1) : "--"} °C
             </span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <span className="uppercase tracking-[0.16em]">Status</span>
+            <span className="uppercase tracking-[0.16em]">Estado</span>
             <span
               className={[
                 "px-3 py-[3px] rounded-full text-[10px] md:text-xs font-semibold uppercase tracking-[0.16em] text-white",

@@ -72,9 +72,9 @@ function severityToLabel(sev: Severity): string {
     case "ok":
       return "OK";
     case "warning":
-      return "Warning";
+      return "Atención";
     case "alarm":
-      return "Alarm";
+      return "Alarma";
     case "nodata":
     default:
       return "Sin datos";
@@ -138,7 +138,7 @@ export default function BusbarSequenceBars({ busbar }: Props) {
     };
 
     const zero: SequenceRow = {
-      label: "Secuencia zero",
+      label: "Secuencia cero",
       short: "Z",
       magnitude:
         typeof rawZero === "number" ? `${rawZero.toFixed(2)} V` : "—",
@@ -169,11 +169,11 @@ export default function BusbarSequenceBars({ busbar }: Props) {
   const globalColor = severityToColor(worstSeverity);
   const globalLabel =
     worstSeverity === "ok"
-      ? "Equilibrio: OK"
+      ? "Equilibrio: Normal"
       : worstSeverity === "warning"
-        ? "Equilibrio: Warning"
+        ? "Equilibrio: Atención"
         : worstSeverity === "alarm"
-          ? "Equilibrio: Alarm"
+          ? "Equilibrio: Alarma"
           : "Equilibrio: Sin datos";
 
   return (
@@ -262,14 +262,14 @@ export default function BusbarSequenceBars({ busbar }: Props) {
             className="w-2.5 h-2.5 rounded-full inline-block"
             style={{ backgroundColor: severityToColor("warning") }}
           />
-          <span>Warning</span>
+          <span>Atención</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
             className="w-2.5 h-2.5 rounded-full inline-block"
             style={{ backgroundColor: severityToColor("alarm") }}
           />
-          <span>Alarm</span>
+          <span>Alarma</span>
         </div>
       </div>
     </div>
