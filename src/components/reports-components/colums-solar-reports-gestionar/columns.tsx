@@ -40,9 +40,13 @@ export const columns: ColumnDef<Report>[] = [
       console.log("Path del archivo para reporte:", path);
       const handleClick = async () => {
         try {
-          const response = await fetch(
-            `/api/pdf-solar-get-url?path=${encodeURIComponent(path)}`
-          );
+          const response = await fetch("/api/pdf-solar-get-url", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ path }),
+          });
 
           if (!response.ok) {
             const text = await response.text();

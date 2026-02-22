@@ -1,27 +1,36 @@
-
-export const runtime = "nodejs";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { desc } from "motion/react-client";
 import { NextResponse } from "next/server";
+// genera la url prefirmada para descargar el archivo PDF desde S3, utilizando el path del archivo que se recibe en la solicitud POST. La función hace una solicitud a un endpoint de AWS API Gateway que se encarga de generar la URL prefirmada. Si la solicitud es exitosa, devuelve la URL en formato JSON; si hay un error, devuelve un mensaje de error con el código de estado correspondiente.
+export async function POST(req: Request) {
+  try {
+    const { path } = await req.json();
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION || "us-east-1",
-});
+    if (!path) {
+      return NextResponse.json(
+        { error: "Missing path" },
+        { status: 400 }
+      );
+    }
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const path = searchParams.get("path");
+    const response = await fetch(
+    "https://e989ua8tf9.execute-api.us-east-1.amazonaws.com/dev/create-get-url-file", // tu endpoint API Gateway
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ path }),
+      }
+    );
 
-  if (!path) {
-    return NextResponse.json({ error: "Missing path" }, { status: 400 });
+    const data = await response.json();
+
+    return NextResponse.json(data, { status: response.status });
+
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
-
-  const command = new GetObjectCommand({
-    Bucket: "solar-reports-prod-1762831693",
-    Key: path,
-  });
-
-  const url = await getSignedUrl(s3, command, { expiresIn: 60 });
-
-  return NextResponse.json({ url });
 }
