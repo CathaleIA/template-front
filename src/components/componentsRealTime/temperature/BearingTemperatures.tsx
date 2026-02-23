@@ -112,7 +112,7 @@ const BearingGauge: React.FC<GaugeProps> = ({ label, value }) => {
       </div>
 
       {/* Gauge (más alto en vertical) */}
-      <div className="relative w-52 h-44 md:w-64 md:h-56">
+      <div className="relative w-full max-w-[13rem] h-44 md:max-w-[16rem] md:h-56">
         <svg viewBox="0 0 200 120" className="w-full h-full">
           {/* Fondo gris del arco */}
           <path

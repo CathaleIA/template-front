@@ -100,9 +100,9 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
   return (
     <div className="flex h-full w-full flex-col gap-3 text-xs text-foreground">
       {/* Resumen superior: frecuencias + estado general */}
-      <div className="grid grid-cols-12 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
         {/* GEN / BUS / Δf */}
-        <div className="col-span-7 grid grid-cols-3 gap-2">
+        <div className="col-span-12 md:col-span-7 grid grid-cols-3 gap-2">
           <div className="flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
             <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               <Zap className="h-3 w-3" />
@@ -135,7 +135,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
         </div>
 
         {/* Estado principal del breaker */}
-        <div className="col-span-5 flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+        <div className="col-span-12 md:col-span-5 flex flex-col rounded-lg border border-border bg-muted/30 px-2 py-1.5">
           <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Power className="h-3 w-3" />

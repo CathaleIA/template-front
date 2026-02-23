@@ -160,11 +160,11 @@ export default function GPC300Dashboard() {
 
   return (
     <>
-      <div className={`p-4 md:p-6 bg-background min-h-screen font-sans text-foreground transition-all duration-300 ${chatOpen ? 'mr-80' : ''}`}>
+      <div className={`p-4 md:p-6 bg-background min-h-screen font-sans text-foreground transition-all duration-300 ${chatOpen ? 'lg:mr-80' : ''}`}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Dashboard GPC-300
+              Panel de Control
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Sistema de Monitoreo de Generador Industrial
@@ -177,7 +177,7 @@ export default function GPC300Dashboard() {
           />
         </div>
 
-        <div className="flex space-x-1 bg-muted p-1 rounded-lg mb-6 w-fit">
+        <div className="flex space-x-1 bg-muted p-1 rounded-lg mb-6 w-fit overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab("main")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "main"
@@ -271,7 +271,7 @@ export default function GPC300Dashboard() {
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
                   title="Flujo de Operación del Interruptor"
-                  className="col-span-12 lg:col-span-5 h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-5 h-[320px] md:h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -286,7 +286,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Secuencias de Barra de Bus"
-                  className="col-span-12 lg:col-span-5 h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-5 h-[320px] md:h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -297,7 +297,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Frecuencia de Barra de Bus"
-                  className="col-span-12 lg:col-span-2 h-[480px]"
+                  className="col-span-12 md:col-span-12 lg:col-span-2 h-auto min-h-[200px] lg:h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -310,7 +310,7 @@ export default function GPC300Dashboard() {
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
                   title="Ángulos de Fase de Barra de Bus"
-                  className="col-span-12 lg:col-span-4 h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[320px] md:h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -321,7 +321,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Estado del Interruptor"
-                  className="col-span-12 lg:col-span-4 h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[320px] md:h-[480px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -332,7 +332,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Δ de Voltaje Generador–Barra"
-                  className="col-span-12 lg:col-span-4 h-[220px]"
+                  className="col-span-12 lg:col-span-4 h-auto min-h-[180px] md:h-[220px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>

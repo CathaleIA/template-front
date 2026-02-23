@@ -18,7 +18,7 @@ export default function GeneralStatusCard({ activa, reactiva, aparente, fp }: Pr
       </h2>
 
       {/* 3 filas, 4 columnas */}
-      <div className="grid grid-cols-4 gap-y-2 text-center">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-2 text-center">
 
         {/* ---------- TITULOS ---------- */}
         <p className="text-sm font-semibold text-muted-foreground">Potencia Activa</p>

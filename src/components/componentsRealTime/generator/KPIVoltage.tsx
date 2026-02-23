@@ -177,7 +177,7 @@ const KPIVoltage = ({
         </div>
 
         {/* DERECHA — Leyenda colores */}
-        <div className="hidden md:flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
             <span>Normal</span>

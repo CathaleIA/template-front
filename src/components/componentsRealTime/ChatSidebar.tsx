@@ -274,7 +274,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
   }
 
   return (
-    <aside className={`fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-80 bg-background flex flex-col shadow-2xl z-[99999] border-l transition-colors duration-300
+    <aside className={`fixed right-0 top-14 h-[calc(100vh-3.5rem)] w-full sm:w-80 bg-background flex flex-col shadow-2xl z-[99999] border-l transition-colors duration-300
       ${hasAlarms ? 'border-red-500/50' : 'border-border'}`}>
       {/* Header */}
       <div className={`${hasAlarms ? 'bg-red-700' : 'bg-[var(--green-dark)]'} text-white p-4 flex items-center justify-between transition-colors duration-500`}>
