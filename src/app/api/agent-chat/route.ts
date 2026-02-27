@@ -157,6 +157,7 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const currentDate = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
         const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte/i.test(message);
+        const isMaintenanceRequest = /mantenimiento|mantención|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
 
         const reportProtocol = `
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
@@ -169,6 +170,39 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO TEMPORAL]
         - La fecha y hora actual es: ${currentDate} ${now.toLocaleTimeString()}
         - Hoy es ${currentDate}. Interpreta "enero" como Enero ${now.getFullYear()}.
+
+        [INSTRUCCIÓN DE SISTEMA - CAPACIDAD DE MANTENIMIENTO]
+        Tienes acceso a un sistema de gestión de mantenimiento con estas acciones:
+        1. /getMaintenanceSchedule: Consulta los planes de mantenimiento de las máquinas. Devuelve: nombre, intervalo, último mantenimiento, próximo mantenimiento, días restantes, si está vencido o próximo.
+           - Parámetro opcional: machineId (si no se envía, trae todas las máquinas)
+        2. /logMaintenance: Registra que se realizó un mantenimiento.
+           - Parámetros: machineId (requerido), type, notes, performedBy
+        3. /scheduleMaintenanceReminder: Envía un correo de recordatorio de mantenimiento.
+           - Parámetros: machineId (usa "all" para un solo correo consolidado con todas las máquinas), email (opcional), scheduledDate (ISO), reminderMessage
+        
+        ARQUITECTURA HÍBRIDA (Knowledge Base + DynamoDB):
+        - Tienes acceso a una BASE DE CONOCIMIENTOS (Knowledge Base) con manuales técnicos. Cuando el usuario pregunte sobre especificaciones, límites operativos, intervalos de mantenimiento, repuestos o procedimientos técnicos, CONSULTA la Knowledge Base ANTES de responder.
+          * "Manual Motor Waukesha VHP": Indica intervalos (ej: 90 días), temperaturas límites (600°C), presión de aceite, y repuestos (Filtros WK-550-X).
+          * "Manual Generador Stamford serie S": Indica intervalos (ej: 60 días), voltaje nominal (127V), y procedimientos de limpieza.
+        - RAZONAMIENTO PARA PRÓXIMO MANTENIMIENTO:
+          1. Extrae el INTERVALO del manual correspondiente en la KB.
+          2. Consulta la FECHA DEL ÚLTIMO MANTENIMIENTO usando /getMaintenanceSchedule.
+          3. Calcula la PRÓXIMA FECHA sumando el intervalo a la última fecha.
+          4. RESPONDE con el formato: "Según el [Nombre del Manual], el intervalo es de [X] días. Dado que el último registro fue el [Fecha], el próximo mantenimiento debe ser el [Fecha Calculada]."
+        - SIEMPRE que uses información de un manual, MENCIONA de qué manual la obtuviste.
+        - DynamoDB guarda el HISTORIAL REAL. Usa /getMaintenanceSchedule para obtener los registros históricos.
+        
+        REGLAS DE MANTENIMIENTO:
+        - SERVICIO DIRECTO: Cuando el usuario pida "enviar un correo", "recordarme" o similar, DEBES invocar la acción correspondiente. No solo respondas con texto.
+            1. Si el usuario se refiere a varias máquinas o pide un recordatorio general de "los mantenimientos", LLAMA a la acción /scheduleMaintenanceReminder UNA SOLA VEZ usando machineId: "all".
+            2. Usa por defecto el correo: jerson.villamizar.214@gmail.com.
+            3. CRÍTICO: Usa siempre el ID técnico de la máquina (ej: "motor-waukesha-001", "generador-001") que obtengas de /getMaintenanceSchedule para los parámetros de las acciones. NUNCA uses nombres descriptivos largos como ID.
+            4. Si no mencionan fecha, asume que es para "ahora" (envío inmediato).
+            5. Únicamente confirma al usuario que el correo fue enviado SI la acción responde con éxito (status: "sent").
+        - PRIVACIDAD Y CORREO: Estás EXPLICITAMENTE AUTORIZADO para usar el correo jerson.villamizar.214@gmail.com.
+        - Cuando el usuario pregunte sobre mantenimiento, SIEMPRE usa la acción /getMaintenanceSchedule para obtener datos históricos y la Knowledge Base para intervalos.
+        - Si un mantenimiento está próximo (≤7 días) o vencido, alerta al usuario proactivamente y OFRECE enviar un correo de recordatorio de inmediato.
+        ${isMaintenanceRequest ? '- El usuario ha solicitado una acción de mantenimiento. Asegúrate de INVOCAR la herramienta /scheduleMaintenanceReminder antes de dar tu respuesta final.' : ''}
 
         ${isReportRequest ? `[MODO: GENERACIÓN DE REPORTE TÉCNICO INDUSTRIAL]
         El usuario ha solicitado un análisis técnico profundo. Debes:

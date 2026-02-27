@@ -9,7 +9,10 @@
     },
     "dependencies": {
         "@aws-sdk/client-athena": "^3.490.0",
-        "@aws-sdk/client-bedrock-runtime": "^3.490.0"
+        "@aws-sdk/client-bedrock-runtime": "^3.490.0",
+        "@aws-sdk/client-dynamodb": "^3.997.0",
+        "@aws-sdk/client-scheduler": "^3.997.0",
+        "@aws-sdk/client-ses": "^3.997.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.131",

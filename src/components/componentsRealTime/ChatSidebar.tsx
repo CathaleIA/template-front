@@ -347,12 +347,13 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-border">
                     <p className="text-[10px] font-semibold opacity-70 mb-1 flex items-center gap-1">
-                      <BookOpen className="w-3 h-3" /> Fuentes:
+                      <BookOpen className="w-3 h-3" /> Fuentes consultadas:
                     </p>
                     <div className="space-y-1">
                       {msg.sources.map((source: any, i: number) => (
-                        <div key={i} className="text-[10px] bg-muted p-1 rounded text-muted-foreground">
-                          {source.source || source.doc || source.text || 'Documento técnico'}
+                        <div key={i} className="text-[10px] bg-muted/80 p-1.5 rounded text-muted-foreground flex items-start gap-1.5" title={source.snippet || ''}>
+                          <span className="text-[var(--green-dark)] dark:text-[var(--green-medium)] mt-0.5">📄</span>
+                          <span className="font-medium">{source.fileName || source.source || source.doc || 'Documento técnico'}</span>
                         </div>
                       ))}
                     </div>
