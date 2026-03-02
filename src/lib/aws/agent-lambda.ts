@@ -761,7 +761,7 @@ export const handler: Handler = async (event: any) => {
                             notificationId: { S: `notif-now-${mid}-${uuidv4().substring(0, 8)}` },
                             scheduledDate: { S: todayStr },
                             machineId: { S: mid },
-                            message: { S: reminderMessage || `Recordatorio enviado hoy para ${mid}` },
+                            message: { S: reminderMessage || `Recordatorio enviado hoy para ${mid === 'all' ? 'Todos los Equipos' : mid}` },
                             type: { S: 'immediate' }
                         }
                     }));

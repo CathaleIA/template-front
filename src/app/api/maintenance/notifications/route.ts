@@ -95,10 +95,11 @@ export async function GET() {
 
         const scheduledNotifs = scheduledResult.Items || [];
         for (const notif of scheduledNotifs) {
+            const mId = notif.machineId?.S || 'system';
             alerts.push({
                 id: notif.notificationId?.S || 'unknown',
-                machineId: notif.machineId?.S || 'system',
-                machineName: notif.machineId?.S || 'Sistema',
+                machineId: mId,
+                machineName: mId === 'all' ? 'Resumen General' : (mId === 'system' ? 'Sistema' : mId),
                 message: notif.message?.S,
                 nextDate: notif.scheduledDate?.S,
                 type: 'info',

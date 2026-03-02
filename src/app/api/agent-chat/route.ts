@@ -156,7 +156,7 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const now = new Date();
         const currentDate = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
-        const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte/i.test(message);
+        const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte|comparar|comparativo|comparativa|diferencia entre|vs\b/i.test(message);
         const isMaintenanceRequest = /mantenimiento|mantención|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
 
         const reportProtocol = `
@@ -241,7 +241,22 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         REGLAS DE ORO:
         - EXTENSIÓN: Sé lo más extenso y detallado posible en el "summary". No uses bullet points ahí; úsalos en "conclusions".
         - LOS CHARTS DEBEN TENER LA LLAVE "data" COMO UN ARRAY.
-        - Si no hay datos para un día, refléjalo en el análisis técnico, no lo ocultes.`
+        - Si no hay datos para un día, refléjalo en el análisis técnico, no lo ocultes.
+
+        [MODO ESPECIAL: REPORTE COMPARATIVO]
+        Si el usuario pide COMPARAR dos fechas, días, semanas o periodos (ej: "comparar 5 y 6 de febrero", "diferencia entre enero y febrero"):
+        1. CONSULTA SEPARADA: Ejecuta UNA consulta por CADA periodo/día. NO mezcles ambos en una sola consulta. Usa WHERE timestamp LIKE '2026-02-05%' para el día 1 y WHERE timestamp LIKE '2026-02-06%' para el día 2, por ejemplo.
+        2. KPIs COMPARATIVOS: Presenta los KPIs de AMBOS periodos lado a lado, con la diferencia porcentual:
+           Ejemplo de kpi: { "label": "Voltaje L1 Promedio", "value": "Día 1: 2401V | Día 2: 2405V", "delta": "+0.17%" }
+        3. CHARTS COMPARATIVOS: Genera charts con DOS series superpuestas (una por cada periodo) para que el usuario compare visualmente.
+           Ejemplo: { "type": "scatter", "data": [{ "x": [...horas], "y": [...valoresDia1], "name": "5 Feb" }, { "x": [...horas], "y": [...valoresDia2], "name": "6 Feb" }] }
+        4. ANÁLISIS COMPARATIVO: En el "summary", estructura tu análisis así:
+           - Párrafo 1: Contexto general de ambos periodos.
+           - Párrafo 2: ¿Qué mejoró del periodo 1 al 2? (con datos numéricos específicos)
+           - Párrafo 3: ¿Qué empeoró o se mantuvo del periodo 1 al 2?
+           - Párrafo 4: Posibles causas de las diferencias observadas.
+        5. CONCLUSIONES: Incluye recomendaciones basadas en las TENDENCIAS detectadas entre ambos periodos.
+        IMPORTANTE: No centres el análisis en un solo periodo. El valor del reporte comparativo está en las DIFERENCIAS y TENDENCIAS entre ambos.`
                 : `[MODO: CONSULTA SIMPLE]
         El usuario hace una pregunta directa. Responde con texto claro y conciso.
         NO generes bloques <report_data> ni JSON. Solo responde la pregunta.` }
