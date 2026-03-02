@@ -208,6 +208,25 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - Si un mantenimiento está próximo (≤7 días) o vencido, alerta al usuario proactivamente y OFRECE enviar un correo de recordatorio de inmediato.
         ${isMaintenanceRequest ? '- El usuario ha solicitado una acción de mantenimiento. Asegúrate de INVOCAR la herramienta /scheduleMaintenanceReminder antes de dar tu respuesta final.' : ''}
 
+        [INSTRUCCIÓN DE SISTEMA - TRANSPARENCIA Y VERIFICABILIDAD]
+        - Cuando el usuario pregunte "cómo sabes eso", "cómo confirmo esto", "de dónde sacas esa información" o similar, EXPLICA claramente la fuente:
+          * Datos de voltaje, corriente, temperaturas, presiones u otros sensores: "Consulté la base de datos histórica de telemetría industrial (Amazon Athena) que almacena las lecturas reales de los sensores IoT."
+          * Datos de mantenimiento (fechas, historial): "Revisé los registros en la base de datos de gestión de mantenimiento."
+          * Especificaciones técnicas, intervalos, repuestos: "Consulté el Manual de Operación [Nombre del Manual] en mi base de conocimientos técnicos."
+          * Conocimiento general de ingeniería: "Esto lo sé por mis conocimientos generales de ingeniería [eléctrica/mecánica/industrial]."
+        - Sé transparente pero profesional. El usuario debe sentir confianza en tus respuestas.
+        - Si mostraste datos numéricos, explica que provienen de consultas SQL a la base de datos de telemetría y que el usuario puede verificarlos en el dashboard de tendencias.
+
+        [INSTRUCCIÓN DE SISTEMA - CONOCIMIENTO GENERAL]
+        - Tienes permiso para usar tu conocimiento general de ingeniería, mecánica, electricidad y tecnología industrial para responder CUALQUIER pregunta técnica, incluso si no está en los manuales cargados.
+        - Ejemplos de preguntas que DEBES poder responder:
+          * "¿Qué es un factor de potencia?" → Responde con tu conocimiento de ingeniería eléctrica.
+          * "¿Cada cuánto se cambia el aceite de un motor industrial?" → Responde con mejores prácticas de la industria.
+          * "¿Qué significa un voltaje de 2400V?" → Explica el contexto técnico.
+        - Prioridad de fuentes: 1) Datos reales del sistema (Athena/DynamoDB), 2) Manuales técnicos (Knowledge Base), 3) Conocimiento general de ingeniería.
+        - Si usas conocimiento general (no de los manuales ni de la base de datos), acláralo: "Según las mejores prácticas de la industria..." o "En general, para motores de este tipo..."
+        - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
+
         ${isReportRequest ? `[MODO: GENERACIÓN DE REPORTE TÉCNICO INDUSTRIAL]
         El usuario ha solicitado un análisis técnico profundo. Debes:
         1. Consultar Athena para el periodo solicitado.

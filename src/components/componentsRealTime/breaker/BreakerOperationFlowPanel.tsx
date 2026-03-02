@@ -98,7 +98,7 @@ const BreakerOperationFlowPanel: React.FC<Props> = ({
         : "bg-amber-400 text-black";
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 text-xs text-foreground">
+    <div className="flex h-full w-full flex-col justify-center gap-3 text-xs text-foreground">
       {/* Resumen superior: frecuencias + estado general */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
         {/* GEN / BUS / Δf */}

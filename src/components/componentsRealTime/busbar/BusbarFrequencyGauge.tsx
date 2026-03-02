@@ -169,8 +169,8 @@ export default function BusbarFrequencyGauge({
         <>
           <div className="mb-1 w-full flex justify-center">{header}</div>
 
-          <div className="flex-1 w-3 flex items-end">
-            <div className="relative w-full h-full bg-muted rounded-full overflow-hidden">
+          <div className="flex-1 w-6 flex items-end my-2">
+            <div className="relative w-full h-[60%] bg-muted rounded-full overflow-hidden">
               <div
                 className="absolute bottom-0 left-0 w-full"
                 style={{

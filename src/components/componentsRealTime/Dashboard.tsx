@@ -271,7 +271,7 @@ export default function GPC300Dashboard() {
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
                   title="Flujo de Operación del Interruptor"
-                  className="col-span-12 md:col-span-6 lg:col-span-5 h-[320px] md:h-[480px]"
+                  className="col-span-12 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -286,7 +286,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Secuencias de Barra de Bus"
-                  className="col-span-12 md:col-span-6 lg:col-span-5 h-[320px] md:h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -297,7 +297,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Frecuencia de Barra de Bus"
-                  className="col-span-12 md:col-span-12 lg:col-span-2 h-auto min-h-[200px] lg:h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -310,7 +310,7 @@ export default function GPC300Dashboard() {
               <div className="grid grid-cols-12 gap-4 mb-4 auto-rows-max">
                 <Card
                   title="Ángulos de Fase de Barra de Bus"
-                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[320px] md:h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -321,7 +321,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Estado del Interruptor"
-                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[320px] md:h-[480px]"
+                  className="col-span-12 md:col-span-6 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -332,7 +332,7 @@ export default function GPC300Dashboard() {
 
                 <Card
                   title="Δ de Voltaje Generador–Barra"
-                  className="col-span-12 lg:col-span-4 h-auto min-h-[180px] md:h-[220px]"
+                  className="col-span-12 lg:col-span-4 h-[360px] md:h-[400px]"
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <Suspense fallback={<div>Cargando...</div>}>
@@ -341,7 +341,7 @@ export default function GPC300Dashboard() {
                         maxRange={10}
                         warningThreshold={2}
                         alarmThreshold={5}
-                        height={180}
+                        height={300}
                       />
                     </Suspense>
                   </div>
