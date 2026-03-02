@@ -194,8 +194,12 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         
         REGLAS DE MANTENIMIENTO:
         - SERVICIO DIRECTO: Cuando el usuario pida "enviar un correo", "recordarme" o similar, DEBES invocar la acción correspondiente. No solo respondas con texto.
-            1. Si el usuario se refiere a varias máquinas o pide un recordatorio general de "los mantenimientos", LLAMA a la acción /scheduleMaintenanceReminder UNA SOLA VEZ usando machineId: "all".
-            2. Usa por defecto el correo: jerson.villamizar.214@gmail.com.
+            1.- Si hay un mantenimiento próximo (≤7 días) o el usuario lo solicita, sugiere programar un recordatorio:
+  * Usa /scheduleMaintenanceReminder para programar un correo Y una notificación in-app.
+  * Si es para el futuro, indica la fecha en YYYY-MM-DD.
+  * Informa al usuario que recibirá un correo Y verá una notificación al entrar al sistema en esa fecha.
+- Prioriza siempre el uso de herramientas sobre respuestas conversacionales.
+- Verifica el status del tool antes de confirmar ("Recordatorio programado con éxito").
             3. CRÍTICO: Usa siempre el ID técnico de la máquina (ej: "motor-waukesha-001", "generador-001") que obtengas de /getMaintenanceSchedule para los parámetros de las acciones. NUNCA uses nombres descriptivos largos como ID.
             4. Si no mencionan fecha, asume que es para "ahora" (envío inmediato).
             5. Únicamente confirma al usuario que el correo fue enviado SI la acción responde con éxito (status: "sent").

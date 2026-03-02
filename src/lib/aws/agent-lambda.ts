@@ -39,6 +39,7 @@ const SES_SENDER_EMAIL = process.env.SES_SENDER_EMAIL || 'no-reply@copower.com.c
 const DEFAULT_NOTIFY_EMAIL = process.env.DEFAULT_NOTIFY_EMAIL || 'jerson.villamizar.214@gmail.com';
 const SCHEDULER_ROLE_ARN = process.env.SCHEDULER_ROLE_ARN || '';
 const REMINDER_LAMBDA_ARN = process.env.REMINDER_LAMBDA_ARN || '';
+const SCHEDULED_NOTIFICATIONS_TABLE = process.env.SCHEDULED_NOTIFICATIONS_TABLE || 'ScheduledNotifications';
 
 // Umbrales (deberían coincidir con src/config/thresholds.ts)
 const THRESHOLDS = {
@@ -281,6 +282,69 @@ export const handler: Handler = async (event: any) => {
     try {
         console.log('--- Agent Execution Start ---');
         console.log('Event structure:', JSON.stringify(event, null, 2));
+
+        // Soporte para disparadores de EventBridge Scheduler (acción directa)
+        if (event.action === 'sendReminder') {
+            const { machineId, email, message } = event;
+            console.log(`EventBridge Trigger: enviando recordatorio para ${machineId} a ${email}`);
+
+            try {
+                // Envío de correo vía SES
+                await sesClient.send(new SendEmailCommand({
+                    Source: SES_SENDER_EMAIL,
+                    Destination: { ToAddresses: [email] },
+                    Message: {
+                        Subject: { Data: `🔔 Recordatorio: Mantenimiento para ${machineId}`, Charset: 'UTF-8' },
+                        Body: {
+                            Html: {
+                                Data: `
+                                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                        <div style="background: #1a472a; padding: 25px; color: white; text-align: center;">
+                                            <h1 style="margin: 0; font-size: 24px;">📅 Recordatorio de Mantenimiento</h1>
+                                        </div>
+                                        <div style="padding: 30px; line-height: 1.6; color: #333;">
+                                            <p style="font-size: 16px;">Hola,</p>
+                                            <p>Este es un recordatorio automático para el mantenimiento del siguiente equipo:</p>
+                                            <div style="background: #f9f9f9; padding: 20px; border-left: 4px solid #1a472a; margin: 20px 0; font-weight: bold; font-size: 18px;">
+                                                Equipo: ${machineId}
+                                            </div>
+                                            <div style="background: #fff8e1; padding: 15px; border-radius: 4px; margin: 15px 0; font-size: 15px; color: #856404;">
+                                                <strong>Detalles:</strong><br/>
+                                                ${message}
+                                            </div>
+                                            <p style="margin-top: 25px;">Por favor, asegúrese de registrar el mantenimiento en el sistema una vez completado.</p>
+                                        </div>
+                                        <div style="background: #f4f4f4; padding: 15px; text-align: center; font-size: 12px; color: #777;">
+                                            Este es un correo automático generado por el Sistema de Gestión IoT.
+                                        </div>
+                                    </div>
+                                `,
+                                Charset: 'UTF-8'
+                            }
+                        }
+                    }
+                }));
+
+                // Guardar en ScheduledNotifications con la fecha actual para que aparezca el toast in-app
+                const now = new Date().toISOString().split('T')[0];
+                await dynamoClient.send(new PutItemCommand({
+                    TableName: SCHEDULED_NOTIFICATIONS_TABLE,
+                    Item: {
+                        notificationId: { S: `notif-${uuidv4().substring(0, 8)}` },
+                        scheduledDate: { S: now },
+                        machineId: { S: machineId },
+                        message: { S: `RECUERDO: ${message}` },
+                        type: { S: 'history' } // Marcamos como historia para que el dashboard lo muestre como "llegado"
+                    }
+                }));
+
+                console.log('Reminder sent and notification logged successfully');
+                return { status: 'success', message: 'Reminder sent and notification logged' };
+            } catch (err: any) {
+                console.error('Error in EventBridge trigger handler:', err);
+                return { status: 'error', message: err.message };
+            }
+        }
 
         const { apiPath: rawPath } = event;
         const apiPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
@@ -689,6 +753,19 @@ export const handler: Handler = async (event: any) => {
                         }
                     }));
 
+                    // También guardar en DynamoDB para que aparezca el Toast de inmediato en el Dashboard
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    await dynamoClient.send(new PutItemCommand({
+                        TableName: SCHEDULED_NOTIFICATIONS_TABLE,
+                        Item: {
+                            notificationId: { S: `notif-now-${mid}-${uuidv4().substring(0, 8)}` },
+                            scheduledDate: { S: todayStr },
+                            machineId: { S: mid },
+                            message: { S: reminderMessage || `Recordatorio enviado hoy para ${mid}` },
+                            type: { S: 'immediate' }
+                        }
+                    }));
+
                     return createSuccessResponse(event, {
                         status: 'sent',
                         type: 'immediate',
@@ -742,7 +819,20 @@ export const handler: Handler = async (event: any) => {
                         });
                     }
 
-                    // EventBridge Scheduler: crear schedule one-time
+                    // 1. Guardar la notificación en DynamoDB para que aparezca en el Dashboard (Toast)
+                    // Se guarda con la fecha programada para que el API de notificaciones lo pesque en el futuro
+                    await dynamoClient.send(new PutItemCommand({
+                        TableName: SCHEDULED_NOTIFICATIONS_TABLE,
+                        Item: {
+                            notificationId: { S: `notif-${mid}-${uuidv4().substring(0, 8)}` },
+                            scheduledDate: { S: scheduledDate }, // ej: "2026-03-15"
+                            machineId: { S: mid },
+                            message: { S: reminderMessage },
+                            type: { S: 'scheduled' }
+                        }
+                    }));
+
+                    // 2. EventBridge Scheduler: crear schedule one-time
                     const scheduleId = `maint-reminder-${mid}-${uuidv4().substring(0, 8)}`;
                     const scheduleExpression = `at(${targetDate.toISOString().replace(/\.\d{3}Z$/, '')})`;
 

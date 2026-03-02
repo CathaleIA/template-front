@@ -26,9 +26,7 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
         )}
       </div>
 
-      <div className="px-6 pt-2">
-        <NotificationSystem />
-      </div>
+      {/* Notificaciones removidas de aquí para usarse globalmente en el Layout */}
     </div>
   )
 }

@@ -16,6 +16,7 @@ const client = new DynamoDBClient({
 
 const MAINTENANCE_SCHEDULES_TABLE = process.env.MAINTENANCE_SCHEDULES_TABLE || 'MaintenanceSchedules';
 const MAINTENANCE_LOG_TABLE = process.env.MAINTENANCE_LOG_TABLE || 'MaintenanceLog';
+const SCHEDULED_NOTIFICATIONS_TABLE = process.env.SCHEDULED_NOTIFICATIONS_TABLE || 'ScheduledNotifications';
 
 export async function GET() {
     try {
@@ -67,6 +68,27 @@ export async function GET() {
                     });
                 }
             }
+        }
+
+        // 3. Obtener notificaciones programadas (manuales del bot)
+        // Buscamos las que ya llegaron a su fecha
+        const nowStr = new Date().toISOString().split('T')[0];
+        const scheduledResult = await client.send(new ScanCommand({
+            TableName: SCHEDULED_NOTIFICATIONS_TABLE,
+            FilterExpression: 'scheduledDate <= :today',
+            ExpressionAttributeValues: { ':today': { S: nowStr } }
+        }));
+
+        const scheduledNotifs = scheduledResult.Items || [];
+        for (const notif of scheduledNotifs) {
+            alerts.push({
+                machineId: notif.machineId?.S || 'system',
+                machineName: notif.machineId?.S || 'Sistema',
+                message: notif.message?.S,
+                nextDate: notif.scheduledDate?.S,
+                type: 'info',
+                isScheduled: true
+            });
         }
 
         return NextResponse.json({

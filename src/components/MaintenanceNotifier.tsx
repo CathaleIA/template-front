@@ -21,12 +21,23 @@ export function MaintenanceNotifier() {
                     data.alerts.forEach((alert: any) => {
                         const isOverdue = alert.daysRemaining < 0;
 
+                        let type: "error" | "success" | "info" = isOverdue ? "error" : "success";
+                        let title = isOverdue ? `Mantenimiento Vencido: ${alert.machineName}` : `Mantenimiento Próximo: ${alert.machineName}`;
+                        let message = isOverdue
+                            ? `El mantenimiento venció hace ${Math.abs(alert.daysRemaining)} días (${alert.nextDate}).`
+                            : `Faltan ${alert.daysRemaining} días para el mantenimiento programado (${alert.nextDate}).`;
+
+                        // Si es una notificación programada manualmente por el bot
+                        if (alert.isScheduled) {
+                            type = "info";
+                            title = `🔔 Recordatorio: ${alert.machineName}`;
+                            message = alert.message || `Recordatorio programado para hoy (${alert.nextDate})`;
+                        }
+
                         addNotification({
-                            type: isOverdue ? "error" : "success", // Usamos success para el color verde/amarillo si no es crítico
-                            title: isOverdue ? `Mantenimiento Vencido: ${alert.machineName}` : `Mantenimiento Próximo: ${alert.machineName}`,
-                            message: isOverdue
-                                ? `El mantenimiento venció hace ${Math.abs(alert.daysRemaining)} días (${alert.nextDate}).`
-                                : `Faltan ${alert.daysRemaining} días para el mantenimiento programado (${alert.nextDate}).`,
+                            type,
+                            title,
+                            message,
                             duration: 10000 // 10 segundos para que el usuario lo vea bien
                         });
                     });

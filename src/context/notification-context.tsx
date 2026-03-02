@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useCallback } from "react"
 
 export interface Notification {
   id: string
-  type: "success" | "error"
+  type: "success" | "error" | "info"
   title: string
   message?: string
   duration?: number
