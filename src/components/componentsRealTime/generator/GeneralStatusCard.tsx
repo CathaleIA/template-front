@@ -30,7 +30,7 @@ export default function GeneralStatusCard({ activa, reactiva, aparente, fp }: Pr
         <h3 className="text-3xl font-bold text-foreground">{(activa ?? 0).toFixed(0)}</h3>
         <h3 className="text-3xl font-bold text-foreground">{(reactiva ?? 0).toFixed(0)}</h3>
         <h3 className="text-3xl font-bold text-foreground">{(aparente ?? 0).toFixed(0)}</h3>
-        <h3 className="text-3xl font-bold text-foreground">{(fp ?? 0).toFixed(0)}%</h3>
+        <h3 className="text-3xl font-bold text-foreground">{(fp ?? 0).toFixed(0)}</h3>
 
         {/* ---------- UNIDADES ---------- */}
         <span className="text-sm font-medium text-muted-foreground/80">kW</span>
