@@ -3,13 +3,19 @@ import { redirect } from 'next/navigation';
 
 async function getAuthStatus() {
   try {
-    const response = await fetch(`/api/tenantget`, {
+    // En Next.js Server Components, las URLs deben ser absolutas.
+    const { headers } = await import('next/headers');
+    const host = (await headers()).get('host') || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/auth/tenantget`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // Esto envía las cookies HttpOnly
-      cache: 'no-store', // Para evitar caché en esta verificación crítica
+      credentials: 'include',
+      cache: 'no-store',
     });
 
     if (!response.ok) {

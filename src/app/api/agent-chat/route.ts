@@ -163,9 +163,9 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
         - Si el usuario pide un "reporte", "resumen" o "gráfica" para un mes o semana, usa GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas).
         - AGREGACIONES: SI USAS GROUP BY, TODAS las columnas del SELECT deben ser agregaciones (AVG, MAX, MIN) o estar en el GROUP BY.
-        - EFICIENCIA: No intentes fórmulas complejas de eficiencia en el SQL. Solo trae los promedios de voltaje y corriente.
-        - VERACIDAD: NUNCA inventes datos. Si no hay registros para un día, no lo incluyas en los resultados.
-        - LIMIT 50 si no es una agregación específica.
+        - EFICIENCIA: Trae promedios de voltaje y corriente.
+        - VERACIDAD: NUNCA inventes datos. Si no hay registros, no lo incluyas.
+        - LIMIT 50.
 
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO TEMPORAL]
         - La fecha y hora actual es: ${currentDate} ${now.toLocaleTimeString()}
@@ -227,36 +227,27 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - Si usas conocimiento general (no de los manuales ni de la base de datos), acláralo: "Según las mejores prácticas de la industria..." o "En general, para motores de este tipo..."
         - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
 
-        ${isReportRequest ? `[MODO: GENERACIÓN DE REPORTE TÉCNICO INDUSTRIAL]
-        El usuario ha solicitado un análisis técnico profundo. Debes:
-        1. Consultar Athena para el periodo solicitado.
-        2. Escribir un resumen profesional en el chat.
-        3. Generar un bloque <report_data> con un JSON que incluya:
-           - "title": Título técnico descriptivo.
-           - "kpis": Mínimo 6 KPIs técnicos (Voltajes, Eficiencia, Temperatura Promedio, Presión de Aceite, Factor de Carga).
-           - "summary": Análisis NARRATIVO EXTENSO (mínimo 4 párrafos). Detalla hallazgos por sistema (Cilindros, Lubricación, Enfriamiento).
-           - "charts": Series de tiempo Plotly (x, y). MÁXIMO 2 charts, 5 puntos cada uno.
-           - "conclusions": Diagnóstico profundo y recomendaciones técnicas (Array de strings).
+        ${isReportRequest ? `[MODO CRÍTICO: INGENIERO SENIOR - REPORTE TÉCNICO]
+        FLUJO OBLIGATORIO DE RESPUESTA FINAL (DENTRO DE <answer>):
+        1. TEXTO BREVE: Escribe exactamente: "Reporte de [Periodo] listo." (ej: "Reporte de enero listo."). No agregues nada más en esta línea.
+        2. BLOQUE DE DATOS: Inmediatamente después del texto, escribe el bloque <report_data>.
         
-        REGLAS DE ORO:
-        - EXTENSIÓN: Sé lo más extenso y detallado posible en el "summary". No uses bullet points ahí; úsalos en "conclusions".
-        - LOS CHARTS DEBEN TENER LA LLAVE "data" COMO UN ARRAY.
-        - Si no hay datos para un día, refléjalo en el análisis técnico, no lo ocultes.
+        OBLIGACIÓN TÉCNICA: El reporte JSON DEBE contener MÍNIMO 12-15 KPIs. No te limites solo a voltaje/corriente; incluye temperaturas de cilindros (max/prom), presión de aceite, y sistema de enfriamiento.
 
-        [MODO ESPECIAL: REPORTE COMPARATIVO]
-        Si el usuario pide COMPARAR dos fechas, días, semanas o periodos (ej: "comparar 5 y 6 de febrero", "diferencia entre enero y febrero"):
-        1. CONSULTA SEPARADA: Ejecuta UNA consulta por CADA periodo/día. NO mezcles ambos en una sola consulta. Usa WHERE timestamp LIKE '2026-02-05%' para el día 1 y WHERE timestamp LIKE '2026-02-06%' para el día 2, por ejemplo.
-        2. KPIs COMPARATIVOS: Presenta los KPIs de AMBOS periodos lado a lado, con la diferencia porcentual:
-           Ejemplo de kpi: { "label": "Voltaje L1 Promedio", "value": "Día 1: 2401V | Día 2: 2405V", "delta": "+0.17%" }
-        3. CHARTS COMPARATIVOS: Genera charts con DOS series superpuestas (una por cada periodo) para que el usuario compare visualmente.
-           Ejemplo: { "type": "scatter", "data": [{ "x": [...horas], "y": [...valoresDia1], "name": "5 Feb" }, { "x": [...horas], "y": [...valoresDia2], "name": "6 Feb" }] }
-        4. ANÁLISIS COMPARATIVO: En el "summary", estructura tu análisis así:
-           - Párrafo 1: Contexto general de ambos periodos.
-           - Párrafo 2: ¿Qué mejoró del periodo 1 al 2? (con datos numéricos específicos)
-           - Párrafo 3: ¿Qué empeoró o se mantuvo del periodo 1 al 2?
-           - Párrafo 4: Posibles causas de las diferencias observadas.
-        5. CONCLUSIONES: Incluye recomendaciones basadas en las TENDENCIAS detectadas entre ambos periodos.
-        IMPORTANTE: No centres el análisis en un solo periodo. El valor del reporte comparativo está en las DIFERENCIAS y TENDENCIAS entre ambos.`
+        ESTRUCTURA JSON EXACTA:
+        {
+          "title": "Diagnóstico Técnico - [Periodo]",
+          "kpis": [{"label": "Variable", "value": "Valor", "unit": "...", "status": "normal/advertencia/critico"}], 
+          "summary": "4 párrafos de análisis industrial profundo.",
+          "conclusions": ["Hallazgo técnico 1", "Hallazgo técnico 2"], 
+          "anomalies": [{
+            "severity": "critical/warning/info",
+            "message": "Mensaje de detección",
+            "variable": "Nombre de la variable"
+          }]
+        }
+
+        REGLA DE ORO: NO incluyas </answer> hasta que hayas puesto el bloque <report_data>. NO uses la herramienta "createReport" interna.`
                 : `[MODO: CONSULTA SIMPLE]
         El usuario hace una pregunta directa. Responde con texto claro y conciso.
         NO generes bloques <report_data> ni JSON. Solo responde la pregunta.` }
@@ -305,12 +296,11 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                         t.orchestrationTrace?.observation?.finalResponse?.text,
                     ].filter(Boolean);
 
-                    console.log(`🔍 Found ${candidates.length} candidate fields to search in trace.`);
-
                     for (const candidate of candidates) {
                         if (typeof candidate !== 'string') continue;
                         const m = candidate.match(/<report_data>([\s\S]*?)(?:<\/report_data>|$)/);
-                        if (m && m[1]?.includes('{')) {
+                        // Aceptar si tiene '{' (JSON) O si tiene '<title>' (XML fallback)
+                        if (m && (m[1]?.includes('{') || m[1]?.includes('<title>'))) {
                             reportDataMatch = m;
                             console.log("✅ Report data recovered from trace field!");
                             break;
@@ -327,15 +317,12 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                             if (content.includes('\\"')) {
                                 content = content.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
                             }
-                            const firstBrace = content.indexOf('{');
-                            if (firstBrace !== -1) content = content.substring(firstBrace);
-
-                            // VALIDACIÓN: solo aceptar si contiene "title" (es JSON real, no texto de instrucción)
-                            if (content.includes('"title"')) {
+                            // Aceptar si parece JSON O si parece XML técnico
+                            if (content.includes('"title"') || content.includes('<title>')) {
                                 reportDataMatch = [content, content];
-                                console.log("✅ Report data recovered from full trace serialization (decoded unicode escapes)!");
+                                console.log("✅ Report data recovered from full trace serialization!");
                             } else {
-                                console.log("⚠️ Fallback match is instruction text, not report JSON. Skipping.");
+                                console.log("⚠️ Fallback match is instruction text, not report JSON/XML. Skipping.");
                             }
                         }
                     }
@@ -347,21 +334,52 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
 
         if (reportDataMatch) {
             let rawCandidate = reportDataMatch[1] || "";
-            // Limpieza extrema de escapes de serialización
+            // Limpieza de escapes
             if (rawCandidate.includes('\\"')) {
                 rawCandidate = rawCandidate.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
             }
 
-            // Recortar a primer '{' y último '}'
-            const startIdx = rawCandidate.indexOf('{');
-            const endIdx = rawCandidate.lastIndexOf('}');
+            // FALLBACK: Si el agente envió XML en lugar de JSON, convertirlo aquí
+            if (!rawCandidate.trim().startsWith('{') && rawCandidate.includes('<title>')) {
+                console.log("🔄 XML detected in report_data, converting to JSON...");
+                try {
+                    const titleMatch = rawCandidate.match(/<title>([\s\S]*?)<\/title>/i);
+                    const summaryMatch = rawCandidate.match(/<summary>([\s\S]*?)<\/summary>/i);
+                    const kpisMatch = rawCandidate.match(/<kpis>([\s\S]*?)<\/kpis>/i);
 
-            if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-                const cleanJson = rawCandidate.substring(startIdx, endIdx + 1);
-                reportDataMatch = [cleanJson, cleanJson];
-                console.log("📊 Report data cleaned and isolated. Length:", cleanJson.length);
+                    const kpis: any[] = [];
+                    if (kpisMatch) {
+                        const kpiEntries = kpisMatch[1].match(/<kpi>([\s\S]*?)<\/kpi>/gi) || [];
+                        for (const entry of kpiEntries) {
+                            const l = entry.match(/<label>([\s\S]*?)<\/label>/i);
+                            const v = entry.match(/<value>([\s\S]*?)<\/value>/i);
+                            const s = entry.match(/<status>([\s\S]*?)<\/status>/i);
+                            if (l && v) kpis.push({ label: l[1].trim(), value: v[1].trim(), status: s?.[1].trim() || 'normal' });
+                        }
+                    }
+
+                    const jsonConv = {
+                        title: titleMatch?.[1].trim() || "Reporte de Operación",
+                        summary: summaryMatch?.[1].replace(/<paragraph>/g, '').replace(/<\/paragraph>/g, '\n\n').replace(/<\/summary>/g, '').trim() || finalAnswer,
+                        kpis: kpis,
+                        conclusions: []
+                    };
+                    const jsonStr = JSON.stringify(jsonConv);
+                    reportDataMatch = [jsonStr, jsonStr];
+                    console.log("✅ XML to JSON conversion successful.");
+                } catch (convError) {
+                    console.error("❌ XML to JSON conversion failed:", convError);
+                }
             } else {
-                console.log("⚠️ Report data structure is problematic (missing braces).");
+                // Recortar a primer '{' y último '}' para JSON estándar
+                const startIdx = rawCandidate.indexOf('{');
+                const endIdx = rawCandidate.lastIndexOf('}');
+
+                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+                    const cleanJson = rawCandidate.substring(startIdx, endIdx + 1);
+                    reportDataMatch = [cleanJson, cleanJson];
+                    console.log("📊 Report data cleaned and isolated. Length:", cleanJson.length);
+                }
             }
         } else {
             console.log("⚠️ No report_data found in answer or traces.");
@@ -369,7 +387,6 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
 
         const jsonFallbackMatch = !reportDataMatch ? finalAnswer.match(/\{[\s\S]*?"title"[\s\S]*?"summary"[\s\S]*?\}/) : null;
         const hasFlag = finalAnswer.includes('<create_report_flag/>');
-        // Solo activar reporte si el usuario lo pidió explícitamente
         const needsReport = isReportRequest && (reportDataMatch || jsonFallbackMatch || hasFlag);
 
         // 2. Limpieza radical de tags y bloques técnicos para el chat
@@ -501,8 +518,8 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                 const reportLink = `/reports/${generatedReportId}`;
                 console.log(`✅ Report generated and saved: ${generatedReportId}`);
 
-                // Reemplazar respuesta con mensaje breve y profesional
-                finalAnswer = `He generado el informe con los datos de ${reportData.title || 'tu solicitud'}.\n\n📊 **Reporte Listo:** [Ver Informe Detallado](${reportLink})`;
+                // Unir el resumen original con el link del reporte de forma estética
+                finalAnswer = `${finalAnswer}\n\n📊 **Reporte Dinámico Listo:** [Ver Informe Detallado](${reportLink})`;
             } catch (saveError) {
                 console.error('❌ Error processing report tag or saving to S3:', saveError);
                 // Si falla, al menos quitamos el placeholder roto para no confundir al usuario

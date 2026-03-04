@@ -164,56 +164,58 @@ export function WebReportViewer({ reportId, data }: WebReportViewerProps) {
                 )}
             </div>
 
-            {/* Visualización de Datos de Alto IMPACTO */}
-            <section className="space-y-6">
-                <div className="flex items-center gap-3 text-primary">
-                    <TrendingUp className="w-5 h-5" />
-                    <h3 className="text-lg font-bold uppercase tracking-widest underline decoration-primary/30 decoration-4 underline-offset-8">Visualización Analítica</h3>
-                </div>
+            {/* Visualización de Datos de Alto IMPACTO - Condicional */}
+            {Array.isArray(data.charts) && data.charts.length > 0 && (
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3 text-primary">
+                        <TrendingUp className="w-5 h-5" />
+                        <h3 className="text-lg font-bold uppercase tracking-widest underline decoration-primary/30 decoration-4 underline-offset-8">Visualización Analítica</h3>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {Array.isArray(data.charts) && data.charts.map((chart, idx) => (
-                        <Card key={idx} className="border-primary/10 bg-card/40 overflow-hidden rounded-3xl group shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
-                            <CardHeader className="bg-primary/5 py-4">
-                                <CardTitle className="text-sm font-bold uppercase tracking-wider text-primary/80 flex justify-between items-center">
-                                    {chart.title || chart.layout?.title || `Parámetro Industrial ${idx + 1}`}
-                                    <TrendingUp className="w-4 h-4 opacity-30" />
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="w-full h-[320px] pt-4">
-                                    <Plot
-                                        data={Array.isArray(chart.data) ? chart.data : []}
-                                        layout={{
-                                            ...chart.layout,
-                                            autosize: true,
-                                            paper_bgcolor: 'rgba(0,0,0,0)',
-                                            plot_bgcolor: 'rgba(0,0,0,0)',
-                                            font: { color: '#888', family: 'Inter, sans-serif' },
-                                            xaxis: {
-                                                gridcolor: 'rgba(128,128,128,0.05)',
-                                                zerolinecolor: 'rgba(128,128,128,0.1)',
-                                                tickfont: { size: 10 }
-                                            },
-                                            yaxis: {
-                                                gridcolor: 'rgba(128,128,128,0.05)',
-                                                zerolinecolor: 'rgba(128,128,128,0.1)',
-                                                tickfont: { size: 10 }
-                                            },
-                                            margin: { t: 20, b: 40, l: 40, r: 20 },
-                                            showlegend: true,
-                                            legend: { orientation: 'h', y: -0.2, font: { size: 9 } }
-                                        }}
-                                        config={{ displayModeBar: false, responsive: true }}
-                                        useResizeHandler={true}
-                                        className="w-full h-full"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            </section>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {data.charts.map((chart, idx) => (
+                            <Card key={idx} className="border-primary/10 bg-card/40 overflow-hidden rounded-3xl group shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+                                <CardHeader className="bg-primary/5 py-4">
+                                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-primary/80 flex justify-between items-center">
+                                        {chart.title || chart.layout?.title || `Parámetro Industrial ${idx + 1}`}
+                                        <TrendingUp className="w-4 h-4 opacity-30" />
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="w-full h-[320px] pt-4">
+                                        <Plot
+                                            data={Array.isArray(chart.data) ? chart.data : []}
+                                            layout={{
+                                                ...chart.layout,
+                                                autosize: true,
+                                                paper_bgcolor: 'rgba(0,0,0,0)',
+                                                plot_bgcolor: 'rgba(0,0,0,0)',
+                                                font: { color: '#888', family: 'Inter, sans-serif' },
+                                                xaxis: {
+                                                    gridcolor: 'rgba(128,128,128,0.05)',
+                                                    zerolinecolor: 'rgba(128,128,128,0.1)',
+                                                    tickfont: { size: 10 }
+                                                },
+                                                yaxis: {
+                                                    gridcolor: 'rgba(128,128,128,0.05)',
+                                                    zerolinecolor: 'rgba(128,128,128,0.1)',
+                                                    tickfont: { size: 10 }
+                                                },
+                                                margin: { t: 20, b: 40, l: 40, r: 20 },
+                                                showlegend: true,
+                                                legend: { orientation: 'h', y: -0.2, font: { size: 9 } }
+                                            }}
+                                            config={{ displayModeBar: false, responsive: true }}
+                                            useResizeHandler={true}
+                                            className="w-full h-full"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     )
 }

@@ -92,7 +92,7 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
     // Esperar a que complete
     let status = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 400; // Aumentado a 120 segundos (400 * 300ms) para consultas pesadas
+    const maxAttempts = 1000; // Aumentado a 300 segundos (1000 * 300ms) para consultas pesadas de Athena
 
     while (status === 'RUNNING' || status === 'QUEUED') {
         if (attempts++ > maxAttempts) {
@@ -139,8 +139,12 @@ async function generateSQL(userQuestion: string): Promise<string> {
 
     const currentDateStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
-    const prompt = `Genera una consulta SQL (Presto/Athena) para responder a la pregunta: "${userQuestion}"
+    const prompt = `Genera una consulta SQL (Presto/Athena) EXACTA para responder a la pregunta: "${userQuestion}"
                  
+REGLA DE ORO DE RENDIMIENTO:
+- La tabla NO está particionada. Usa filtros de 'timestamp' lo más específicos posible.
+- Si piden "hoy", usa >= '${today}T00:00:00Z'.
+- Si piden "enero", usa >= '2026-01-01T00:00:00Z' AND timestamp < '2026-02-01T00:00:00Z'.
 CONVENCIÓN TEMPORAL:
 - La fecha de HOY es: ${today} (${currentDateStr})
 - Si el usuario dice "enero", se refiere al año ${now.getFullYear()}.
@@ -178,7 +182,7 @@ REGLAS:
     };
 
     const command = new InvokeModelCommand({
-        modelId: process.env.AWS_BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0',
+        modelId: process.env.AWS_BEDROCK_MODEL_ID || 'anthropic.claude-3-haiku-20240307-v1:0',
         contentType: 'application/json',
         accept: 'application/json',
         body: JSON.stringify(payload)

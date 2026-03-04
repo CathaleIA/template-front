@@ -207,7 +207,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             timestamp: new Date()
           }]);
         }
-      }, 2000); // Poll cada 2 segundos
+      }, 1000); // Poll cada 1 segundo
 
       // Timeout de seguridad (2 minutos)
       setTimeout(() => {
@@ -220,7 +220,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             timestamp: new Date()
           }]);
         }
-      }, 120000);
+      }, 300000);
 
     } catch (error: any) {
       console.error('Error querying agent:', error);
