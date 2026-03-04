@@ -72,9 +72,9 @@ function severityToLabel(sev: Severity): string {
     case "ok":
       return "OK";
     case "warning":
-      return "Warning";
+      return "Atención";
     case "alarm":
-      return "Alarm";
+      return "Alarma";
     case "nodata":
     default:
       return "Sin datos";
@@ -138,7 +138,7 @@ export default function BusbarSequenceBars({ busbar }: Props) {
     };
 
     const zero: SequenceRow = {
-      label: "Secuencia zero",
+      label: "Secuencia cero",
       short: "Z",
       magnitude:
         typeof rawZero === "number" ? `${rawZero.toFixed(2)} V` : "—",
@@ -169,17 +169,17 @@ export default function BusbarSequenceBars({ busbar }: Props) {
   const globalColor = severityToColor(worstSeverity);
   const globalLabel =
     worstSeverity === "ok"
-      ? "Equilibrio: OK"
+      ? "Equilibrio: Normal"
       : worstSeverity === "warning"
-      ? "Equilibrio: Warning"
-      : worstSeverity === "alarm"
-      ? "Equilibrio: Alarm"
-      : "Equilibrio: Sin datos";
+        ? "Equilibrio: Atención"
+        : worstSeverity === "alarm"
+          ? "Equilibrio: Alarma"
+          : "Equilibrio: Sin datos";
 
   return (
     <div className="w-full space-y-3">
       {/* Estado global */}
-      <div className="flex items-center justify-start text-[11px] text-gray-600">
+      <div className="flex items-center justify-start text-[11px] text-muted-foreground">
         <span
           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-medium"
           style={{
@@ -197,8 +197,8 @@ export default function BusbarSequenceBars({ busbar }: Props) {
       </div>
 
       {/* Tabla de KPIs */}
-      <div className="border border-slate-200 rounded-md overflow-hidden bg-slate-50/60">
-        <div className="grid grid-cols-4 text-[10px] font-medium text-slate-600 bg-slate-100/80 border-b border-slate-200">
+      <div className="border border-border rounded-md overflow-hidden bg-muted/20">
+        <div className="grid grid-cols-4 text-[10px] font-medium text-muted-foreground bg-muted/50 border-b border-border">
           <div className="px-2 py-1.5">Secuencia</div>
           <div className="px-2 py-1.5 text-right">Magnitud</div>
           <div className="px-2 py-1.5 text-right">% de P</div>
@@ -213,20 +213,19 @@ export default function BusbarSequenceBars({ busbar }: Props) {
           return (
             <div
               key={row.short}
-              className={`grid grid-cols-4 text-[11px] ${
-                isEven ? "bg-white" : "bg-slate-50/80"
-              }`}
+              className={`grid grid-cols-4 text-[11px] transition-colors duration-200 ${isEven ? "bg-card" : "bg-muted/30"
+                }`}
             >
               <div className="px-2 py-1.5 flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold bg-slate-800 text-white">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900">
                   {row.short}
                 </span>
-                <span className="text-slate-700">{row.label}</span>
+                <span className="text-foreground">{row.label}</span>
               </div>
-              <div className="px-2 py-1.5 text-right tabular-nums text-slate-800">
+              <div className="px-2 py-1.5 text-right tabular-nums text-foreground">
                 {row.magnitude}
               </div>
-              <div className="px-2 py-1.5 text-right tabular-nums text-slate-700">
+              <div className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">
                 {row.ratioText}
               </div>
               <div className="px-2 py-1.5 flex items-center justify-center">
@@ -250,7 +249,7 @@ export default function BusbarSequenceBars({ busbar }: Props) {
       </div>
 
       {/* Leyenda de colores */}
-      <div className="flex items-center gap-3 text-[10px] text-gray-500">
+      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span
             className="w-2.5 h-2.5 rounded-full inline-block"
@@ -263,14 +262,14 @@ export default function BusbarSequenceBars({ busbar }: Props) {
             className="w-2.5 h-2.5 rounded-full inline-block"
             style={{ backgroundColor: severityToColor("warning") }}
           />
-          <span>Warning</span>
+          <span>Atención</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
             className="w-2.5 h-2.5 rounded-full inline-block"
             style={{ backgroundColor: severityToColor("alarm") }}
           />
-          <span>Alarm</span>
+          <span>Alarma</span>
         </div>
       </div>
     </div>

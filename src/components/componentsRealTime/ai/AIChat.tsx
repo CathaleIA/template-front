@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, BookOpen, Brain, Sparkles } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
 
 interface Message {
   id: string;
@@ -20,6 +21,7 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { userr } = useUser();
   const [sessionId] = useState(() => `session-${Date.now()}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +54,7 @@ export default function AIChat() {
         body: JSON.stringify({
           message: input,
           sessionId,
+          userId: userr?.userName || 'anonymous'
         }),
       });
 
@@ -143,11 +146,10 @@ export default function AIChat() {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md ${
-                msg.role === 'user'
+              className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md ${msg.role === 'user'
                   ? 'bg-[var(--green-dark)] text-white'
                   : 'bg-white text-gray-900 border border-gray-200'
-              }`}
+                }`}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
 

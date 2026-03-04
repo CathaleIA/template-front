@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { IoTDataProvider } from "@/context/IoTDataContext"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,15 +34,17 @@ export default function RootLayout({
         className={`${notoSans.variable} font-sans`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <UserProvider>
-            <ApolloHook>
-              <GlobalChatProvider>
-                <div className="min-h-screen bg-background">
-                  <main>{children}</main>
-                </div>
-              </GlobalChatProvider>
-            </ApolloHook>
-          </UserProvider>
+          <IoTDataProvider>
+            <UserProvider>
+              <ApolloHook>
+                <GlobalChatProvider>
+                  <div className="min-h-screen bg-background">
+                    <main>{children}</main>
+                  </div>
+                </GlobalChatProvider>
+              </ApolloHook>
+            </UserProvider>
+          </IoTDataProvider>
         </ThemeProvider>
       </body>
     </html>

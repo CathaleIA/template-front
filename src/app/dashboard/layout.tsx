@@ -10,6 +10,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import { Toaster } from "@/components/ui/sonner"
 import { NotificationProvider } from "@/context/notification-context"
+import { MaintenanceNotifier } from "@/components/MaintenanceNotifier"
+import { NotificationSystem } from "@/hooks/notification-system"
 import { Separator } from "@/components/ui/separator"
 
 export default async function DashboardLayout({
@@ -52,14 +54,23 @@ export default async function DashboardLayout({
   return (
     <div className="[--header-height:calc(theme(spacing.14))] [--header-h:calc(theme(spacing.9))] min-h-screen overflow-hidden">
       <NotificationProvider>
+        <MaintenanceNotifier />
         <SidebarProvider className="flex h-screen flex-col">
           <div className="flex flex-1 min-h-0">
             <AppSidebar />
             <div className="flex flex-1 flex-col overflow-hidden">
               <SiteHeader />
               <SidebarInset className="flex flex-1 flex-col overflow-hidden">
-                <main className="flex-1 overflow-auto scroll-container">
+                <main className="flex-1 overflow-auto scroll-container relative">
                   <Toaster position="top-right" />
+
+                  {/* Sistema de Notificaciones Global (Toasts) */}
+                  <div className="fixed top-4 right-4 z-[100] w-full max-w-sm pointer-events-none">
+                    <div className="pointer-events-auto">
+                      <NotificationSystem />
+                    </div>
+                  </div>
+
                   <div className="flex-1">
                     {children}
                   </div>

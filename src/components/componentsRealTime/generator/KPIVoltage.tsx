@@ -101,46 +101,44 @@ const KPIVoltage = ({
   };
 
   const getCardClasses = (status: StatusLevel): string => {
-    // Versiones claras para que integren con tu dashboard blanco
     switch (status) {
       case 'normal':
-        return 'border-emerald-200 bg-emerald-50/70';
+        return 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800/50 dark:bg-emerald-900/10';
       case 'warning':
-        return 'border-amber-200 bg-amber-50/70';
+        return 'border-amber-200 bg-amber-50/70 dark:border-amber-800/50 dark:bg-amber-900/10';
       case 'danger':
-        return 'border-red-200 bg-red-50/70';
+        return 'border-red-200 bg-red-50/70 dark:border-red-800/50 dark:bg-red-900/10';
       case 'unknown':
       default:
-        return 'border-gray-200 bg-gray-50/70';
+        return 'border-gray-200 bg-gray-50/70 dark:border-gray-800/50 dark:bg-gray-900/10';
     }
   };
 
   const getValueClasses = (status: StatusLevel): string => {
     switch (status) {
       case 'normal':
-        return 'text-emerald-800';
+        return 'text-emerald-800 dark:text-emerald-400';
       case 'warning':
-        return 'text-amber-800';
+        return 'text-amber-800 dark:text-amber-400';
       case 'danger':
-        return 'text-red-800';
+        return 'text-red-800 dark:text-red-400';
       case 'unknown':
       default:
-        return 'text-gray-600';
+        return 'text-gray-600 dark:text-gray-400';
     }
   };
 
   const getChipClasses = (status: StatusLevel): string => {
-    // Pill de estado más suave, sin tanto contraste
     switch (status) {
       case 'normal':
-        return 'bg-white/70 text-emerald-700 border-emerald-200';
+        return 'bg-white/70 dark:bg-black/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
       case 'warning':
-        return 'bg-white/70 text-amber-700 border-amber-200';
+        return 'bg-white/70 dark:bg-black/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
       case 'danger':
-        return 'bg-white/70 text-red-700 border-red-200';
+        return 'bg-white/70 dark:bg-black/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800';
       case 'unknown':
       default:
-        return 'bg-white/70 text-gray-600 border-gray-200';
+        return 'bg-white/70 dark:bg-black/20 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800';
     }
   };
 
@@ -161,41 +159,41 @@ const KPIVoltage = ({
   return (
     <div className="w-full">
       {/* Rangos de referencia arriba */}
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-600">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-600 dark:text-gray-400">
 
-  {/* IZQUIERDA — Rangos + Chips */}
-  <div className="flex items-center gap-2">
-    <span className="font-semibold text-gray-700">
-      Rangos de referencia
-    </span>
+        {/* IZQUIERDA — Rangos + Chips */}
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-700 dark:text-gray-300">
+            Rangos de referencia
+          </span>
 
-    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px]">
-      ±{warningTolerancePercent}% normal
-    </span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[10px]">
+            ±{warningTolerancePercent}% normal
+          </span>
 
-    <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px]">
-      ±{dangerTolerancePercent}% alerta
-    </span>
-  </div>
+          <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-[10px]">
+            ±{dangerTolerancePercent}% alerta
+          </span>
+        </div>
 
-  {/* DERECHA — Leyenda colores */}
-  <div className="hidden md:flex items-center gap-3 text-[10px] text-gray-500">
-    <div className="flex items-center gap-1">
-      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-      <span>Normal</span>
-    </div>
+        {/* DERECHA — Leyenda colores */}
+        <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Normal</span>
+          </div>
 
-    <div className="flex items-center gap-1">
-      <div className="w-2 h-2 rounded-full bg-amber-500" />
-      <span>Desviación</span>
-    </div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-amber-500" />
+            <span>Desviación</span>
+          </div>
 
-    <div className="flex items-center gap-1">
-      <div className="w-2 h-2 rounded-full bg-red-500" />
-      <span>Crítico</span>
-    </div>
-  </div>
-</div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <span>Crítico</span>
+          </div>
+        </div>
+      </div>
 
 
 
@@ -226,7 +224,7 @@ const KPIVoltage = ({
                       status,
                     )} ${status !== 'unknown' ? 'animate-pulse' : ''}`}
                   />
-                  <span className="text-xs font-semibold text-gray-800 tracking-wide">
+                  <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 tracking-wide">
                     {config.label}
                   </span>
                 </div>
@@ -250,18 +248,18 @@ const KPIVoltage = ({
                   >
                     {value !== null ? value.toFixed(1) : '—'}
                   </span>
-                  <span className="text-xs text-gray-500">V</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">V</span>
                 </div>
 
                 {deviationPercent !== null && (
-                  <span className="text-[11px] text-gray-700">
+                  <span className="text-[11px] text-gray-700 dark:text-gray-300">
                     Desv: {deviationPercent}%
                   </span>
                 )}
               </div>
 
               {/* Solo referencia a nominal, sin descripciones largas ni horas */}
-              <div className="mt-2 flex items-center justify-end text-[10px] text-gray-500">
+              <div className="mt-2 flex items-center justify-end text-[10px] text-gray-500 dark:text-gray-400">
                 Ref: {expectedLineLine.toFixed(0)}V
               </div>
             </div>

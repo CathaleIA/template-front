@@ -40,7 +40,7 @@ async function classifyQuestion(question: string): Promise<'manuals' | 'data'> {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { message } = body;
+    const { message, sessionId, userId } = body;
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -62,6 +62,8 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         message,
         agentType, // 'manuals' o 'data' según clasificación
+        sessionId,
+        userId
       }),
     });
 

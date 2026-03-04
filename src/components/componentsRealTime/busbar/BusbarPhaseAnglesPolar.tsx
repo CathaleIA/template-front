@@ -54,7 +54,12 @@ function getStatusFromDeviation(deviationDeg: number): PhaseStatus {
   return "ALARM";
 }
 
+import { useTheme } from "next-themes";
+
 export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const { phases, separations } = useMemo(() => {
     const rawA = getNumericValue(busbar?.angulo_fase_A);
     const rawB = getNumericValue(busbar?.angulo_fase_B);
@@ -89,7 +94,7 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
         label: "A",
         angleDeg: angleA,
         deviationDeg: devA,
-        color: "#1d4ed8", // azul
+        color: isDark ? "#60a5fa" : "#1d4ed8", // azul más claro en dark
         status: statusA,
       },
       {
@@ -103,7 +108,7 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
         label: "C",
         angleDeg: angleC,
         deviationDeg: devC,
-        color: "#10b981", // verde
+        color: isDark ? "#34d399" : "#10b981", // verde más claro en dark
         status: statusC,
       },
     ];
@@ -115,7 +120,7 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
     };
 
     return { phases: phasesLocal, separations: separationsLocal };
-  }, [busbar]);
+  }, [busbar, isDark]);
 
   // Estado global según la peor fase
   const globalStatus: PhaseStatus = useMemo(() => {
@@ -128,25 +133,36 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
   const centerY = 100;
   const radius = 70;
 
-  const globalStatusColor = STATUS_COLORS[globalStatus];
+  const getGlobalStatusColor = (status: PhaseStatus) => {
+    if (isDark) {
+      switch (status) {
+        case "OK": return "#34d399";
+        case "WARN": return "#fbbf24";
+        case "ALARM": return "#f87171";
+      }
+    }
+    return STATUS_COLORS[status];
+  };
+
+  const globalStatusColor = getGlobalStatusColor(globalStatus);
 
   return (
     <div className="w-full flex flex-col gap-3">
       {/* Fila superior: estado global + referencia nominal */}
       <div className="flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-2">
-          <span className="text-gray-600 font-medium">Phase balance</span>
+          <span className="text-muted-foreground font-medium">Equilibrio de fases</span>
           <span
-            className="px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide"
+            className="px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide transition-colors duration-200"
             style={{
               backgroundColor: `${globalStatusColor}1A`,
               color: globalStatusColor,
             }}
           >
-            {globalStatus}
+            {globalStatus === "OK" ? "NORMAL" : globalStatus === "WARN" ? "ATENCIÓN" : "ALARMA"}
           </span>
         </div>
-        <span className="text-gray-400">
+        <span className="text-muted-foreground/50">
           Ref: AB ≈ BC ≈ CA ≈ 120°
         </span>
       </div>
@@ -159,9 +175,10 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
             cx={centerX}
             cy={centerY}
             r={radius}
-            fill="#f9fafb"
-            stroke="#e5e7eb"
+            fill="currentColor"
+            stroke="currentColor"
             strokeWidth={2}
+            className="text-muted/20"
           />
 
           {/* Aros concéntricos suaves */}
@@ -172,7 +189,8 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
               cy={centerY}
               r={radius * factor}
               fill="none"
-              stroke="#eef2f7"
+              stroke="currentColor"
+              className="text-muted/10"
               strokeWidth={1}
             />
           ))}
@@ -183,7 +201,8 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
             y1={centerY}
             x2={centerX + radius}
             y2={centerY}
-            stroke="#e5e7eb"
+            stroke="currentColor"
+            className="text-muted/20"
             strokeWidth={1}
             strokeDasharray="3 3"
           />
@@ -192,7 +211,8 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
             y1={centerY - radius}
             x2={centerX}
             y2={centerY + radius}
-            stroke="#f3f4f6"
+            stroke="currentColor"
+            className="text-muted/10"
             strokeWidth={1}
           />
 
@@ -218,14 +238,16 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
                   y1={y2}
                   x2={tx}
                   y2={ty}
-                  stroke="#d1d5db"
+                  stroke="currentColor"
+                  className="text-muted-foreground/30"
                   strokeWidth={1}
                 />
                 <text
                   x={lx}
                   y={ly}
                   fontSize={9}
-                  fill="#6b7280"
+                  fill="currentColor"
+                  className="text-muted-foreground/60"
                   textAnchor="middle"
                   dominantBaseline="middle"
                 >
@@ -246,7 +268,9 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
             const lx = centerX + labelRadius * Math.cos(rad);
             const ly = centerY + labelRadius * Math.sin(rad);
 
-            const statusColor = STATUS_COLORS[phase.status];
+            const statusColor = isDark ?
+              (phase.status === "OK" ? "#34d399" : phase.status === "WARN" ? "#fbbf24" : "#f87171") :
+              STATUS_COLORS[phase.status];
 
             return (
               <g key={phase.label}>
@@ -295,27 +319,26 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
           })}
 
           {/* Centro */}
-          <circle cx={centerX} cy={centerY} r={3} fill="#6b7280" />
+          <circle cx={centerX} cy={centerY} r={3} fill="currentColor" className="text-muted-foreground/60" />
         </svg>
       </div>
 
       {/* Tarjetas por fase con relleno según estado */}
       <div className="grid grid-cols-3 gap-2 text-[11px]">
         {phases.map((phase) => {
-          const statusColor = STATUS_COLORS[phase.status];
+          const statusColor = isDark ?
+            (phase.status === "OK" ? "#34d399" : phase.status === "WARN" ? "#fbbf24" : "#f87171") :
+            STATUS_COLORS[phase.status];
           const absDeviation = Math.abs(phase.deviationDeg).toFixed(1);
 
-          const cardBg =
-            phase.status === "OK"
-              ? "#ecfdf3" // verde muy suave
-              : phase.status === "WARN"
-              ? "#fff7ed" // ámbar muy suave
-              : "#fef2f2"; // rojo muy suave
+          const cardBg = isDark ?
+            (phase.status === "OK" ? "rgba(52,211,153,0.05)" : phase.status === "WARN" ? "rgba(251,191,36,0.05)" : "rgba(248,113,113,0.05)") :
+            (phase.status === "OK" ? "#ecfdf3" : phase.status === "WARN" ? "#fff7ed" : "#fef2f2");
 
           return (
             <div
               key={phase.label}
-              className="flex flex-col items-center gap-1 rounded-md border px-2 py-1.5"
+              className="flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 transition-colors duration-200"
               style={{
                 backgroundColor: cardBg,
                 borderColor: `${statusColor}40`,
@@ -327,25 +350,25 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
                   className="inline-flex w-2 h-2 rounded-full"
                   style={{ backgroundColor: phase.color }}
                 />
-                <span className="text-[11px] font-semibold text-gray-700">
+                <span className="text-[11px] font-semibold text-foreground/80">
                   Fase {phase.label}
                 </span>
               </div>
 
               {/* Ángulo actual */}
-              <div className="text-[12px] font-semibold text-gray-900">
+              <div className="text-[12px] font-semibold text-foreground">
                 {phase.angleDeg.toFixed(1)}°
               </div>
 
               {/* Desbalance vs 120° */}
               <div className="flex flex-col items-center gap-0.5">
-                <span className="text-[10px] text-gray-500">
-                  Desbalance (vs 120°)
+                <span className="text-[10px] text-muted-foreground">
+                  Desbalance
                 </span>
                 <span
                   className="px-1.5 py-0.5 rounded-full text-[10px] font-medium"
                   style={{
-                    backgroundColor: `${statusColor}10`,
+                    backgroundColor: `${statusColor}15`,
                     color: statusColor,
                   }}
                 >
@@ -358,22 +381,22 @@ export default function BusbarPhaseAnglesPolar({ busbar }: Props) {
       </div>
 
       {/* Separaciones entre fases */}
-      <div className="flex justify-center gap-3 text-[11px] text-gray-600">
+      <div className="flex justify-center gap-3 text-[11px] text-muted-foreground">
         <div className="flex items-center gap-1">
           <span className="font-medium">AB</span>
-          <span className="text-gray-900 font-semibold">
+          <span className="text-foreground font-semibold">
             {separations.AB.toFixed(1)}°
           </span>
         </div>
         <div className="flex items-center gap-1">
           <span className="font-medium">BC</span>
-          <span className="text-gray-900 font-semibold">
+          <span className="text-foreground font-semibold">
             {separations.BC.toFixed(1)}°
           </span>
         </div>
         <div className="flex items-center gap-1">
           <span className="font-medium">CA</span>
-          <span className="text-gray-900 font-semibold">
+          <span className="text-foreground font-semibold">
             {separations.CA.toFixed(1)}°
           </span>
         </div>

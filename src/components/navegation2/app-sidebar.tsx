@@ -53,26 +53,6 @@ const data = {
   ],
   navMain: [
     {
-      title: "Servicio de Reportes",
-      url: "*",
-      icon: ClipboardMinus,
-      isActive: false,
-      items: [
-        {
-          title: "Crear",
-          url: "/dashboard/reports",
-        },
-        {
-          title: "Listar",
-          url: "#",
-        },
-        {
-          title: "Configurar",
-          url: "#",
-        },
-      ],
-    },
-    {
       title: "Analisis de Sitio",
       url: "#",
       icon: Brain,

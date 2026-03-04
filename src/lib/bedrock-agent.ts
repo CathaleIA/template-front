@@ -12,10 +12,47 @@ const client = new BedrockAgentRuntimeClient({
     } : {}),
 });
 
+export interface CitationSource {
+    fileName: string;
+    snippet: string;
+}
+
 export interface AgentResponse {
     answer: string;
-    citations?: any[];
+    citations?: CitationSource[];
     trace?: any[];
+}
+
+/**
+ * Extrae las fuentes de citación de los eventos del agente
+ */
+function extractCitations(rawCitations: any[]): CitationSource[] {
+    const sources: CitationSource[] = [];
+    const seenFiles = new Set<string>();
+
+    for (const citationGroup of rawCitations) {
+        const items = Array.isArray(citationGroup) ? citationGroup : [citationGroup];
+        for (const citation of items) {
+            const references = citation?.retrievedReferences || [];
+            for (const ref of references) {
+                const uri = ref?.location?.s3Location?.uri || ref?.location?.uri || '';
+                const content = ref?.content?.text || '';
+
+                // Extraer solo el nombre del archivo del URI de S3
+                const fileName = uri.split('/').pop() || uri;
+
+                if (fileName && !seenFiles.has(fileName)) {
+                    seenFiles.add(fileName);
+                    sources.push({
+                        fileName: fileName.replace('.md', '').replace('.pdf', ''),
+                        snippet: content.substring(0, 200)
+                    });
+                }
+            }
+        }
+    }
+
+    return sources;
 }
 
 /**
@@ -26,7 +63,7 @@ export async function invokeAgent(
     sessionId: string = `session-${Date.now()}`
 ): Promise<AgentResponse> {
     const agentId = process.env.BEDROCK_AGENT_ID;
-    const agentAliasId = process.env.BEDROCK_AGENT_ALIAS_ID || 'TSTALIASID'; // ID por defecto del alias de prueba
+    const agentAliasId = process.env.BEDROCK_AGENT_ALIAS_ID || 'TSTALIASID';
 
     if (!agentId) {
         throw new Error('BEDROCK_AGENT_ID environment variable is not set');
@@ -37,7 +74,7 @@ export async function invokeAgent(
         agentAliasId,
         sessionId,
         inputText: userMessage,
-        enableTrace: true, // Para debugging
+        enableTrace: true,
     });
 
     console.log('🤖 Invoking Bedrock Agent:', { agentId, sessionId, message: userMessage.substring(0, 100) });
@@ -45,9 +82,8 @@ export async function invokeAgent(
     try {
         const response = await client.send(command);
 
-        // El agente devuelve un stream de eventos
         let completionText = '';
-        const citations: any[] = [];
+        const rawCitations: any[] = [];
         const trace: any[] = [];
 
         if (response.completion) {
@@ -58,6 +94,10 @@ export async function invokeAgent(
                         const text = new TextDecoder().decode(chunk.bytes);
                         completionText += text;
                     }
+                    // Las citaciones vienen adjuntas al chunk en KB responses
+                    if ((chunk as any).attribution?.citations) {
+                        rawCitations.push(...(chunk as any).attribution.citations);
+                    }
                 }
 
                 if (event.trace) {
@@ -65,18 +105,24 @@ export async function invokeAgent(
                     console.log('🔍 Agent trace:', JSON.stringify(event.trace, null, 2));
                 }
 
-                // Capturar citas si las hay (para Knowledge Bases)
+                // Fallback: citaciones a nivel de evento
                 if ((event as any).citations) {
-                    citations.push((event as any).citations);
+                    rawCitations.push((event as any).citations);
                 }
             }
+        }
+
+        // Procesar y deduplicar citaciones
+        const citations = extractCitations(rawCitations);
+        if (citations.length > 0) {
+            console.log('📚 Citations found:', citations.map(c => c.fileName));
         }
 
         console.log('✅ Agent response completed:', completionText.substring(0, 200));
 
         return {
             answer: completionText || 'El agente no pudo generar una respuesta.',
-            citations,
+            citations: citations.length > 0 ? citations : undefined,
             trace: trace.length > 0 ? trace : undefined,
         };
     } catch (error: any) {

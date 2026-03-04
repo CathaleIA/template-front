@@ -28,12 +28,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       //     ["blog", ["page.tsx"]],
       //   ],
       // ],
-      [
-        { "title": "Reports", "url": "#" },
-        { "title": "Create", "url": "/dashboard/reports" },
-        { "title": "List", "url": "/dashboard/listreports" },
-        { "title": "Config", "url": "#" },
-      ],
+      /* Removed Reports section for simplification */
       [{ "title": "Analysis", "url": "#" },
       // ["Site CTY", "Alerts", "Analytics", "Administration"],
       [{ "title": "Site CTY", "url": "#" },
@@ -69,13 +64,7 @@ export const SIDEBAR_BY_TENANT: Record<string, ProjectData> = {
       },
     ],
     tree: [
-      [
-        { "title": "Reports", "url": "#" },
-        { "title": "Create", "url": "/dashboard/reports" },
-        { "title": "List", "url": "/dashboard/listreports" },
-        { "title": "Config", "url": "#" },
-
-      ],
+      /* Removed Reports section for simplification */
       // ["Analysis",
       //   ["Site CTY", "Alerts", "Analytics", "Administration"],
       // ],

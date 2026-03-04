@@ -49,13 +49,13 @@ export default function DeltaBusDeltaTrend({
   }, [data]);
 
   const phases = useMemo(
-  () => [
-    { key: "delta_L1_barra" as const, label: "L1" },
-    { key: "delta_L2_barra" as const, label: "L2" },
-    { key: "delta_L3_barra" as const, label: "L3" },
-  ],
-  []
-);
+    () => [
+      { key: "delta_L1_barra" as const, label: "L1" },
+      { key: "delta_L2_barra" as const, label: "L2" },
+      { key: "delta_L3_barra" as const, label: "L3" },
+    ],
+    []
+  );
 
   const generalStatus = useMemo<Status>(() => {
     if (!latest) return "ok";
@@ -77,29 +77,26 @@ export default function DeltaBusDeltaTrend({
   const center = 50;
 
   return (
-    <div className="w-full flex flex-col items-center justify-center" style={{ height }}>
+    <div className="w-full flex flex-col items-center justify-center transition-colors duration-300" style={{ height }}>
       {/* Título + indicadores globales */}
       <div className="w-full flex items-center justify-between mb-4 px-6">
-        <div className="text-sm font-semibold text-gray-900">
+        <div className="text-sm font-semibold text-foreground">
           ΔV – Desbalance de voltaje
         </div>
 
         {/* Indicadores globales */}
         <div className="flex items-center gap-3">
           <span
-            className={`w-3 h-3 rounded-full bg-[var(--green-light)] ${
-              generalStatus === "ok" ? "opacity-100" : "opacity-30"
-            }`}
+            className={`w-3 h-3 rounded-full bg-[var(--green-light)] dark:bg-emerald-500 transition-all ${generalStatus === "ok" ? "opacity-100 scale-110 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "opacity-30"
+              }`}
           />
           <span
-            className={`w-3 h-3 rounded-full bg-yellow-400 ${
-              generalStatus === "warn" ? "opacity-100" : "opacity-30"
-            }`}
+            className={`w-3 h-3 rounded-full bg-yellow-400 dark:bg-amber-400 transition-all ${generalStatus === "warn" ? "opacity-100 scale-110 shadow-[0_0_8px_rgba(251,191,36,0.5)]" : "opacity-30"
+              }`}
           />
           <span
-            className={`w-3 h-3 rounded-full bg-red-500 ${
-              generalStatus === "alarm" ? "opacity-100" : "opacity-30"
-            }`}
+            className={`w-3 h-3 rounded-full bg-red-500 dark:bg-rose-500 transition-all ${generalStatus === "alarm" ? "opacity-100 scale-110 shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "opacity-30"
+              }`}
           />
         </div>
       </div>
@@ -130,70 +127,68 @@ export default function DeltaBusDeltaTrend({
             <div key={p.key} className="flex flex-col gap-1">
               {/* Header */}
               <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-gray-800">{p.label}</span>
-                <span className="text-base font-bold text-gray-900">
+                <span className="font-semibold text-foreground/80">{p.label}</span>
+                <span className="text-base font-bold text-foreground tabular-nums">
                   {value.toFixed(1)} V
                 </span>
               </div>
 
               {/* Contenedor general de la barra + triángulo */}
-            <div className="relative w-full">
+              <div className="relative w-full">
+                {/* Barra horizontal */}
+                <div className="relative w-full h-6 rounded-full border border-border bg-muted/30 overflow-hidden">
+                  {/* Barra del valor (debajo) */}
+                  {width > 0 && (
+                    <div
+                      className={`absolute top-0 h-full transition-all duration-300 ${barColor(status)} ${status === "ok" ? "dark:bg-emerald-500" : status === "warn" ? "dark:bg-amber-400" : "dark:bg-rose-500"
+                        }`}
+                      style={{ left: `${left}%`, width: `${width}%` }}
+                    />
+                  )}
 
-              {/* Barra horizontal */}
-              <div className="relative w-full h-6 rounded-full border border-black-400 bg-gray-100 overflow-hidden">
-                {/* Barra del valor (debajo) */}
-                {width > 0 && (
+                  {/* Línea central marcada (encima) */}
                   <div
-                    className={`absolute top-0 h-full ${barColor(status)}`}
-                    style={{ left: `${left}%`, width: `${width}%` }}
+                    className="absolute top-0 h-full w-[2px] bg-foreground/80 z-10"
+                    style={{ left: "50%" }}
                   />
-                )}
+                </div>
 
-                {/* Línea central marcada (encima) */}
+                {/* Triángulo fuera de la barra */}
                 <div
-                  className="absolute top-0 h-full w-[2px] bg-black/80 z-10"
-                  style={{ left: "50%" }}
+                  className="absolute left-1/2 top-full -translate-x-1/2 mt-[2px]
+                            w-0 h-0 border-l-[6px] border-r-[6px] border-b-[8px]
+                            border-l-transparent border-r-transparent border-t-foreground/70"
                 />
               </div>
-
-              {/* Triángulo fuera de la barra, ya no lo tapa overflow-hidden */}
-              <div
-                className="absolute left-1/2 top-full -translate-x-1/2 mt-[2px]
-                          w-0 h-0 border-l-[6px] border-r-[6px] border-b-[8px]
-                          border-l-transparent border-r-transparent border-t-black/70"
-              />
-            </div>
             </div>
           );
         })}
       </div>
 
       {/* Escala */}
-      <div className="flex justify-between w-full text-xs text-gray-600 mt-3 px-10">
+      <div className="flex justify-between w-full text-xs text-muted-foreground mt-3 px-10">
         <span>-{maxRange} V</span>
         <span>0 V</span>
         <span>+{maxRange} V</span>
       </div>
 
       {/* ⭐ LEYENDAS RESTAURADAS (más minimalistas) */}
-      <div className="mt-3 flex flex-col items-center text-[11px] text-gray-600 px-8">
+      <div className="mt-3 flex flex-col items-center text-[11px] text-muted-foreground px-8">
         <div className="flex flex-wrap justify-center gap-4">
-
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-[var(--green-light)]" />
+            <span className="w-3 h-3 rounded-full bg-[var(--green-light)] dark:bg-emerald-500" />
             <span>OK (&lt; {warningThreshold} V)</span>
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-yellow-400" />
-            <span>Warning ({warningThreshold}–{alarmThreshold} V)</span>
+            <span className="w-3 h-3 rounded-full bg-yellow-400 dark:bg-amber-400" />
+            <span>Atención ({warningThreshold}–{alarmThreshold} V)</span>
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-red-500" />
-            <span>Alarm (≥ {alarmThreshold} V)</span>
+            <span className="w-3 h-3 rounded-full bg-red-500 dark:bg-rose-500" />
+            <span>Alarma (≥ {alarmThreshold} V)</span>
           </div>
-
         </div>
       </div>
     </div>

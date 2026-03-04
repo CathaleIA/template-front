@@ -3,7 +3,7 @@
 import { useNotifications } from "@/context/notification-context"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, XCircle, X } from "lucide-react"
+import { CheckCircle, XCircle, Info, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function NotificationSystem() {
@@ -21,13 +21,17 @@ export function NotificationSystem() {
           className={cn(
             "relative pr-12 animate-in slide-in-from-top-2 duration-300",
             notification.type === "success" &&
-              "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200",
+            "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200",
             notification.type === "error" &&
-              "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+            "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+            notification.type === "info" &&
+            "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200",
           )}
         >
           {notification.type === "success" ? (
             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          ) : notification.type === "info" ? (
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           ) : (
             <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
           )}

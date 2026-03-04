@@ -101,28 +101,28 @@ const getStatusText = (status: StatusLevel): string => {
 const getStatusChipClasses = (status: StatusLevel): string => {
   switch (status) {
     case 'normal':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50';
     case 'warning':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
+      return 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50';
     case 'danger':
-      return 'bg-red-50 text-red-700 border-red-200';
+      return 'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50';
     case 'unknown':
     default:
-      return 'bg-gray-50 text-gray-600 border-gray-200';
+      return 'bg-muted text-muted-foreground border-border';
   }
 };
 
 const getValueClasses = (status: StatusLevel): string => {
   switch (status) {
     case 'normal':
-      return 'text-emerald-800';
+      return 'text-emerald-800 dark:text-emerald-400';
     case 'warning':
-      return 'text-amber-800';
+      return 'text-amber-800 dark:text-amber-400';
     case 'danger':
-      return 'text-red-800';
+      return 'text-red-800 dark:text-red-400';
     case 'unknown':
     default:
-      return 'text-gray-600';
+      return 'text-muted-foreground';
   }
 };
 
@@ -143,8 +143,8 @@ const AngleValue = ({ angle, deviation, status }: AngleValueProps) => {
     !hasDeviation || deviation === 0
       ? ''
       : deviation > 0
-      ? '+'
-      : '−';
+        ? '+'
+        : '−';
   const deviationText = hasDeviation
     ? Math.abs(deviation as number).toFixed(1)
     : '—';
@@ -161,14 +161,14 @@ const AngleValue = ({ angle, deviation, status }: AngleValueProps) => {
           {angleText}
         </span>
         {angle !== null && (
-          <span className="ml-0.5 text-[11px] font-medium text-gray-500">
+          <span className="ml-0.5 text-[11px] font-medium text-muted-foreground">
             °
           </span>
         )}
       </div>
 
       {/* Δ alineado debajo */}
-      <div className="mt-0.5 text-[11px] text-gray-600 whitespace-nowrap">
+      <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
         {hasDeviation ? (
           <>
             <span>Δ: </span>
@@ -245,20 +245,20 @@ const PhaseAnglesPanel = ({
       {/* Tabla de ángulos y desviaciones */}
       <div className="space-y-2 flex flex-col h-full">
         {/* Leyenda de referencia superior */}
-        <div className="mb-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
-          <span className="font-semibold text-gray-700">
+        <div className="mb-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">
             Ángulos de fase (generador)
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] whitespace-nowrap">
+          <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 text-[10px] whitespace-nowrap">
             |Δ| ≤ {warningToleranceDeg}° normal
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] whitespace-nowrap">
+          <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 text-[10px] whitespace-nowrap">
             |Δ| ≤ {dangerToleranceDeg}° alerta
           </span>
         </div>
 
         {/* Contenedor de filas */}
-        <div className="flex-1 flex flex-col divide-y divide-gray-200 rounded-md border border-gray-200 bg-white/70 overflow-hidden">
+        <div className="flex-1 flex flex-col divide-y divide-border rounded-md border border-border bg-card/50 overflow-hidden">
           {phaseRows.map(({ config, angle, nominal, deviation, status }) => (
             <div
               key={config.key}
@@ -274,7 +274,7 @@ const PhaseAnglesPanel = ({
                 >
                   {config.label}
                 </span>
-                <span className="text-[10px] text-gray-500 whitespace-nowrap">
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                   Nominal: {nominal.toFixed(0)}°
                 </span>
               </div>
@@ -307,8 +307,8 @@ const PhaseAnglesPanel = ({
               {/* Fondo */}
               <defs>
                 <radialGradient id="phasorBg" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#e5e7eb" stopOpacity="0.8" />
+                  <stop offset="0%" stopColor="var(--card)" stopOpacity="1" />
+                  <stop offset="100%" stopColor="var(--muted)" stopOpacity="0.8" />
                 </radialGradient>
               </defs>
 
@@ -317,7 +317,8 @@ const PhaseAnglesPanel = ({
                 cy={cy}
                 r={radius + 8}
                 fill="url(#phasorBg)"
-                stroke="#d1d5db"
+                stroke="currentColor"
+                className="text-border"
                 strokeWidth={1}
               />
 
@@ -327,7 +328,8 @@ const PhaseAnglesPanel = ({
                 y1={cy - (radius + 4)}
                 x2={cx}
                 y2={cy + (radius + 4)}
-                stroke="#d1d5db"
+                stroke="currentColor"
+                className="text-border"
                 strokeWidth={0.75}
                 strokeDasharray="3 3"
               />
@@ -336,7 +338,8 @@ const PhaseAnglesPanel = ({
                 y1={cy}
                 x2={cx + (radius + 4)}
                 y2={cy}
-                stroke="#d1d5db"
+                stroke="currentColor"
+                className="text-border"
                 strokeWidth={0.75}
                 strokeDasharray="3 3"
               />
@@ -351,10 +354,10 @@ const PhaseAnglesPanel = ({
                   baseColorClass === 'stroke-emerald-500'
                     ? '#10b981'
                     : baseColorClass === 'stroke-sky-500'
-                    ? '#0ea5e9'
-                    : baseColorClass === 'stroke-amber-500'
-                    ? '#f59e0b'
-                    : '#6b7280';
+                      ? '#0ea5e9'
+                      : baseColorClass === 'stroke-amber-500'
+                        ? '#f59e0b'
+                        : '#6b7280';
 
                 return (
                   <g key={config.key}>
@@ -383,28 +386,28 @@ const PhaseAnglesPanel = ({
         </div>
 
         {/* Leyenda de fases */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[10px] text-gray-600">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[10px] text-muted-foreground">
           {phaseConfigs.map((config) => {
             const baseColorClass = config.colorClass
               .split(' ')
               .find((c) => c.startsWith('stroke-'));
             const bgClass =
               baseColorClass === 'stroke-emerald-500'
-                ? 'bg-emerald-100'
+                ? 'bg-emerald-100 dark:bg-emerald-900/30'
                 : baseColorClass === 'stroke-sky-500'
-                ? 'bg-sky-100'
-                : baseColorClass === 'stroke-amber-500'
-                ? 'bg-amber-100'
-                : 'bg-gray-100';
+                  ? 'bg-sky-100 dark:bg-sky-900/30'
+                  : baseColorClass === 'stroke-amber-500'
+                    ? 'bg-amber-100 dark:bg-amber-900/30'
+                    : 'bg-muted';
 
             const dotClass =
               baseColorClass === 'stroke-emerald-500'
-                ? 'bg-emerald-500'
+                ? 'bg-emerald-500 dark:bg-emerald-400'
                 : baseColorClass === 'stroke-sky-500'
-                ? 'bg-sky-500'
-                : baseColorClass === 'stroke-amber-500'
-                ? 'bg-amber-500'
-                : 'bg-gray-500';
+                  ? 'bg-sky-500 dark:bg-sky-400'
+                  : baseColorClass === 'stroke-amber-500'
+                    ? 'bg-amber-500 dark:bg-amber-400'
+                    : 'bg-muted-foreground';
 
             return (
               <div

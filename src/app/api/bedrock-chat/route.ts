@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { invokeBedrock } from '@/lib/bedrock';
 import { getLatestRealtimeData } from '@/lib/iot-realtime';
 import { executeAthenaQuery, getDDLScript } from '@/lib/athena-data';
+import { INDUSTRIAL_THRESHOLDS } from '@/config/thresholds';
 
 // Clasificador inteligente de preguntas
 function classifyQuestion(question: string): 'conversation' | 'manuals' | 'data' {
@@ -269,7 +270,15 @@ INSTRUCCIONES:
 - Confía en que el sistema ya filtró los datos por la fecha correcta solicitada por el usuario.
 - Da los valores técnicos inmediatamente.
 - Si los datos muestran un valor, asume que es el dato correcto para la fecha consultada.
-- No añadas advertencias sobre "falta de contexto de tiempo" a menos que no haya absolutamente ningún dato.`;
+
+REGLAS DE ALARMA Y ANOMALÍAS (AWS Native):
+${JSON.stringify(INDUSTRIAL_THRESHOLDS.ALARM_RULES, null, 2)}
+
+INSTRUCCIONES DE ANÁLISIS:
+1. Si el usuario pregunta por el estado de salud o anomalías, compara los datos de IoT proporcionados con las REGLAS DE ALARMA de arriba.
+2. Si un valor viola un umbral (ej. Frecuencia > 60.5), indica explícitamente que existe una "Alarma de Severidad ${'{{severity}}'}" y explica el motivo basándote en el mensaje de la regla.
+3. Menciona que estas alertas son procesadas directamente por AWS Lambda y notificadas vía SNS cuando ocurren.
+4. No añadas advertencias sobre "falta de contexto de tiempo" a menos que no haya absolutamente ningún dato.`;
 
             // 3. Invocar Bedrock
             console.log('🤖 Invoking Bedrock...');

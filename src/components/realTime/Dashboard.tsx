@@ -94,169 +94,11 @@ function Card({
 }
 
 /* ============ DASHBOARD ============ */
+import { useIoTData } from "@/context/IoTDataContext";
+
+/* ============ DASHBOARD ============ */
 export default function GPC300Dashboard() {
-  const [data, setData] = useState<IoTMessage | null>(null);
-  const [buffer, setBuffer] = useState<{
-    corriente: BufferPoint[];
-    voltaje: BufferPoint[];
-  }>({ corriente: [], voltaje: [] });
-
-  /* --- new delta buffer for delta charts --- */
-  const [deltaBuffer, setDeltaBuffer] = useState<DeltaPoint[]>([]);
-
-  const [connected, setConnected] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const reconnectAttempts = useRef(0);
-
-  /* ============ UPDATE BUFFER ============ */
-  const updateBuffer = useCallback((msg: IoTMessage) => {
-    const gen = msg.data.generator;
-    const ahora = Date.now();
-
-    setBuffer((prev) => {
-      const append = (arr: BufferPoint[], value: Record<string, number>) => {
-        const nuevoHistorial = [...arr, { time: ahora, value }];
-        return nuevoHistorial.filter(
-          (punto) => ahora - punto.time < MAX_HISTORIAL_MS
-        );
-      };
-
-      return {
-        corriente: append(prev.corriente, {
-          L1: getNumericValue(gen?.corriente_L1) || 0,
-          L2: getNumericValue(gen?.corriente_L2) || 0,
-          L3: getNumericValue(gen?.corriente_L3) || 0,
-          Promedio: getNumericValue(gen?.promedio_corrientes) || 0,
-        }),
-        voltaje: append(prev.voltaje, {
-          "L1-N": getNumericValue(gen?.voltage_L1_N) || 0,
-          "L2-N": getNumericValue(gen?.voltage_L2_N) || 0,
-          "L3-N": getNumericValue(gen?.voltage_L3_N) || 0,
-          Promedio: getNumericValue(gen?.promedio_voltajes) || 0,
-        }),
-      };
-    });
-
-    // Update deltaBuffer (keep same trimming behavior)
-    setDeltaBuffer((prev) => {
-      const next = [
-        ...prev,
-        {
-          time: ahora,
-          delta_L1_barra:
-            typeof gen?.delta_L1_barra === "number"
-              ? gen.delta_L1_barra
-              : null,
-          delta_L2_barra:
-            typeof gen?.delta_L2_barra === "number"
-              ? gen.delta_L2_barra
-              : null,
-          delta_L3_barra:
-            typeof gen?.delta_L3_barra === "number"
-              ? gen.delta_L3_barra
-              : null,
-        },
-      ];
-      return next.filter((p) => ahora - p.time < MAX_HISTORIAL_MS);
-    });
-  }, []);
-
-  /* ============ WEBSOCKET CONNECTION ============ */
-  useEffect(() => {
-    const WEBSOCKET_URL =
-      process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
-      "wss://657pcrk382.execute-api.us-east-1.amazonaws.com/production/";
-
-    console.group("🌐 WebSocket Debug");
-    console.log("➡️ Intentando conectar a:", WEBSOCKET_URL);
-    console.groupEnd();
-
-    let ws: WebSocket | null = null;
-    let reconnectTimer: NodeJS.Timeout | null = null;
-    let messageCount = 0;
-
-    const connectWebSocket = () => {
-      ws = new WebSocket(WEBSOCKET_URL);
-
-      ws.onopen = () => {
-        reconnectAttempts.current = 0;
-        setConnected(true);
-        setError(null);
-        console.log("✅ WebSocket conectado correctamente");
-      };
-
-      ws.onclose = () => {
-        setConnected(false);
-        console.warn("🔌 WebSocket desconectado");
-
-        if (reconnectAttempts.current < MAX_RECONNECTIONS) {
-          reconnectAttempts.current += 1;
-          console.warn(
-            `🔄 Intento de reconexión #${reconnectAttempts.current} en 3 segundos...`
-          );
-          reconnectTimer = setTimeout(connectWebSocket, 3000);
-        } else {
-          console.error("❌ Se alcanzó el número máximo de reconexiones");
-          setError("Conexión fallida: límite de reconexiones alcanzado");
-        }
-      };
-
-      ws.onerror = (err) => {
-        console.error("❌ Error en WebSocket:", err);
-        setError("Error de conexión WebSocket");
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const msg: unknown = JSON.parse(event.data);
-
-          // Control message - ignore
-          if (
-            typeof msg === "object" &&
-            msg !== null &&
-            "type" in (msg as Record<string, unknown>)
-          ) {
-            return;
-          }
-
-          // 🆕 FILTRAR: Solo procesar mensajes del generador
-          const casted = msg as IoTMessage & { subsystem?: string };
-
-          // Log para debug
-          console.debug(`📩 Mensaje recibido - Subsystem: ${casted.subsystem || 'undefined'}`);
-
-          // Si tiene subsystem y NO es generator, ignorar
-          if (casted.subsystem && casted.subsystem !== "generator") {
-            console.debug(`⏭️ Mensaje ignorado (subsystem: ${casted.subsystem})`);
-            return;
-          }
-
-          // Si no tiene subsystem pero tiene data.cylinders, es del motor - ignorar
-          if (!casted.subsystem && casted.data && 'cylinders' in casted.data) {
-            console.debug("⏭️ Mensaje ignorado (detectado como motor por estructura)");
-            return;
-          }
-
-          messageCount++;
-          console.log(`✅ Procesando mensaje de generador #${messageCount}`);
-
-          setData(casted);
-          setLastUpdate(new Date());
-          updateBuffer(casted);
-        } catch (err) {
-          console.error("⚠️ Error parseando mensaje:", err);
-        }
-      };
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (ws) ws.close();
-    };
-  }, [updateBuffer]);
+  const { data, buffer, deltaBuffer, connected, lastUpdate, error } = useIoTData();
 
   /* ============ ROWS FOR CHARTS ============ */
   const corrienteData: Row[] = buffer.corriente.map((p, i) => ({
@@ -295,10 +137,10 @@ export default function GPC300Dashboard() {
       <div className="absolute right-6 top-6 z-50">
         <div
           className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium shadow-md ${error
-              ? "bg-red-600 text-white"
-              : connected
-                ? "bg-[var(--green-light)] text-white"
-                : "bg-yellow-500 text-black"
+            ? "bg-red-600 text-white"
+            : connected
+              ? "bg-[var(--green-light)] text-white"
+              : "bg-yellow-500 text-black"
             }`}
           title={lastUpdate ? `Last: ${lastUpdate.toLocaleTimeString()}` : ""}
         >
