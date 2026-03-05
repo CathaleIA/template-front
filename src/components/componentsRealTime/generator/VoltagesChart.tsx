@@ -35,8 +35,8 @@ type Props = {
   };
 };
 
-export const DEFAULT_VOLT_MIN = 2395;
-export const DEFAULT_VOLT_MAX = 2408;
+export const DEFAULT_VOLT_MIN = 2399;
+export const DEFAULT_VOLT_MAX = 2401;
 
 type Label = "30s" | "1m" | "5m" | "Todo";
 
