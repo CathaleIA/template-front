@@ -14,7 +14,7 @@ export const INDUSTRIAL_THRESHOLDS = {
             label: 'Voltaje Fase-Neutro'
         },
         current: {
-            warning_high: 110,
+            warning_high: 120,
             unit: 'A',
             label: 'Corriente por Fase'
         },
@@ -57,9 +57,9 @@ export const INDUSTRIAL_THRESHOLDS = {
         { id: 'temp_rodamiento_trasero', path: 'data.temperature.rodamiento_trasero.value', operator: '>', threshold: 72, severity: 'warning', message: 'Temperatura Rodamiento Trasero alta' },
 
         // CORRIENTES
-        { id: 'corriente_L1_high', path: 'data.generator.corriente_L1.value', operator: '>', threshold: 110, severity: 'warning', message: 'Corriente L1 elevada' },
-        { id: 'corriente_L2_high', path: 'data.generator.corriente_L2.value', operator: '>', threshold: 110, severity: 'warning', message: 'Corriente L2 elevada' },
-        { id: 'corriente_L3_high', path: 'data.generator.corriente_L3.value', operator: '>', threshold: 110, severity: 'warning', message: 'Corriente L3 elevada' },
+        { id: 'corriente_L1_high', path: 'data.generator.corriente_L1.value', operator: '>', threshold: 120, severity: 'warning', message: 'Corriente L1 elevada' },
+        { id: 'corriente_L2_high', path: 'data.generator.corriente_L2.value', operator: '>', threshold: 120, severity: 'warning', message: 'Corriente L2 elevada' },
+        { id: 'corriente_L3_high', path: 'data.generator.corriente_L3.value', operator: '>', threshold: 120, severity: 'warning', message: 'Corriente L3 elevada' },
 
         // VOLTAJES
         { id: 'voltage_L1_N_high', path: 'data.generator.voltage_L1_N.value', operator: '>', threshold: 2644, severity: 'warning', message: 'Voltaje L1-N alto' },

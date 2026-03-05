@@ -45,7 +45,7 @@ const SCHEDULED_NOTIFICATIONS_TABLE = process.env.SCHEDULED_NOTIFICATIONS_TABLE 
 const THRESHOLDS = {
     generator: {
         voltage_L_N: { min: 100, max: 130, unit: 'V' },
-        current: { max: 50, unit: 'A' },
+        current: { max: 120, unit: 'A' },
         frequency: { min: 58, max: 62, unit: 'Hz' }
     },
     engine: {
