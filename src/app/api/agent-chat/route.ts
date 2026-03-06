@@ -229,39 +229,27 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
 
         ${isReportRequest ? `[MODO CRÍTICO: INGENIERO SENIOR - REPORTE TÉCNICO]
-        Identifica si el usuario pide un reporte SIMPLE (un periodo) o COMPARATIVO (A vs B).
+        Identifica si el usuario pide un reporte SIMPLE (ej: "informe de enero", "resumen de hoy") o COMPARATIVO (A vs B).
         
-        SI ES COMPARATIVO (ej: "compara enero con febrero", "vs", "diferencia"):
-        1. [PRESUPUESTO DE TIEMPO: MÁX 180s] Realiza UNA SOLA consulta a queryData para AMBOS periodos simultáneamente. PROHIBIDO hacer llamadas secuenciales.
-        2. Para cada KPI, mapea "value" (Actual) y "comparisonValue" (Anterior).
-        3. Calcula "delta" y "trend" ('up', 'down', 'stable').
-        4. "dynamicSections": Sección "Análisis de Causalidad" (4 párrafos sólidos).
+        REGLA DE HERRAMIENTAS: El parámetro 'question' de queryData DEBE ser lenguaje natural. PROHIBIDO ESCRIBIR SQL.
+        
+        CASO A: REPORTE SIMPLE (Un solo periodo)
+        1. Consulta queryData para el periodo solicitado.
+        2. Genera el bloque <report_data> con 12-15 KPIs. DEBES usar "label" para el nombre del parámetro (ej: "Voltaje Fase A", "Temperatura Aceite").
+        3. ESTRUCTURA JSON OBLIGATORIA: { "title": "..", "kpis": [{"label": "NOMBRE_DESCRIPTIVO", "value": "VALOR", "unit": "UNIDAD", "status": "normal|warning|critical"}], "summary": "..", "conclusions": [..] }
+        
+        CASO B: REPORTE COMPARATIVO (Dos periodos / vs / diferencia)
+        1. [PRESUPUESTO DE TIEMPO: MÁX 120s] Consulta queryData para AMBOS periodos en una sola llamada.
+        2. Genera el bloque <report_data> incluyendo "label" (OBLIGATORIO), "value", "comparisonValue", "delta" y "trend".
+        3. Agrega la sección "Análisis de Causalidad" en dynamicSections.
 
         FLUJO OBLIGATORIO DE RESPUESTA FINAL:
         1. TEXTO BREVE: "Reporte de [Periodo] listo." (PROHIBIDO resúmenes fuera del JSON).
-        2. BLOQUE DE DATOS: Inmediatemente el bloque <report_data>.
+        2. BLOQUE DE DATOS: Inmediatemente después, incluye el bloque <report_data>.
         
-        OBLIGACIÓN TÉCNICA: El reporte JSON DEBE contener MÍNIMO 12-15 KPIs. includes voltajes, corrientes, temperaturas y presiones.
-
-        ESTRUCTURA JSON EXACTA:
-        {
-          "title": "Diagnóstico Técnico - [Periodo]",
-          "kpis": [{
-            "label": "Variable", "value": "Val", "comparisonValue": "ValAnt", "unit": "..", "status": "..", "delta": "..", "trend": ".."
-          }], 
-          "summary": "Análisis profundo (4 párrafos).",
-          "conclusions": ["Hallazgo 1", "Hallazgo 2"], 
-          "dynamicSections": [
-            {"title": "Análisis de Causalidad", "content": "..."},
-            {"title": "Recomendaciones", "content": "..."}
-          ],
-          "anomalies": [{"severity": "..", "message": "..", "variable": ".."}]
-        }
-
         REGLA DE ORO: NO incluyas </answer> hasta que hayas puesto el bloque <report_data>. NO uses la herramienta "createReport" interna.`
                 : `[MODO: CONSULTA SIMPLE]
-        El usuario hace una pregunta directa. Responde con texto claro y conciso.
-        NO generes bloques <report_data> ni JSON. Solo responde la pregunta.` }
+        Responde de forma clara y concisa a la pregunta técnica.` }
         --------------------------------------------------
         PREGUNTA DEL USUARIO: ${message}
         `;
@@ -489,40 +477,31 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                     };
                 }
 
-                // NORMALIZACIÓN DE KPIs: El agente a veces envía formato comparativo {name, feb5, feb6}
-                // en lugar del esperado {label, value, unit}. Convertir automáticamente.
-                if (Array.isArray(reportData.kpis) && reportData.kpis.length > 0) {
-                    const firstKpi = reportData.kpis[0];
-                    if (firstKpi.name && !firstKpi.label) {
-                        console.log("🔄 Normalizing KPIs from comparative format to standard format...");
-                        const dateKeys = Object.keys(firstKpi).filter(k => k !== 'name' && k !== 'unit');
-                        const normalizedKpis: any[] = [];
+                // NORMALIZACIÓN ROBUSTA DE KPIs: El agente a veces envía 'name', 'parameter' o 'variable' en lugar de 'label'
+                if (Array.isArray(reportData.kpis)) {
+                    reportData.kpis = reportData.kpis.map((kpi: any) => {
+                        const label = kpi.label || kpi.name || kpi.parameter || kpi.variable || kpi.id || "Parámetro Técnico";
 
-                        for (const kpi of reportData.kpis) {
-                            if (dateKeys.length >= 2) {
-                                const [day1Key, day2Key] = dateKeys;
-                                const val1 = Number(kpi[day1Key]);
-                                const val2 = Number(kpi[day2Key]);
-                                const diff = val2 - val1;
+                        // Si es formato comparativo directo {name, feb5, feb6}
+                        const keys = Object.keys(kpi);
+                        const dataKeys = keys.filter(k => k !== 'label' && k !== 'name' && k !== 'parameter' && k !== 'variable' && k !== 'id' && k !== 'unit' && k !== 'status' && k !== 'delta' && k !== 'trend' && k !== 'comparisonValue');
 
-                                normalizedKpis.push({
-                                    label: kpi.name,
-                                    value: !isNaN(val2) ? val2.toFixed(2) : String(kpi[day2Key]),
-                                    unit: kpi.unit || '',
-                                    trend: diff > 0.01 ? 'up' : diff < -0.01 ? 'down' : 'stable'
-                                });
-                            } else {
-                                const valKey = dateKeys[0];
-                                normalizedKpis.push({
-                                    label: kpi.name,
-                                    value: String(kpi[valKey]),
-                                    unit: kpi.unit || '',
-                                    trend: 'stable'
-                                });
-                            }
+                        if (dataKeys.length >= 2 && !kpi.comparisonValue) {
+                            const [v1Key, v2Key] = dataKeys;
+                            const v1 = parseFloat(kpi[v1Key]);
+                            const v2 = parseFloat(kpi[v2Key]);
+                            return {
+                                ...kpi,
+                                label,
+                                value: !isNaN(v2) ? v2.toFixed(2) : String(kpi[v2Key]),
+                                comparisonValue: !isNaN(v1) ? v1.toFixed(2) : String(kpi[v1Key]),
+                                unit: kpi.unit || '',
+                                trend: (v2 - v1) > 0.01 ? 'up' : (v2 - v1) < -0.01 ? 'down' : 'stable'
+                            };
                         }
-                        reportData.kpis = normalizedKpis;
-                    }
+
+                        return { ...kpi, label };
+                    });
                 }
 
                 generatedReportId = await saveWebReport(reportData);
