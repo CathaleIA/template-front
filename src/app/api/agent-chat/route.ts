@@ -161,6 +161,7 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
 
         const reportProtocol = `
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
+        - REGLA DE ORO DE VELOCIDAD: NUNCA realices llamadas secuenciales a herramientas. Si necesitas datos de múltiples periodos, pide "datos de periodo A y periodo B" en una SOLA llamada a queryData.
         - Si el usuario pide un "reporte", "resumen" o "gráfica" para un mes o semana, usa GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas).
         - AGREGACIONES: SI USAS GROUP BY, TODAS las columnas del SELECT deben ser agregaciones (AVG, MAX, MIN) o estar en el GROUP BY.
         - EFICIENCIA: Trae promedios de voltaje y corriente.
@@ -228,23 +229,33 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
 
         ${isReportRequest ? `[MODO CRÍTICO: INGENIERO SENIOR - REPORTE TÉCNICO]
-        FLUJO OBLIGATORIO DE RESPUESTA FINAL (DENTRO DE <answer>):
-        1. TEXTO BREVE: Escribe exactamente: "Reporte de [Periodo] listo." (ej: "Reporte de enero listo."). No agregues nada más en esta línea.
-        2. BLOQUE DE DATOS: Inmediatamente después del texto, escribe el bloque <report_data>.
+        Identifica si el usuario pide un reporte SIMPLE (un periodo) o COMPARATIVO (A vs B).
         
-        OBLIGACIÓN TÉCNICA: El reporte JSON DEBE contener MÍNIMO 12-15 KPIs. No te limites solo a voltaje/corriente; incluye temperaturas de cilindros (max/prom), presión de aceite, y sistema de enfriamiento.
+        SI ES COMPARATIVO (ej: "compara enero con febrero", "vs", "diferencia"):
+        1. [PRESUPUESTO DE TIEMPO: MÁX 180s] Realiza UNA SOLA consulta a queryData para AMBOS periodos simultáneamente. PROHIBIDO hacer llamadas secuenciales.
+        2. Para cada KPI, mapea "value" (Actual) y "comparisonValue" (Anterior).
+        3. Calcula "delta" y "trend" ('up', 'down', 'stable').
+        4. "dynamicSections": Sección "Análisis de Causalidad" (4 párrafos sólidos).
+
+        FLUJO OBLIGATORIO DE RESPUESTA FINAL:
+        1. TEXTO BREVE: "Reporte de [Periodo] listo." (PROHIBIDO resúmenes fuera del JSON).
+        2. BLOQUE DE DATOS: Inmediatemente el bloque <report_data>.
+        
+        OBLIGACIÓN TÉCNICA: El reporte JSON DEBE contener MÍNIMO 12-15 KPIs. includes voltajes, corrientes, temperaturas y presiones.
 
         ESTRUCTURA JSON EXACTA:
         {
           "title": "Diagnóstico Técnico - [Periodo]",
-          "kpis": [{"label": "Variable", "value": "Valor", "unit": "...", "status": "normal/advertencia/critico"}], 
-          "summary": "4 párrafos de análisis industrial profundo.",
-          "conclusions": ["Hallazgo técnico 1", "Hallazgo técnico 2"], 
-          "anomalies": [{
-            "severity": "critical/warning/info",
-            "message": "Mensaje de detección",
-            "variable": "Nombre de la variable"
-          }]
+          "kpis": [{
+            "label": "Variable", "value": "Val", "comparisonValue": "ValAnt", "unit": "..", "status": "..", "delta": "..", "trend": ".."
+          }], 
+          "summary": "Análisis profundo (4 párrafos).",
+          "conclusions": ["Hallazgo 1", "Hallazgo 2"], 
+          "dynamicSections": [
+            {"title": "Análisis de Causalidad", "content": "..."},
+            {"title": "Recomendaciones", "content": "..."}
+          ],
+          "anomalies": [{"severity": "..", "message": "..", "variable": ".."}]
         }
 
         REGLA DE ORO: NO incluyas </answer> hasta que hayas puesto el bloque <report_data>. NO uses la herramienta "createReport" interna.`
@@ -518,8 +529,9 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
                 const reportLink = `/reports/${generatedReportId}`;
                 console.log(`✅ Report generated and saved: ${generatedReportId}`);
 
-                // Unir el resumen original con el link del reporte de forma estética
-                finalAnswer = `${finalAnswer}\n\n📊 **Reporte Dinámico Listo:** [Ver Informe Detallado](${reportLink})`;
+                // OPTIMIZACIÓN DE BREVEDAD: Si hay un reporte, ignoramos el texto largo del agente fuera del JSON
+                let shortLabel = finalAnswer.match(/Reporte.*listo\./i)?.[0] || "Reporte técnico generado con éxito.";
+                finalAnswer = `${shortLabel}\n\n📊 **Reporte Dinámico Listo:** [Ver Informe Detallado](${reportLink})`;
             } catch (saveError) {
                 console.error('❌ Error processing report tag or saving to S3:', saveError);
                 // Si falla, al menos quitamos el placeholder roto para no confundir al usuario

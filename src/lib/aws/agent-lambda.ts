@@ -167,12 +167,17 @@ REGLAS:
 - FILTRO DE TIEMPO: La columna 'timestamp' es un STRING. USA COMPARACIÓN DE STRINGS DIRECTA para que sea rápido.
 - Ejemplo correcto: WHERE timestamp >= '${yesterday}T00:00:00Z' AND timestamp <= '${yesterday}T23:59:59Z'
 - REPORTES: Si el usuario pide un "reporte", "resumen" o "gráfica", usa GROUP BY substr(timestamp, 1, 10).
+- COMPARATIVOS: Si el usuario pide comparar dos periodos (ej: "ayer vs hoy", "enero vs febrero"):
+  1. Identifica AMBAS fechas de inicio y fin.
+  2. Genera una consulta que traiga los datos de AMBOS periodos (usando BETWEEN o filtros OR).
+  3. Asegúrate de incluir el substr(timestamp, 1, 10) para agrupar por día y diferenciar los periodos.
 - AGREGACIONES (CRÍTICO): SI USAS GROUP BY, TODAS las columnas del SELECT y CUALQUIER operación matemática debe estar envuelta en funciones de agregación (AVG, SUM, MAX).
 - INCORRECTO: AVG(potencia) / (voltaje1 + voltaje2)
 - CORRECTO: AVG(potencia) / (AVG(voltaje1) + AVG(voltaje2) + AVG(voltaje3))
 - VERACIDAD: NUNCA inventes datos. Si no hay registros para una fecha, ignora ese día en los resultados o indícalo.
 - LIMIT 50 si no es una agregación específica.
-- Si la pregunta menciona "fuera de umbral", usa los umbrales proporcionados arriba.`;
+- Si la pregunta menciona "fuera de umbral", usa los umbrales proporcionados arriba.
+- SIEMPRE utiliza .value para acceder a los números en los campos de datos.`;
 
     const payload = {
         anthropic_version: 'bedrock-2023-05-31',
