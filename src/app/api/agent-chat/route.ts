@@ -230,18 +230,19 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         Identifica si el usuario pide un reporte SIMPLE o COMPARATIVO (dos periodos).
         
         REGLA SQL OBLIGATORIA: Debes generar el SQL tú mismo y pasarlo en el parámetro "sql" de queryData.
-        - TABLA: iot_telemetry_db.iot_data
-        - COLUMNAS: timestamp (ISO8601), data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value, data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value, data.generator.potencia_activa.value, data.generator.frecuencia.value, data.cylinders.Promedio_tem_cyl.value, data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value, data.cooling_system.T_HT_ENTRADA.value
-        - REGLAS SQL: Filtro de timestamp con strings (timestamp >= 'YYYY-MM-DDT00:00:00Z'). Si hay GROUP BY, envuelve todo en AVG/MAX/MIN. LIMIT 30.
+        - TABLA: iot_telemetry_db.iot_data_v2
+        - COLUMNAS PARTICION (USAR EN WHERE SIEMPRE): year (ej: '2026'), month (ej: '01'), day (ej: '21'), hour (ej: '14'). Esto evita escanear 1 millón de archivos.
+        - COLUMNAS DATOS: timestamp (ISO8601), data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value, data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value, data.generator.potencia_activa.value, data.generator.frecuencia.value, data.cylinders.Promedio_tem_cyl.value, data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value, data.cooling_system.T_HT_ENTRADA.value
+        - REGLAS SQL: FILTRO DE PARTICION OBLIGATORIO: WHERE year='YYYY' AND month='MM' AND day='DD'. Si hay GROUP BY, usa GROUP BY year, month, day y envuelve datos en AVG/MAX/MIN. LIMIT 30.
         
         CASO A: REPORTE SIMPLE
-        1. Genera SQL con AVG/MAX de las variables clave para el periodo. GROUP BY substr(timestamp,1,10) si hay más de un día.
+        1. Genera SQL con WHERE year/month/day y AVG/MAX de las variables clave. GROUP BY year, month, day si hay más de un día.
         2. Llama queryData con tu SQL en el parámetro "sql".
         3. Genera el bloque <report_data> con 12-15 KPIs. DEBES usar "label" descriptivo (ej: "Voltaje Fase A", "Temperatura Aceite").
         4. ESTRUCTURA JSON: { "title": "..", "kpis": [{"label": "NOMBRE", "value": "VAL", "unit": "UNIDAD", "status": "normal|warning|critical"}], "summary": "..", "conclusions": [..] }
         
         CASO B: REPORTE COMPARATIVO
-        1. Genera UN SQL que cubra AMBOS periodos con GROUP BY substr(timestamp,1,10).
+        1. Genera UN SQL con GROUP BY year, month, day que cubra AMBOS periodos (con condición OR o IN para los días).
         2. Llama queryData UNA SOLA VEZ con ese SQL.
         3. Genera <report_data> con "label" (OBLIGATORIO), "value", "comparisonValue", "delta", "trend".
         4. Agrega "Análisis de Causalidad" en dynamicSections.

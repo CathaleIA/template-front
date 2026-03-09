@@ -91,11 +91,12 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
         throw new Error('Failed to start Athena query');
     }
 
-    // Polling con BACKOFF EXPONENCIAL: 500ms → 1000ms → 2000ms → 4000ms (máx)
+    // Polling con BACKOFF EXPONENCIAL: 300ms → 600ms → 1200ms → 4000ms (máx)
+    // Con partition projection la tabla iot_data_v2 responde en 1-3s; empezamos más rápido.
     let status = 'RUNNING';
     let attempts = 0;
     const maxAttempts = 40; // máx ~90s de espera total
-    let delay = 800; // ms inicial
+    let delay = 300; // ms inicial (era 800ms — reducido por partition projection)
 
     while (status === 'RUNNING' || status === 'QUEUED') {
         if (attempts++ > maxAttempts) {
@@ -147,8 +148,8 @@ async function generateSQL(userQuestion: string): Promise<string> {
 
 CONVENCION TEMPORAL: HOY es ${today} (${currentDateStr}). "Enero" = enero ${now.getFullYear()}.
 
-TABLA: iot_telemetry_db.iot_data
-COLUMNAS (usar .value para el numero):
+TABLA: iot_telemetry_db.iot_data_v2
+COLUMNAS DE DATOS (usar .value para el numero):
 - timestamp (ISO8601 string, ej: '2026-01-21T16:45:34Z')
 - data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value
 - data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value
@@ -157,11 +158,19 @@ COLUMNAS (usar .value para el numero):
 - data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value
 - data.cooling_system.T_HT_ENTRADA.value, data.cooling_system.Temp_LT_salida.value
 
+COLUMNAS DE PARTICION (filtros de fecha — OBLIGATORIO usarlos):
+- year  (string, ej: '2026')
+- month (string, zero-padded, ej: '01', '12')
+- day   (string, zero-padded, ej: '01', '21')
+- hour  (string, zero-padded, ej: '00', '14')
+
 REGLAS SQL (CRITICO):
 - Devuelve SOLO el codigo SQL sin markdown ni explicacion.
-- FILTRO DE TIEMPO: timestamp es STRING. Comparacion directa: WHERE timestamp >= '${yesterday}T00:00:00Z'
-- REPORTES/RESUMENES: usa GROUP BY substr(timestamp, 1, 10) para agrupar por dia.
-- COMPARATIVOS (dia A vs dia B, mes A vs mes B): UN SOLO query con GROUP BY substr(timestamp,1,10) cubriendo AMBOS periodos.
+- FILTRO POR PARTICION (OBLIGATORIO): SIEMPRE incluye year, month, day en el WHERE. Ejemplo para "21 de enero de 2026": WHERE year='2026' AND month='01' AND day='21'. Esto evita escanear 1 millon de archivos innecesarios.
+- ULTIMO DIA DISPONIBLE: usa year='${today.substring(0,4)}' AND month='${today.substring(5,7)}' AND day='${today.substring(8,10)}'.
+- RANGOS: para "ultimos 7 dias" o "esta semana", lista los dias: day IN ('09','08','07','06','05','04','03') con el month correcto.
+- REPORTES/RESUMENES: usa GROUP BY year, month, day para agrupar por dia (NO substr(timestamp,1,10)).
+- COMPARATIVOS (dia A vs dia B): UN SOLO query con GROUP BY year, month, day cubriendo AMBOS dias con OR de condiciones.
 - Si usas GROUP BY, TODA columna en SELECT debe ser AVG/MAX/MIN o estar en GROUP BY.
 - LIMIT 30.`;
 
@@ -396,18 +405,26 @@ export const handler: Handler = async (event: any) => {
             console.log(`Action: getRealTimeStatus (optimized - date filter)`);
 
             try {
-                const today = new Date().toISOString().split('T')[0];
-                // Intentar primero con datos de hoy, si no hay, extender a los últimos 3 días
-                const sql = `SELECT * FROM iot_telemetry_db.iot_data WHERE timestamp >= '${today}T00:00:00Z' ORDER BY timestamp DESC LIMIT 1`;
-                console.log('Executing optimized RealTime Athena Query:', sql);
+                const todayDate = new Date();
+                const ty = todayDate.getFullYear().toString();
+                const tm = String(todayDate.getMonth() + 1).padStart(2, '0');
+                const td = String(todayDate.getDate()).padStart(2, '0');
+                // Usa iot_data_v2 con filtro de particion: solo escanea los archivos de HOY
+                const sql = `SELECT * FROM iot_telemetry_db.iot_data_v2 WHERE year='${ty}' AND month='${tm}' AND day='${td}' ORDER BY timestamp DESC LIMIT 1`;
+                console.log('Executing optimized RealTime Athena Query (partition-filtered):', sql);
 
                 let results = await executeAthenaQuery(sql);
 
-                // Fallback: si no hay datos hoy, buscar en los últimos 7 días
+                // Fallback: si no hay datos hoy, buscar en los ultimos 7 dias (un dia a la vez para no escanear de mas)
                 if (results.length === 0) {
-                    const pastDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    const fallbackSql = `SELECT * FROM iot_telemetry_db.iot_data WHERE timestamp >= '${pastDate}T00:00:00Z' ORDER BY timestamp DESC LIMIT 1`;
-                    results = await executeAthenaQuery(fallbackSql);
+                    for (let i = 1; i <= 7 && results.length === 0; i++) {
+                        const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+                        const fy = d.getFullYear().toString();
+                        const fm = String(d.getMonth() + 1).padStart(2, '0');
+                        const fd = String(d.getDate()).padStart(2, '0');
+                        const fallbackSql = `SELECT * FROM iot_telemetry_db.iot_data_v2 WHERE year='${fy}' AND month='${fm}' AND day='${fd}' ORDER BY timestamp DESC LIMIT 1`;
+                        results = await executeAthenaQuery(fallbackSql);
+                    }
                 }
 
                 if (results.length === 0) {
