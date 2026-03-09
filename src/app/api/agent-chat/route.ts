@@ -157,16 +157,14 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const currentDate = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
         const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte|comparar|comparativo|comparativa|diferencia entre|vs\b/i.test(message);
-        const isMaintenanceRequest = /mantenimiento|mantención|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
+        const isMaintenanceRequest = /manteni|manté|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
 
         const reportProtocol = `
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
-        - REGLA DE ORO DE VELOCIDAD: NUNCA realices llamadas secuenciales a herramientas. Si necesitas datos de múltiples periodos, pide "datos de periodo A y periodo B" en una SOLA llamada a queryData.
-        - Si el usuario pide un "reporte", "resumen" o "gráfica" para un mes o semana, usa GROUP BY substr(timestamp, 1, 10) (para días) o substr(timestamp, 1, 13) (para horas).
-        - AGREGACIONES: SI USAS GROUP BY, TODAS las columnas del SELECT deben ser agregaciones (AVG, MAX, MIN) o estar en el GROUP BY.
-        - EFICIENCIA: Trae promedios de voltaje y corriente.
-        - VERACIDAD: NUNCA inventes datos. Si no hay registros, no lo incluyas.
-        - LIMIT 50.
+        - REGLA DE ORO DE VELOCIDAD: NUNCA escribas SQL. Pasa la pregunta del usuario al parámetro "question" de queryData.
+        - Si el usuario pide un "reporte" o "comparativa", emite el JSON/XML en un bloque <report_data>.
+        - Si es un REPORTE COMPARATIVO (ej: día A vs día B), el bloque <report_data> DEBE incluir comparisonValue, delta y trend en los KPIs.
+        - Incluye siempre una sección <dynamicSections><section><title>Análisis de Causalidad</title>... para los hallazgos.
 
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO TEMPORAL]
         - La fecha y hora actual es: ${currentDate} ${now.toLocaleTimeString()}
@@ -229,25 +227,26 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
 
         ${isReportRequest ? `[MODO CRÍTICO: INGENIERO SENIOR - REPORTE TÉCNICO]
-        Identifica si el usuario pide un reporte SIMPLE (ej: "informe de enero", "resumen de hoy") o COMPARATIVO (A vs B).
+        Identifica si el usuario pide un reporte SIMPLE o COMPARATIVO (dos periodos).
         
-        REGLA DE HERRAMIENTAS: El parámetro 'question' de queryData DEBE ser lenguaje natural. PROHIBIDO ESCRIBIR SQL.
+        REGLA SQL OBLIGATORIA: Debes generar el SQL tú mismo y pasarlo en el parámetro "sql" de queryData.
+        - TABLA: iot_telemetry_db.iot_data
+        - COLUMNAS: timestamp (ISO8601), data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value, data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value, data.generator.potencia_activa.value, data.generator.frecuencia.value, data.cylinders.Promedio_tem_cyl.value, data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value, data.cooling_system.T_HT_ENTRADA.value
+        - REGLAS SQL: Filtro de timestamp con strings (timestamp >= 'YYYY-MM-DDT00:00:00Z'). Si hay GROUP BY, envuelve todo en AVG/MAX/MIN. LIMIT 30.
         
-        CASO A: REPORTE SIMPLE (Un solo periodo)
-        1. Consulta queryData para el periodo solicitado.
-        2. Genera el bloque <report_data> con 12-15 KPIs. DEBES usar "label" para el nombre del parámetro (ej: "Voltaje Fase A", "Temperatura Aceite").
-        3. ESTRUCTURA JSON OBLIGATORIA: { "title": "..", "kpis": [{"label": "NOMBRE_DESCRIPTIVO", "value": "VALOR", "unit": "UNIDAD", "status": "normal|warning|critical"}], "summary": "..", "conclusions": [..] }
+        CASO A: REPORTE SIMPLE
+        1. Genera SQL con AVG/MAX de las variables clave para el periodo. GROUP BY substr(timestamp,1,10) si hay más de un día.
+        2. Llama queryData con tu SQL en el parámetro "sql".
+        3. Genera el bloque <report_data> con 12-15 KPIs. DEBES usar "label" descriptivo (ej: "Voltaje Fase A", "Temperatura Aceite").
+        4. ESTRUCTURA JSON: { "title": "..", "kpis": [{"label": "NOMBRE", "value": "VAL", "unit": "UNIDAD", "status": "normal|warning|critical"}], "summary": "..", "conclusions": [..] }
         
-        CASO B: REPORTE COMPARATIVO (Dos periodos / vs / diferencia)
-        1. [PRESUPUESTO DE TIEMPO: MÁX 120s] Consulta queryData para AMBOS periodos en una sola llamada.
-        2. Genera el bloque <report_data> incluyendo "label" (OBLIGATORIO), "value", "comparisonValue", "delta" y "trend".
-        3. Agrega la sección "Análisis de Causalidad" en dynamicSections.
+        CASO B: REPORTE COMPARATIVO
+        1. Genera UN SQL que cubra AMBOS periodos con GROUP BY substr(timestamp,1,10).
+        2. Llama queryData UNA SOLA VEZ con ese SQL.
+        3. Genera <report_data> con "label" (OBLIGATORIO), "value", "comparisonValue", "delta", "trend".
+        4. Agrega "Análisis de Causalidad" en dynamicSections.
 
-        FLUJO OBLIGATORIO DE RESPUESTA FINAL:
-        1. TEXTO BREVE: "Reporte de [Periodo] listo." (PROHIBIDO resúmenes fuera del JSON).
-        2. BLOQUE DE DATOS: Inmediatemente después, incluye el bloque <report_data>.
-        
-        REGLA DE ORO: NO incluyas </answer> hasta que hayas puesto el bloque <report_data>. NO uses la herramienta "createReport" interna.`
+        RESPUESTA FINAL: Solo "Reporte de [Periodo] listo." + el bloque <report_data>. Nada más.`
                 : `[MODO: CONSULTA SIMPLE]
         Responde de forma clara y concisa a la pregunta técnica.` }
         --------------------------------------------------
@@ -339,33 +338,91 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
             }
 
             // FALLBACK: Si el agente envió XML en lugar de JSON, convertirlo aquí
+            // CORRECCIÓN: extrae TODOS los campos incluyendo comparisonValue, delta, trend, unit, dynamicSections y conclusions
             if (!rawCandidate.trim().startsWith('{') && rawCandidate.includes('<title>')) {
-                console.log("🔄 XML detected in report_data, converting to JSON...");
+                console.log("🔄 XML detected in report_data, converting to JSON (full fields)...");
                 try {
                     const titleMatch = rawCandidate.match(/<title>([\s\S]*?)<\/title>/i);
                     const summaryMatch = rawCandidate.match(/<summary>([\s\S]*?)<\/summary>/i);
                     const kpisMatch = rawCandidate.match(/<kpis>([\s\S]*?)<\/kpis>/i);
+                    const conclusionsMatch = rawCandidate.match(/<conclusions>([\s\S]*?)<\/conclusions>/i);
+                    const dynamicSectionsMatch = rawCandidate.match(/<dynamicSections>([\s\S]*?)<\/dynamicSections>/i);
 
+                    // Extraer KPIs con todos sus campos (simples y comparativos)
                     const kpis: any[] = [];
                     if (kpisMatch) {
                         const kpiEntries = kpisMatch[1].match(/<kpi>([\s\S]*?)<\/kpi>/gi) || [];
                         for (const entry of kpiEntries) {
                             const l = entry.match(/<label>([\s\S]*?)<\/label>/i);
                             const v = entry.match(/<value>([\s\S]*?)<\/value>/i);
+                            const u = entry.match(/<unit>([\s\S]*?)<\/unit>/i);
                             const s = entry.match(/<status>([\s\S]*?)<\/status>/i);
-                            if (l && v) kpis.push({ label: l[1].trim(), value: v[1].trim(), status: s?.[1].trim() || 'normal' });
+                            const cv = entry.match(/<comparisonValue>([\s\S]*?)<\/comparisonValue>/i);
+                            const d = entry.match(/<delta>([\s\S]*?)<\/delta>/i);
+                            const tr = entry.match(/<trend>([\s\S]*?)<\/trend>/i);
+                            if (l && v) {
+                                const kpi: any = {
+                                    label: l[1].trim(),
+                                    value: v[1].trim(),
+                                    unit: u?.[1].trim() || '',
+                                    status: s?.[1].trim() || 'normal',
+                                };
+                                if (cv) kpi.comparisonValue = cv[1].trim();
+                                if (d) kpi.delta = d[1].trim();
+                                if (tr) kpi.trend = tr[1].trim();
+                                kpis.push(kpi);
+                            }
                         }
                     }
 
-                    const jsonConv = {
+                    // Extraer conclusions del XML
+                    const conclusions: string[] = [];
+                    if (conclusionsMatch) {
+                        const items = conclusionsMatch[1].match(/<li>([\s\S]*?)<\/li>/gi)
+                            || conclusionsMatch[1].match(/- ([^\n]+)/g)
+                            || [];
+                        for (const item of items) {
+                            const text = item.replace(/<\/?li>/gi, '').replace(/^- /, '').trim();
+                            if (text) conclusions.push(text);
+                        }
+                        // Si no hubo items estructurados, partir por saltos de línea
+                        if (conclusions.length === 0) {
+                            conclusionsMatch[1].split('\n').forEach(l => {
+                                const t = l.replace(/^[-•*]\s*/, '').trim();
+                                if (t) conclusions.push(t);
+                            });
+                        }
+                    }
+
+                    // Extraer secciones dinámicas (Análisis de Causalidad, Hallazgos, etc.)
+                    const dynamicSections: any[] = [];
+                    if (dynamicSectionsMatch) {
+                        const sections = dynamicSectionsMatch[1].match(/<section>([\s\S]*?)<\/section>/gi) || [];
+                        for (const sec of sections) {
+                            const st = sec.match(/<title>([\s\S]*?)<\/title>/i);
+                            const sc = sec.match(/<content>([\s\S]*?)<\/content>/i);
+                            if (st || sc) {
+                                dynamicSections.push({
+                                    title: st?.[1].trim() || '',
+                                    content: sc?.[1].trim() || '',
+                                });
+                            }
+                        }
+                    }
+
+                    const jsonConv: any = {
                         title: titleMatch?.[1].trim() || "Reporte de Operación",
-                        summary: summaryMatch?.[1].replace(/<paragraph>/g, '').replace(/<\/paragraph>/g, '\n\n').replace(/<\/summary>/g, '').trim() || finalAnswer,
-                        kpis: kpis,
-                        conclusions: []
+                        summary: summaryMatch?.[1]
+                            .replace(/<paragraph>/g, '').replace(/<\/paragraph>/g, '\n\n')
+                            .replace(/<\/summary>/g, '').trim() || finalAnswer,
+                        kpis,
+                        conclusions,
                     };
+                    if (dynamicSections.length > 0) jsonConv.dynamicSections = dynamicSections;
+
                     const jsonStr = JSON.stringify(jsonConv);
                     reportDataMatch = [jsonStr, jsonStr];
-                    console.log("✅ XML to JSON conversion successful.");
+                    console.log(`✅ XML to JSON conversion: ${kpis.length} KPIs, ${conclusions.length} conclusions, ${dynamicSections.length} sections.`);
                 } catch (convError) {
                     console.error("❌ XML to JSON conversion failed:", convError);
                 }

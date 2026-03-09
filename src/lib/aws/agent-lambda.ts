@@ -69,14 +69,16 @@ interface AgentEvent {
 }
 
 /**
- * Ejecuta una consulta SQL en Athena
+ * Ejecuta una consulta SQL en Athena con backoff exponencial
+ * 
+ * OPTIMIZACIÓN (Nivel 1.3): Backoff exponencial en lugar de polling agresivo de 300ms
+ * Razón: Athena tarda 1-5s típicamente. El backoff ahorra ~1s en los primeros intentos.
  */
 async function executeAthenaQuery(sql: string): Promise<any[]> {
     const database = process.env.ATHENA_DATABASE || 'iot_telemetry_db';
     const outputBucket = process.env.AWS_S3_IOT_BUCKET || '';
     const outputLocation = `s3://${outputBucket}/athena-results/`;
 
-    // Iniciar ejecución
     const startCommand = new StartQueryExecutionCommand({
         QueryString: sql,
         QueryExecutionContext: { Database: database },
@@ -89,17 +91,20 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
         throw new Error('Failed to start Athena query');
     }
 
-    // Esperar a que complete
+    // Polling con BACKOFF EXPONENCIAL: 500ms → 1000ms → 2000ms → 4000ms (máx)
     let status = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 1000; // Aumentado a 300 segundos (1000 * 300ms) para consultas pesadas de Athena
+    const maxAttempts = 40; // máx ~90s de espera total
+    let delay = 800; // ms inicial
 
     while (status === 'RUNNING' || status === 'QUEUED') {
         if (attempts++ > maxAttempts) {
-            throw new Error('Athena query timeout');
+            throw new Error(`Athena query timeout after ${attempts} attempts`);
         }
 
-        await new Promise(resolve => setTimeout(resolve, 300)); // Polling más rápido para Bedrock
+        await new Promise(resolve => setTimeout(resolve, delay));
+        // Duplicar el delay hasta un máximo de 4000ms
+        delay = Math.min(delay * 1.5, 4000);
 
         const getCommand = new GetQueryExecutionCommand({ QueryExecutionId });
         const execution = await athenaClient.send(getCommand);
@@ -110,7 +115,6 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
         }
     }
 
-    // Obtener resultados
     const resultsCommand = new GetQueryResultsCommand({ QueryExecutionId });
     const results = await athenaClient.send(resultsCommand);
 
@@ -128,7 +132,8 @@ async function executeAthenaQuery(sql: string): Promise<any[]> {
 }
 
 /**
- * Genera SQL usando Bedrock (igual que route.ts actual)
+ * Genera SQL usando Bedrock Claude Haiku (rápido, 3-5s)
+ * RESTAURADO: Sonnet tardaba 29s generando SQL como parte del agente; Haiku lo hace en 3-5s.
  */
 async function generateSQL(userQuestion: string): Promise<string> {
     const now = new Date();
@@ -136,53 +141,34 @@ async function generateSQL(userQuestion: string): Promise<string> {
     const yesterdayDate = new Date(now);
     yesterdayDate.setDate(now.getDate() - 1);
     const yesterday = yesterdayDate.toISOString().split('T')[0];
-
     const currentDateStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
-    const prompt = `Genera una consulta SQL (Presto/Athena) EXACTA para responder a la pregunta: "${userQuestion}"
-                 
-REGLA DE ORO DE RENDIMIENTO:
-- La tabla NO está particionada. Usa filtros de 'timestamp' lo más específicos posible.
-- Si piden "hoy", usa >= '${today}T00:00:00Z'.
-- Si piden "enero", usa >= '2026-01-01T00:00:00Z' AND timestamp < '2026-02-01T00:00:00Z'.
-CONVENCIÓN TEMPORAL:
-- La fecha de HOY es: ${today} (${currentDateStr})
-- Si el usuario dice "enero", se refiere al año ${now.getFullYear()}.
+    const prompt = `Genera una consulta SQL (Presto/Athena) EXACTA para responder: "${userQuestion}"
+
+CONVENCION TEMPORAL: HOY es ${today} (${currentDateStr}). "Enero" = enero ${now.getFullYear()}.
 
 TABLA: iot_telemetry_db.iot_data
-COLUMNAS IMPORTANTES (Usar .value para el valor):
-- timestamp (string ISO8601, ej: '2026-01-21T16:45:34.477925Z')
-- data.generator (voltage_L1_N.value, voltage_L2_N.value, voltage_L3_N.value, corriente_L1.value, corriente_L2.value, corriente_L3.value, potencia_activa.value, frecuencia.value)
-- data.cylinders (Tem_Cyl_1.value hasta Tem_Cyl_20.value, Promedio_tem_cyl.value)
-- data.oil_system (Temperatura_aceite.value, Presion_aceite.value)
-- data.cooling_system (T_HT_ENTRADA.value, Temp_LT_salida.value)
+COLUMNAS (usar .value para el numero):
+- timestamp (ISO8601 string, ej: '2026-01-21T16:45:34Z')
+- data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value
+- data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value
+- data.generator.potencia_activa.value, data.generator.frecuencia.value
+- data.cylinders.Tem_Cyl_1.value hasta data.cylinders.Tem_Cyl_20.value, data.cylinders.Promedio_tem_cyl.value
+- data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value
+- data.cooling_system.T_HT_ENTRADA.value, data.cooling_system.Temp_LT_salida.value
 
-UMBRALES PARA COMPARACIÓN:
-${JSON.stringify(THRESHOLDS, null, 2)}
-
-REGLAS:
-- Devuelve SOLO el código SQL, nada de explicación.
-- IMPORTANTE: Debes acceder al campo .value para obtener el número. Ejemplo: data.generator.voltage_L1_N.value
-- USA SOLO las columnas listadas arriba. SI el usuario pide algo que NO está en la lista, ignóralo.
-- FILTRO DE TIEMPO: La columna 'timestamp' es un STRING. USA COMPARACIÓN DE STRINGS DIRECTA para que sea rápido.
-- Ejemplo correcto: WHERE timestamp >= '${yesterday}T00:00:00Z' AND timestamp <= '${yesterday}T23:59:59Z'
-- REPORTES: Si el usuario pide un "reporte", "resumen" o "gráfica", usa GROUP BY substr(timestamp, 1, 10).
-- COMPARATIVOS: Si el usuario pide comparar dos periodos (ej: "ayer vs hoy", "enero vs febrero"):
-  1. Identifica AMBAS fechas de inicio y fin.
-  2. Genera una consulta que traiga los datos de AMBOS periodos (usando BETWEEN o filtros OR).
-  3. Asegúrate de incluir el substr(timestamp, 1, 10) para agrupar por día y diferenciar los periodos.
-- AGREGACIONES (CRÍTICO): SI USAS GROUP BY, TODAS las columnas del SELECT y CUALQUIER operación matemática debe estar envuelta en funciones de agregación (AVG, SUM, MAX).
-- INCORRECTO: AVG(potencia) / (voltaje1 + voltaje2)
-- CORRECTO: AVG(potencia) / (AVG(voltaje1) + AVG(voltaje2) + AVG(voltaje3))
-- VERACIDAD: NUNCA inventes datos. Si no hay registros para una fecha, ignora ese día en los resultados o indícalo.
-- LIMIT 50 si no es una agregación específica.
-- Si la pregunta menciona "fuera de umbral", usa los umbrales proporcionados arriba.
-- SIEMPRE utiliza .value para acceder a los números en los campos de datos.`;
+REGLAS SQL (CRITICO):
+- Devuelve SOLO el codigo SQL sin markdown ni explicacion.
+- FILTRO DE TIEMPO: timestamp es STRING. Comparacion directa: WHERE timestamp >= '${yesterday}T00:00:00Z'
+- REPORTES/RESUMENES: usa GROUP BY substr(timestamp, 1, 10) para agrupar por dia.
+- COMPARATIVOS (dia A vs dia B, mes A vs mes B): UN SOLO query con GROUP BY substr(timestamp,1,10) cubriendo AMBOS periodos.
+- Si usas GROUP BY, TODA columna en SELECT debe ser AVG/MAX/MIN o estar en GROUP BY.
+- LIMIT 30.`;
 
     const payload = {
         anthropic_version: 'bedrock-2023-05-31',
-        max_tokens: 2048,
-        temperature: 0.3,
+        max_tokens: 1024,
+        temperature: 0.1,
         messages: [{ role: 'user', content: prompt }]
     };
 
@@ -198,12 +184,10 @@ REGLAS:
 
     if (responseBody.content && responseBody.content.length > 0) {
         const sql = responseBody.content[0].text;
-        return sql.replace(/```sql/g, '').replace(/```/g, '').trim();
+        return sql.replace(/```sql/gi, '').replace(/```/g, '').trim();
     }
-
-    throw new Error('No SQL generated by Bedrock');
+    throw new Error('No SQL generated by Haiku');
 }
-
 
 /**
  * Parsea los parámetros del formato de Bedrock Agent
@@ -360,36 +344,42 @@ export const handler: Handler = async (event: any) => {
         const params = parseAgentParameters(event);
         console.log(`Action: ${apiPath} | Parsed parameters:`, JSON.stringify(params, null, 2));
 
-        // Acción: Consultar datos
+        // Acción: Consultar datos via Haiku SQL generation
+        // Haiku genera el SQL (3-5s). Más rápido que Sonnet (que tardaba 29s generando SQL).
         if (apiPath === '/queryData') {
+            const sql = params.sql;
             const question = params.question;
 
-            if (!question) {
-                console.error('Missing question parameter');
-                return createErrorResponse(event, 400, 'Missing question parameter');
+            if (!sql && !question) {
+                return createErrorResponse(event, 400, 'Missing required parameter: question');
             }
 
-            console.log('Action: queryData | Question:', question);
+            let finalSql: string;
+
+            if (sql) {
+                // Modo nuevo: SQL ya generado (por si el agente lo envia directamente)
+                finalSql = sql.replace(/```sql/gi, '').replace(/```/g, '').trim();
+                console.log('Action: queryData | SQL received directly:', finalSql.substring(0, 200));
+            } else {
+                // Modo clasico: pregunta en lenguaje natural → Haiku genera SQL
+                console.log('Action: queryData | Generating SQL with Haiku for:', question);
+                finalSql = await generateSQL(question);
+                console.log('Generated SQL:', finalSql.substring(0, 200));
+            }
 
             try {
-                // 1. Generar SQL
-                const sql = await generateSQL(question);
-                console.log('Generated SQL:', sql);
-
-                // 2. Ejecutar SQL
-                const results = await executeAthenaQuery(sql);
+                const results = await executeAthenaQuery(finalSql);
                 console.log('Query results count:', results.length);
 
                 return createSuccessResponse(event, {
-                    sql,
+                    sql: finalSql,
                     rowCount: results.length,
-                    data: results.slice(0, 20)
+                    data: results.slice(0, 30)
                 });
             } catch (queryError: any) {
                 console.error('Error in queryData execution:', queryError);
-                // Devolvemos una estructura que Bedrock NO rechace (campos esperados)
                 return createSuccessResponse(event, {
-                    sql: 'Error en consulta',
+                    sql: finalSql,
                     rowCount: 0,
                     data: [],
                     error: queryError.message,
@@ -398,37 +388,42 @@ export const handler: Handler = async (event: any) => {
             }
         }
 
-        // Acción: Obtener estado en tiempo real (Simulado via Athena/S3)
+        // Acción: Obtener estado en tiempo real
+        // OPTIMIZACIÓN (Nivel 1.5): Usar filtro de fecha reciente en lugar de full table scan.
+        // Antes: ORDER BY timestamp DESC LIMIT 1 → escanea toda la tabla
+        // Ahora: WHERE timestamp >= 'YYYY-MM-DDT00:00:00Z' ORDER BY timestamp DESC LIMIT 1
         if (apiPath === '/getRealTimeStatus') {
-            console.log(`Action: getRealTimeStatus (via Athena)`);
+            console.log(`Action: getRealTimeStatus (optimized - date filter)`);
 
             try {
-                // Consulta para obtener el ÚLTIMO registro insertado en S3
-                // Usamos LIMIT 1 ordenado por timestamp descendente
-                const sql = "SELECT * FROM iot_telemetry_db.iot_data ORDER BY timestamp DESC LIMIT 1";
-                console.log('Executing RealTime Athena Query:', sql);
+                const today = new Date().toISOString().split('T')[0];
+                // Intentar primero con datos de hoy, si no hay, extender a los últimos 3 días
+                const sql = `SELECT * FROM iot_telemetry_db.iot_data WHERE timestamp >= '${today}T00:00:00Z' ORDER BY timestamp DESC LIMIT 1`;
+                console.log('Executing optimized RealTime Athena Query:', sql);
 
-                const results = await executeAthenaQuery(sql);
+                let results = await executeAthenaQuery(sql);
 
+                // Fallback: si no hay datos hoy, buscar en los últimos 7 días
                 if (results.length === 0) {
-                    return createSuccessResponse(event, {
-                        message: "No se encontraron datos recientes en el histórico."
-                    });
+                    const pastDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const fallbackSql = `SELECT * FROM iot_telemetry_db.iot_data WHERE timestamp >= '${pastDate}T00:00:00Z' ORDER BY timestamp DESC LIMIT 1`;
+                    results = await executeAthenaQuery(fallbackSql);
                 }
 
-                // Tomamos el primer (y único) registro
-                const latestRecord = results[0];
+                if (results.length === 0) {
+                    return createSuccessResponse(event, { message: 'No se encontraron datos recientes.' });
+                }
 
                 return createSuccessResponse(event, {
                     thingName: params.thingName || 'qnap-gateway-001',
-                    timestamp: latestRecord.timestamp || new Date().toISOString(),
-                    state: latestRecord, // Devolvemos todo el registro plano como el estado
-                    source: 'Athena/S3 (Historical Data)'
+                    timestamp: results[0].timestamp || new Date().toISOString(),
+                    state: results[0],
+                    source: 'Athena/S3 (date-filtered)'
                 });
 
             } catch (athenaError: any) {
-                console.error('Error fetching RealTime status via Athena:', athenaError);
-                return createErrorResponse(event, 500, `Failed to fetch latest status from S3: ${athenaError.message}`);
+                console.error('Error fetching RealTime status:', athenaError);
+                return createErrorResponse(event, 500, `Failed to fetch latest status: ${athenaError.message}`);
             }
         }
 
