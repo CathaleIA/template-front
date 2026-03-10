@@ -156,7 +156,7 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const now = new Date();
         const currentDate = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
-        const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte|comparar|comparativo|comparativa|diferencia entre|vs\b/i.test(message);
+        const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte|comparar|comparativo|comparativa|diferencia entre|ejecutivo|vs\b/i.test(message);
         const isMaintenanceRequest = /manteni|manté|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
 
         const reportProtocol = `
@@ -227,27 +227,77 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         - NUNCA digas "No tengo suficiente contexto" si la pregunta es técnica y puedes responderla con tu conocimiento. Solo admite limitaciones si realmente no sabes la respuesta.
 
         ${isReportRequest ? `[MODO CRÍTICO: INGENIERO SENIOR - REPORTE TÉCNICO]
-        Identifica si el usuario pide un reporte SIMPLE o COMPARATIVO (dos periodos).
-        
+        Clasifica el tipo de reporte antes de empezar:
+        - TIPO "monthly": el usuario pide un informe general de un mes (ej: "informe de enero", "reporte de diciembre")
+        - TIPO "comparative": el usuario quiere comparar dos días, semanas o periodos (ej: "comparar el 5 y el 6 de febrero")
+        - TIPO "executive": el usuario pide explícitamente un informe ejecutivo (ej: "informe ejecutivo", "reporte para gerencia")
+
         REGLA SQL OBLIGATORIA: Debes generar el SQL tú mismo y pasarlo en el parámetro "sql" de queryData.
         - TABLA: iot_telemetry_db.iot_data_v2
         - COLUMNAS PARTICION (USAR EN WHERE SIEMPRE): year (ej: '2026'), month (ej: '01'), day (ej: '21'), hour (ej: '14'). Esto evita escanear 1 millón de archivos.
         - COLUMNAS DATOS: timestamp (ISO8601), data.generator.voltage_L1_N.value, data.generator.voltage_L2_N.value, data.generator.voltage_L3_N.value, data.generator.corriente_L1.value, data.generator.corriente_L2.value, data.generator.corriente_L3.value, data.generator.potencia_activa.value, data.generator.frecuencia.value, data.cylinders.Promedio_tem_cyl.value, data.oil_system.Temperatura_aceite.value, data.oil_system.Presion_aceite.value, data.cooling_system.T_HT_ENTRADA.value
-        - REGLAS SQL: FILTRO DE PARTICION OBLIGATORIO: WHERE year='YYYY' AND month='MM' AND day='DD'. Si hay GROUP BY, usa GROUP BY year, month, day y envuelve datos en AVG/MAX/MIN. LIMIT 30.
-        
-        CASO A: REPORTE SIMPLE
-        1. Genera SQL con WHERE year/month/day y AVG/MAX de las variables clave. GROUP BY year, month, day si hay más de un día.
-        2. Llama queryData con tu SQL en el parámetro "sql".
-        3. Genera el bloque <report_data> con 12-15 KPIs. DEBES usar "label" descriptivo (ej: "Voltaje Fase A", "Temperatura Aceite").
-        4. ESTRUCTURA JSON: { "title": "..", "kpis": [{"label": "NOMBRE", "value": "VAL", "unit": "UNIDAD", "status": "normal|warning|critical"}], "summary": "..", "conclusions": [..] }
-        
-        CASO B: REPORTE COMPARATIVO
-        1. Genera UN SQL con GROUP BY year, month, day que cubra AMBOS periodos (con condición OR o IN para los días).
-        2. Llama queryData UNA SOLA VEZ con ese SQL.
-        3. Genera <report_data> con "label" (OBLIGATORIO), "value", "comparisonValue", "delta", "trend".
-        4. Agrega "Análisis de Causalidad" en dynamicSections.
+        - REGLAS SQL: FILTRO DE PARTICION OBLIGATORIO: WHERE year='YYYY' AND month='MM'. Si hay GROUP BY, usa GROUP BY year, month, day y envuelve datos en AVG/MAX/MIN/COUNT. LIMIT 31.
 
-        RESPUESTA FINAL: Solo "Reporte de [Periodo] listo." + el bloque <report_data>. Nada más.`
+        CASO A: REPORTE MENSUAL (reportType = "monthly")
+        1. Genera SQL con WHERE year/month, GROUP BY year, month, day → una fila por día para ver tendencia mensual.
+        2. Llama queryData con tu SQL.
+        3. Genera el bloque <report_data> con 12-15 KPIs del PROMEDIO mensual total. El "label" DEBE ser descriptivo (ej: "Voltaje Promedio Fase A", "Temperatura Máx. Cilindros", "Potencia Activa Promedio").
+        4. Incluye "overallStatus": "normal" | "warning" | "critical" según el estado general.
+        5. ESTRUCTURA JSON OBLIGATORIA:
+        {
+          "reportType": "monthly",
+          "title": "Informe Operacional — [Mes] [Año]",
+          "period": "[Mes completo] [Año]",
+          "overallStatus": "normal|warning|critical",
+          "kpis": [{"label": "NOMBRE DESCRIPTIVO", "value": "VAL", "unit": "UNIDAD", "status": "normal|warning|critical"}],
+          "summary": "...",
+          "conclusions": ["hallazgo 1", "hallazgo 2", "hallazgo 3"],
+          "dynamicSections": [{"title": "Tendencia del Período", "content": "..."}, {"title": "Variables Críticas", "content": "..."}]
+        }
+
+        CASO B: REPORTE COMPARATIVO (reportType = "comparative")
+        1. Genera UN SQL con GROUP BY year, month, day que cubra AMBOS periodos (condición OR o IN para los días).
+        2. Llama queryData UNA SOLA VEZ.
+        3. Para cada KPI incluye "label" (OBLIGATORIO), "value" (periodo más reciente), "comparisonValue" (periodo anterior), "delta" (diferencia en %), "trend" (up/down/stable).
+        4. Incluye "periodA" y "periodB" con nombres legibles (ej: "5 Feb 2026", "6 Feb 2026").
+        5. ESTRUCTURA JSON OBLIGATORIA:
+        {
+          "reportType": "comparative",
+          "title": "Comparativa de Rendimiento — [PeriodoA] vs [PeriodoB]",
+          "period": "[PeriodoA] vs [PeriodoB]",
+          "periodA": "etiqueta legible del periodo más reciente",
+          "periodB": "etiqueta legible del periodo anterior",
+          "overallStatus": "normal|warning|critical",
+          "kpis": [{"label": "NOMBRE", "value": "VAL_A", "comparisonValue": "VAL_B", "delta": "+X%", "unit": "UNIDAD", "trend": "up|down|stable", "status": "normal|warning|critical"}],
+          "summary": "...",
+          "conclusions": ["..."],
+          "dynamicSections": [{"title": "Análisis de Causalidad", "content": "..."}, {"title": "Recomendaciones", "content": "..."}]
+        }
+
+        CASO C: REPORTE EJECUTIVO (reportType = "executive")
+        1. Genera SQL con AVG/MAX/MIN de las variables MÁS RELEVANTES para gerencia: potencia, voltaje, temperatura, eficiencia.
+        2. Llama queryData con tu SQL.
+        3. Prioriza KPIs de negocio: potencia generada, horas en rango nominal, temperatura promedio cilindros, factor de potencia.
+        4. Incluye una sección "Resumen Ejecutivo" y "Riesgos Identificados" en dynamicSections.
+        5. ESTRUCTURA JSON OBLIGATORIA:
+        {
+          "reportType": "executive",
+          "title": "Informe Ejecutivo — [descripción contextual del período]",
+          "period": "[período]",
+          "overallStatus": "normal|warning|critical",
+          "executiveSummary": "2-3 oraciones de alto nivel para gerencia no técnica",
+          "kpis": [{"label": "NOMBRE", "value": "VAL", "unit": "UNIDAD", "status": "normal|warning|critical"}],
+          "summary": "...",
+          "conclusions": ["..."],
+          "dynamicSections": [{"title": "Resumen Ejecutivo", "content": "..."}, {"title": "Riesgos Identificados", "content": "..."}, {"title": "Recomendaciones de Acción", "content": "..."}]
+        }
+
+        REGLA TÍTULO: El título SIEMPRE debe ser específico al contexto del usuario:
+        - "Informe Operacional — Enero 2026" (no solo "Reporte")
+        - "Comparativa de Rendimiento — 5 Feb vs 6 Feb 2026"
+        - "Informe Ejecutivo — Diciembre 2025"
+
+        RESPUESTA FINAL: Solo "Reporte listo." + el bloque <report_data>. Nada más.`
                 : `[MODO: CONSULTA SIMPLE]
         Responde de forma clara y concisa a la pregunta técnica.` }
         --------------------------------------------------
