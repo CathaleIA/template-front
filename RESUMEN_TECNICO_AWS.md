@@ -14,51 +14,43 @@ Este proyecto es un dashboard de monitoreo industrial en tiempo real desarrollad
   - **Estructura**: `telemetry/YYYY/MM/DD/HH/`
 - **AWS Athena**: Motor de consultas SQL serverless que escanea los JSON de S3 de forma masiva sin necesidad de mover los datos.
 
-### 2. Capa de Inteligencia (Generative AI)
-- **Amazon Bedrock**: Utiliza **Claude 3 Sonnet** como motor de razonamiento.
-- **Modos de Operación**:
-  - **Conversacional**: Respuestas rápidas a saludos y preguntas generales (bajo costo).
-  - **Tiempo Real**: Conexión directa a **WebSockets** para ver el estado actual del equipo.
-  - **Histórico (SQL RAG)**: El bot traduce preguntas humanas a **SQL (Presto/Athena)** para extraer datos precisos de S3.
+### 2. Capa de Inteligencia (Amazon Bedrock Agents)
+- **Motor de Razonamiento**: Utiliza **Claude 3 Haiku** para operaciones rápidas (SQL interno) y **Claude 3 Sonnet** para el análisis final de reportes.
+- **Bedrock Agent**: Configurado con un **Action Group** que invoca una función **AWS Lambda** (`IndustrialIoTAgentFunction`).
+- **Knowledge Base**: Integración con manuales técnicos (Motor Waukesha, Generador Stamford) para extracción de límites operativos y planes de mantenimiento.
+- **Optimizaciones de Latencia**: 
+    - **Regla de Oro de Velocidad**: Consolidación de múltiples consultas en una sola llamada a Athena.
+    - **Polling Adaptativo**: Reducción de llamadas innecesarias durante la generación de reportes.
+
+### 3. Sistema de Reportes Dinámicos
+- **Protocolo `<report_data>`**: La IA emite estructuras JSON/XML aisladas que el frontend captura y procesa.
+- **Visor Premium (`web-report-viewer.tsx`)**: 
+    - Estética **Glassmorphism** y gradientes dinámicos según el estado de los sensores.
+    - Soporte para **Reportes Comparativos** (Cara a Cara) con cálculo automático de Deltas y Tendencias.
+    - **Normalización Automática**: El backend corrige en tiempo real inconsistencias en las etiquetas de los KPIs enviados por la IA.
 
 ---
 
-## 🤖 Detalles de Implementación (Bedrock + Athena)
-
-### A. API Route Orquestadora (`/api/bedrock-chat`)
-- **Clasificador Inteligente**: Detecta si la consulta es una charla informal, una duda sobre manuales o una petición de datos técnicos.
-- **Generación Dinámica de SQL**: Bedrock genera la consulta SQL óptima según la pregunta del usuario.
-- **Inyección de Contexto**: El bot recibe los resultados de la DB y los traduce a una explicación técnica directa y segura.
-
-### B. Servicio Athena (`athena-data.ts`)
-- **Esquema 2026**: Adaptado para manejar estructuras JSON complejas y anidadas (donde cada métrica tiene su propio objeto `value` y `timestamp`).
-- **Performance**: Optimizado para escanear particiones por fecha, permitiendo analizar meses de datos en pocos segundos.
-
-### C. Tiempo Real (`iot-realtime.ts`)
-- Mantiene un caché en memoria de los últimos mensajes del motor y generador vía WebSockets, permitiendo respuestas instantáneas sobre el "ahora".
-
----
-
-## ⚙️ Configuración del Entorno (`.env`)
+## ⚙️ Configuración del Entorno (`.env` & Lambda)
 
 ```ini
-# Bedrock
-AWS_BEDROCK_REGION=us-east-1
-AWS_BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
+# Bedrock Agent
+AWS_BEDROCK_AGENT_ID=O4WWVY6I8G
+AWS_BEDROCK_AGENT_ALIAS_ID=TSTALIASID
 
-# S3 & Athena
+# Athena & S3
 AWS_S3_IOT_BUCKET=industrial-iot-snowflake-staging-240435918890
-# Athena utiliza el bucket anterior para guardar resultados en /athena-results/
+ATHENA_DATABASE=iot_data_test
 
-# Credenciales
-AWS_ACCESS_KEY_ID=***
-AWS_SECRET_ACCESS_KEY=***
+# Lambda Action Group
+LAMBDA_FUNCTION_NAME=IndustrialIoTAgentFunction
 ```
 
 ---
 
-## 🚀 Flujo de una Consulta de Datos
-1. **Usuario**: "¿Cuál fue el voltaje máximo ayer?"
-2. **Bedrock (SQL Gen)**: Genera `SELECT MAX(data.generator.voltage_L1_N.value) FROM ... WHERE date >= '2026-01-21'`.
-3. **Athena**: Ejecuta la consulta sobre los miles de archivos en S3.
-4. **Bedrock (Final)**: Recibe el valor (ej: 2405V) y responde: *"El voltaje máximo ayer fue de 2405V...".* ✅
+## 🚀 Flujo de una Consulta de Datos / Reporte
+1. **Usuario**: "¿Compara el voltaje entre el 5 y 6 de febrero?"
+2. **Bedrock Agent**: Invoca la Lambda pidiendo datos de ambos días en una sola transacción.
+3. **Lambda**: Ejecuta SQL en Athena, procesa resultados y devuelve el resumen técnico.
+4. **Bedrock (Análisis)**: Genera el bloque `<report_data>` con KPIs, conclusiones y análisis de causalidad.
+5. **Frontend**: Detecta el reporte, lo persiste en S3 y lo renderiza con el visor **Next-Gen**. ✅
