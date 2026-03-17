@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
     //Redirección final 
-    //const redirectUrl = "https://suecia.d1ajb21hsxi2dm.amplifyapp.com/dashboard"
-    const redirectUrl = "http://localhost:3000/dashboard"
+    const redirectUrl = "https://amplify-test.d1ajb21hsxi2dm.amplifyapp.com/dashboard"
+    //const redirectUrl = "http://localhost:3000/dashboard"
 
     const redirectResponse = NextResponse.redirect(redirectUrl, {
       status: 302,
