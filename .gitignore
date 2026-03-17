@@ -49,6 +49,5 @@ src/lib/aws/lambda-deployment.zip
 src/lib/aws/package-lock.json
 
 # Ignorar archivos específicos
-/src/app/api/auth/route.ts
-/src/app/api/auth/logout/route.ts
+
 /src/components/select-tenant-form.tsx
