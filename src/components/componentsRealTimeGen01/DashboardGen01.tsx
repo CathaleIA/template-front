@@ -20,8 +20,6 @@ export default function DashboardGen01() {
     const alarmas = gen["Alarmas"]   ?? EMPTY;
     const raiz    = gen["raiz"]      ?? EMPTY;
 
-    const hasData = Object.keys(gen).length > 0;
-
     return (
         <div className="flex flex-col h-[calc(100vh-var(--header-height))] overflow-hidden">
             {/* Header bar */}
@@ -47,14 +45,7 @@ export default function DashboardGen01() {
                 </div>
             </div>
 
-            {/* Waiting state */}
-            {!hasData ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
-                    <div className="w-8 h-8 border-4 border-[#00ffc2] border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-sm">Esperando datos de Generador 55...</p>
-                </div>
-            ) : (
-                <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+            <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
                     <TabsList className="shrink-0 mx-4 mt-2 w-fit">
                         <TabsTrigger value="general">General</TabsTrigger>
                         <TabsTrigger value="cilindros">Cilindros</TabsTrigger>
@@ -75,7 +66,6 @@ export default function DashboardGen01() {
                         <TabVibraciones hmi={hmi} />
                     </TabsContent>
                 </Tabs>
-            )}
         </div>
     );
 }

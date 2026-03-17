@@ -94,7 +94,7 @@ const data = {
               items: [
                 {
                   title: "Monitoreo en tiempo real",
-                  url: "/dashboard/realTime",
+                  url: "/dashboard/realTimeGen02",
                 },
                 {
                   title: "Analisis Inteligente",
