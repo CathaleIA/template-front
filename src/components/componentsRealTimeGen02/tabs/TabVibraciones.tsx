@@ -1,6 +1,7 @@
 "use client";
 
 import { TagValue } from "@/context/IoTTagsContext";
+import { getThresholdStatus, ALL_THRESHOLDS } from "@/config/thresholds-v2";
 
 interface Props {
     knock: Record<string, TagValue>;
@@ -9,20 +10,23 @@ interface Props {
 
 const n = (v?: TagValue) => v ? parseFloat(v.value) : null;
 
-const KNOCK_WARN   = 30;
-const KNOCK_DANGER = 60;
-const KNOCK_MAX    = 100;
+// Leer umbrales dinámicamente del archivo de umbrales
+const KNOCK_REF   = ALL_THRESHOLDS["Rx_Knc_Int_1"];
+const KNOCK_WARN   = KNOCK_REF?.warning_high  ?? 20;
+const KNOCK_DANGER = KNOCK_REF?.critical_high ?? 40;
+const KNOCK_MAX    = KNOCK_REF?.max           ?? 100;
 
-function knockColor(val: number | null) {
+function knockColor(val: number | null, num: number) {
     if (val === null) return { bar: "bg-muted/30", text: "text-muted-foreground" };
-    if (val >= KNOCK_DANGER) return { bar: "bg-red-500",     text: "text-red-400" };
-    if (val >= KNOCK_WARN)   return { bar: "bg-yellow-400",  text: "text-yellow-400" };
+    const status = getThresholdStatus(`Rx_Knc_Int_${num}`, val);
+    if (status === "critical") return { bar: "bg-red-500",    text: "text-red-500" };
+    if (status === "warning")  return { bar: "bg-yellow-400", text: "text-yellow-400" };
     return { bar: "bg-[#60a5fa]", text: "text-[#60a5fa]" };
 }
 
 function KnockBar({ num, value }: { num: number; value: number | null }) {
     const pct = value !== null ? Math.min(100, (value / KNOCK_MAX) * 100) : 0;
-    const { bar, text } = knockColor(value);
+    const { bar, text } = knockColor(value, num);
 
     return (
         <div className="flex flex-col items-center gap-1">
@@ -49,7 +53,7 @@ export default function TabVibraciones({ knock, mic5 }: Props) {
         value: n(knock[`Rx_Knc_Int_${i + 1}`]),
     }));
 
-    const activeKnocks = knockData.filter(k => k.value !== null && k.value >= KNOCK_WARN);
+    const activeKnocks = knockData.filter(k => k.value !== null && getThresholdStatus(`Rx_Knc_Int_${k.num}`, k.value!) !== "normal");
     const maxKnock     = knockData.reduce((max, k) => (k.value ?? 0) > (max.value ?? 0) ? k : max, { num: 0, value: null as number | null });
 
     return (
@@ -80,7 +84,7 @@ export default function TabVibraciones({ knock, mic5 }: Props) {
                     {maxKnock.value !== null && maxKnock.value > 0 && (
                         <div className="ml-auto text-right">
                             <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Máximo (Cil {maxKnock.num})</p>
-                            <p className={`text-lg font-bold tabular-nums ${knockColor(maxKnock.value).text}`}>
+                            <p className={`text-lg font-bold tabular-nums ${knockColor(maxKnock.value, maxKnock.num).text}`}>
                                 {maxKnock.value.toFixed(0)}
                             </p>
                         </div>

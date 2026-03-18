@@ -1,6 +1,7 @@
 "use client";
 
 import { TagValue } from "@/context/IoTTagsContext";
+import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
 import KpiCard from "../shared/KpiCard";
 
@@ -14,11 +15,20 @@ const fmt = (v?: TagValue, dec = 1) => {
     return val !== null ? val.toFixed(dec) : "--";
 };
 
-function ElecRow({ label, value, unit }: { label: string; value: string; unit: string }) {
+const STATUS_TEXT: Record<string, string> = {
+    critical: "text-red-500",
+    warning:  "text-yellow-400",
+    info:     "text-blue-400",
+    normal:   "text-foreground",
+};
+
+function ElecRow({ label, value, unit, tagName }: { label: string; value: string; unit: string; tagName?: string }) {
+    const numVal = parseFloat(value);
+    const status = tagName && !isNaN(numVal) ? getThresholdStatus(tagName, numVal) : "normal";
     return (
         <div className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
             <span className="text-xs text-muted-foreground">{label}</span>
-            <span className="text-xs font-semibold tabular-nums text-foreground">
+            <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status]}`}>
                 {value} <span className="text-muted-foreground font-normal">{unit}</span>
             </span>
         </div>
@@ -45,14 +55,23 @@ export default function TabGeneral({ agc }: Props) {
                 </div>
                 {/* KPI cards */}
                 <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-2">
-                    <KpiCard label="Pot. Activa" value={n(agc["Generator_active_power"])} unit="kW" />
-                    <KpiCard label="Pot. Reactiva" value={n(agc["Generator_reactive_power"])} unit="kVAr" />
-                    <KpiCard label="Pot. Aparente" value={n(agc["Generator_apparent_power"])} unit="kVA" />
-                    <KpiCard label="Factor Potencia" value={n(agc["Generator_PF"])} unit="" />
-                    <KpiCard label="Batería" value={n(agc["VDCbattery"])} unit="VDC" size="sm" />
-                    <KpiCard label="Energía Exp." value={n(agc["EnergiaExp"])} unit="kWh" size="sm" />
-                    <KpiCard label="Reactiva Exp." value={n(agc["ReactivaExp"])} unit="kVArh" size="sm" />
-                    <KpiCard label="FreqEscale" value={n(agc["FreqEscale"])} unit="" size="sm" />
+                    {(["Generator_active_power","Generator_reactive_power","Generator_apparent_power","Generator_PF",
+                       "VDCbattery","EnergiaExp","FreqEscale"] as const).map((key) => {
+                        const val = n(agc[key]);
+                        const status = val !== null ? getThresholdStatus(key, val) : "normal";
+                        const labels: Record<string,string> = {
+                            Generator_active_power:"Pot. Activa", Generator_reactive_power:"Pot. Reactiva",
+                            Generator_apparent_power:"Pot. Aparente", Generator_PF:"Factor Potencia",
+                            VDCbattery:"Batería", EnergiaExp:"Energía Exp.", FreqEscale:"FreqEscale"
+                        };
+                        const units: Record<string,string> = {
+                            Generator_active_power:"kW", Generator_reactive_power:"kVAr",
+                            Generator_apparent_power:"kVA", Generator_PF:"",
+                            VDCbattery:"VDC", EnergiaExp:"kWh", FreqEscale:""
+                        };
+                        return <KpiCard key={key} label={labels[key]} value={val}
+                            unit={units[key]} status={status as "normal"|"warning"|"critical"|"info"} size="sm" />;
+                    })}
                 </div>
             </div>
 
@@ -66,29 +85,29 @@ export default function TabGeneral({ agc }: Props) {
                     <div className="grid grid-cols-2 gap-x-4">
                         <div>
                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-L</p>
-                            <ElecRow label="V L1-L2" value={fmt(agc["Generator_voltage_L1_L2"], 0)} unit="V" />
-                            <ElecRow label="V L2-L3" value={fmt(agc["Generator_voltage_L2_L3"], 0)} unit="V" />
-                            <ElecRow label="V L3-L1" value={fmt(agc["Generator_voltage_L3_L1"], 0)} unit="V" />
+                            <ElecRow label="V L1-L2" value={fmt(agc["Generator_voltage_L1_L2"], 0)} unit="V" tagName="Generator_voltage_L1_L2" />
+                            <ElecRow label="V L2-L3" value={fmt(agc["Generator_voltage_L2_L3"], 0)} unit="V" tagName="Generator_voltage_L2_L3" />
+                            <ElecRow label="V L3-L1" value={fmt(agc["Generator_voltage_L3_L1"], 0)} unit="V" tagName="Generator_voltage_L3_L1" />
                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Voltajes L-N</p>
-                            <ElecRow label="V L1-N" value={fmt(agc["Generator_voltage_L1_N"], 0)} unit="V" />
-                            <ElecRow label="V L2-N" value={fmt(agc["Generator_voltage_L2_N"], 0)} unit="V" />
-                            <ElecRow label="V L3-N" value={fmt(agc["Generator_voltage_L3_N"], 0)} unit="V" />
+                            <ElecRow label="V L1-N" value={fmt(agc["Generator_voltage_L1_N"], 0)} unit="V" tagName="Generator_voltage_L1_N" />
+                            <ElecRow label="V L2-N" value={fmt(agc["Generator_voltage_L2_N"], 0)} unit="V" tagName="Generator_voltage_L2_N" />
+                            <ElecRow label="V L3-N" value={fmt(agc["Generator_voltage_L3_N"], 0)} unit="V" tagName="Generator_voltage_L3_N" />
                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Ángulos de fase</p>
                             <ElecRow label="A L2-L3" value={fmt(agc["Generator_voltage_phase_angle_L2_L3"], 1)} unit="°" />
                             <ElecRow label="A L3-L1" value={fmt(agc["Generator_voltage_phase_angle_L3_L1"], 1)} unit="°" />
                         </div>
                         <div>
                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Corrientes</p>
-                            <ElecRow label="I L1" value={fmt(agc["Generator_current_L1"], 0)} unit="A" />
-                            <ElecRow label="I L2" value={fmt(agc["Generator_current_L2"], 0)} unit="A" />
-                            <ElecRow label="I L3" value={fmt(agc["Generator_current_L3"], 0)} unit="A" />
+                            <ElecRow label="I L1" value={fmt(agc["Generator_current_L1"], 0)} unit="A" tagName="Generator_current_L1" />
+                            <ElecRow label="I L2" value={fmt(agc["Generator_current_L2"], 0)} unit="A" tagName="Generator_current_L2" />
+                            <ElecRow label="I L3" value={fmt(agc["Generator_current_L3"], 0)} unit="A" tagName="Generator_current_L3" />
                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Potencias por fase</p>
-                            <ElecRow label="P L1" value={fmt(agc["Generator_active_power_L1"], 0)} unit="kW" />
-                            <ElecRow label="P L2" value={fmt(agc["Generator_active_power_L2"], 0)} unit="kW" />
-                            <ElecRow label="P L3" value={fmt(agc["Generator_active_power_L3"], 0)} unit="kW" />
-                            <ElecRow label="Q L1" value={fmt(agc["Generator_reactive_power_L1"], 0)} unit="kVAr" />
-                            <ElecRow label="Q L2" value={fmt(agc["Generator_reactive_power_L2"], 0)} unit="kVAr" />
-                            <ElecRow label="Q L3" value={fmt(agc["Generator_reactive_power_L3"], 0)} unit="kVAr" />
+                            <ElecRow label="P L1" value={fmt(agc["Generator_active_power_L1"], 0)} unit="kW" tagName="Generator_active_power_L1" />
+                            <ElecRow label="P L2" value={fmt(agc["Generator_active_power_L2"], 0)} unit="kW" tagName="Generator_active_power_L2" />
+                            <ElecRow label="P L3" value={fmt(agc["Generator_active_power_L3"], 0)} unit="kW" tagName="Generator_active_power_L3" />
+                            <ElecRow label="Q L1" value={fmt(agc["Generator_reactive_power_L1"], 0)} unit="kVAr" tagName="Generator_reactive_power_L1" />
+                            <ElecRow label="Q L2" value={fmt(agc["Generator_reactive_power_L2"], 0)} unit="kVAr" tagName="Generator_reactive_power_L2" />
+                            <ElecRow label="Q L3" value={fmt(agc["Generator_reactive_power_L3"], 0)} unit="kVAr" tagName="Generator_reactive_power_L3" />
                         </div>
                     </div>
                 </div>

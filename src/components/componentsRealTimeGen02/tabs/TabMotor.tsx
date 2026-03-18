@@ -1,6 +1,7 @@
 "use client";
 
 import { TagValue } from "@/context/IoTTagsContext";
+import { getThresholdStatus } from "@/config/thresholds-v2";
 
 interface Props {
     engine: Record<string, TagValue>;
@@ -8,33 +9,31 @@ interface Props {
 
 const n = (v?: TagValue) => v ? parseFloat(v.value) : null;
 
-const TEMP_WARN = 500;
-const TEMP_DANGER = 550;
-
-function cylColor(val: number | null) {
+function cylColor(val: number | null, num: number) {
     if (val === null) return "border-border bg-card text-muted-foreground";
-    if (val >= TEMP_DANGER) return "border-red-500/60 bg-red-500/10 text-red-400";
-    if (val >= TEMP_WARN)   return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
+    const status = getThresholdStatus(`Tem_Cyl_${num}`, val);
+    if (status === "critical") return "border-red-500/60 bg-red-500/10 text-red-400";
+    if (status === "warning")  return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
     return "border-[#60a5fa]/30 bg-[#60a5fa]/5 text-[#60a5fa]";
 }
 
 function CylCell({ num, value }: { num: number; value: number | null }) {
     return (
-        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${cylColor(value)}`}>
+        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${cylColor(value, num)}`}>
             <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Cil {num}</span>
             <span className="text-sm font-bold tabular-nums">{value !== null ? value.toFixed(0) : "--"}</span>
-            <span className="text-[9px] text-muted-foreground">°C</span>
+            <span className="text-[9px] text-muted-foreground">°F</span>
         </div>
     );
 }
 
-function TempCard({ label, value, unit = "°C", warn = 80, danger = 100 }: {
-    label: string; value: number | null; unit?: string; warn?: number; danger?: number;
+function TempCard({ label, value, unit = "°C", tagName }: {
+    label: string; value: number | null; unit?: string; tagName?: string;
 }) {
-    const color = value === null ? "text-foreground"
-        : value >= danger ? "text-red-400"
-        : value >= warn   ? "text-yellow-400"
-        : "text-[#60a5fa]";
+    const status = tagName && value !== null ? getThresholdStatus(tagName, value) : "normal";
+    const color = status === "critical" ? "text-red-500"
+        : status === "warning" ? "text-yellow-400"
+        : value === null ? "text-foreground" : "text-[#60a5fa]";
     return (
         <div className="rounded-lg border bg-card px-3 py-2 flex flex-col gap-0.5">
             <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight">{label}</p>
@@ -95,7 +94,8 @@ export default function TabMotor({ engine }: Props) {
                 <div className="flex flex-col gap-1.5 shrink-0">
                     {(["U", "V", "W"] as const).map(d => {
                         const val = n(engine[`Devanado_${d}`]);
-                        const color = val === null ? "text-foreground" : val >= 90 ? "text-red-400" : val >= 70 ? "text-yellow-400" : "text-[#60a5fa]";
+                        const s = val !== null ? getThresholdStatus(`Devanado_${d}`, val) : "normal";
+                        const color = s === "critical" ? "text-red-500" : s === "warning" ? "text-yellow-400" : val === null ? "text-foreground" : "text-[#60a5fa]";
                         return (
                             <div key={d} className="rounded-lg border bg-card px-3 py-1.5 min-w-[80px]">
                                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Dev. {d}</p>
@@ -112,11 +112,11 @@ export default function TabMotor({ engine }: Props) {
             <div className="shrink-0">
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5 px-0.5">Temperaturas Sistema</p>
                 <div className="grid grid-cols-5 gap-2">
-                    <TempCard label="Refrig. HT Entrada"  value={n(engine["T_HT_ENTREDA"])}       warn={50} danger={65} />
-                    <TempCard label="Refrig. HT Salida"   value={n(engine["Tem_HT_ref_salida"])}   warn={80} danger={95} />
-                    <TempCard label="Refrig. LT Salida"   value={n(engine["Temp_LT_salida"])}      warn={55} danger={65} />
-                    <TempCard label="Temp. Aceite"        value={n(engine["Temperatura_aceite"])}  warn={70} danger={85} />
-                    <TempCard label="Temp. Filtro"        value={n(engine["Tempe_filtro"])}        warn={40} danger={55} />
+                    <TempCard label="Refrig. HT Entrada"  value={n(engine["T_HT_ENTREDA"])}      tagName="T_HT_ENTREDA" />
+                    <TempCard label="Refrig. HT Salida"   value={n(engine["Tem_HT_ref_salida"])}  tagName="Tem_HT_ref_salida" />
+                    <TempCard label="Refrig. LT Salida"   value={n(engine["Temp_LT_salida"])}     tagName="Temp_LT_salida" />
+                    <TempCard label="Temp. Aceite"        value={n(engine["Temperatura_aceite"])} tagName="Temperatura_aceite" />
+                    <TempCard label="Temp. Filtro"        value={n(engine["Tempe_filtro"])}       tagName="Tempe_filtro" />
                 </div>
             </div>
 
@@ -128,15 +128,15 @@ export default function TabMotor({ engine }: Props) {
                     <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Presiones</h3>
                     <div className="grid grid-cols-3 gap-2">
                         {[
-                            ["MAP",            "MAP",                     "mbar", 2000, 2500],
-                            ["Pres. Aceite",   "Presion_aceite",          "bar",  3,    6   ],
-                            ["Gas Entrada",    "Pres_Gas_Entrada_Motor",  "bar",  2,    4   ],
-                        ].map(([label, key, unit, warn, danger]) => {
+                            ["MAP",            "MAP",                    "mbar"],
+                            ["Pres. Aceite",   "Presion_aceite",         "bar" ],
+                            ["Gas Entrada",    "Pres_Gas_Entrada_Motor", "bar" ],
+                        ].map(([label, key, unit]) => {
                             const val = n(engine[key as string]);
-                            const color = val === null ? "text-foreground"
-                                : val >= (danger as number) ? "text-red-400"
-                                : val >= (warn as number)   ? "text-yellow-400"
-                                : "text-[#60a5fa]";
+                            const s = val !== null ? getThresholdStatus(key as string, val) : "normal";
+                            const color = s === "critical" ? "text-red-500"
+                                : s === "warning" ? "text-yellow-400"
+                                : val === null ? "text-foreground" : "text-[#60a5fa]";
                             return (
                                 <div key={key as string} className="rounded-lg border bg-muted/20 px-3 py-2">
                                     <p className="text-[9px] uppercase tracking-widest text-muted-foreground">{label as string}</p>

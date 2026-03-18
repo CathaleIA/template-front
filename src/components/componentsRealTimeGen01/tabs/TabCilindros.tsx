@@ -1,6 +1,7 @@
 "use client";
 
 import { TagValue } from "@/context/IoTTagsContext";
+import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
 
 interface Props {
@@ -10,20 +11,17 @@ interface Props {
 
 const n = (v?: TagValue) => v ? parseFloat(v.value) : null;
 
-const CYL_WARN = 500;
-const CYL_DANGER = 550;
-const CYL_MAX = 650;
-
-function cylColor(val: number | null) {
+function cylColor(val: number | null, num: number) {
     if (val === null) return "border-border bg-card text-muted-foreground";
-    if (val >= CYL_DANGER) return "border-red-500/60 bg-red-500/10 text-red-400";
-    if (val >= CYL_WARN) return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
+    const status = getThresholdStatus(`Tem_Cyl_${num}`, val);
+    if (status === "critical") return "border-red-500/60 bg-red-500/10 text-red-400";
+    if (status === "warning")  return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
     return "border-[#00ffc2]/30 bg-[#00ffc2]/5 text-[#00ffc2]";
 }
 
 function CylCard({ num, value }: { num: number; value: number | null }) {
     return (
-        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${cylColor(value)}`}>
+        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${cylColor(value, num)}`}>
             <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Cil {num}
             </span>
@@ -52,7 +50,7 @@ export default function TabCilindros({ engine, alarmas }: Props) {
             <div className="flex gap-3 items-start shrink-0">
                 <div className="w-36 shrink-0">
                     <HalfGauge label="Prom. Temp Cil." value={promedio}
-                        unit="°C" min={400} max={CYL_MAX} warning={CYL_WARN} danger={CYL_DANGER} size="sm" />
+                        unit="°F" min={400} max={650} warning={580} danger={610} size="sm" />
                 </div>
                 <div className="w-36 shrink-0">
                     <HalfGauge label="Delta Temp Cil." value={delta}
@@ -72,7 +70,8 @@ export default function TabCilindros({ engine, alarmas }: Props) {
                     <div className="grid grid-cols-3 gap-2">
                         {[["Devanado U", "Devanado_U"], ["Devanado V", "Devanado_V"], ["Devanado W", "Devanado_W"]].map(([label, key]) => {
                             const val = n(engine[key]);
-                            const color = val === null ? "text-foreground" : val >= 90 ? "text-red-400" : val >= 70 ? "text-yellow-400" : "text-[#00ffc2]";
+                            const s = val !== null ? getThresholdStatus(key, val) : "normal";
+                            const color = s === "critical" ? "text-red-500" : s === "warning" ? "text-yellow-400" : val === null ? "text-foreground" : "text-[#00ffc2]";
                             return (
                                 <div key={key} className="rounded-lg border bg-card px-2 py-1.5">
                                     <p className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</p>
@@ -104,10 +103,12 @@ export default function TabCilindros({ engine, alarmas }: Props) {
                     ["T. Aire Filtro", "Temp_Aire_Filtro_Motor", "°C"],
                 ].map(([label, key, unit]) => {
                     const val = n(engine[key]);
+                    const s = val !== null ? getThresholdStatus(key, val) : "normal";
+                    const color = s === "critical" ? "text-red-500" : s === "warning" ? "text-yellow-400" : "text-foreground";
                     return (
                         <div key={key} className="rounded-lg border bg-card px-3 py-2">
                             <p className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</p>
-                            <p className="text-lg font-bold tabular-nums text-foreground">
+                            <p className={`text-lg font-bold tabular-nums ${color}`}>
                                 {val !== null ? val.toFixed(1) : "--"} <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                             </p>
                         </div>

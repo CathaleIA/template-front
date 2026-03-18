@@ -1,6 +1,7 @@
 "use client";
 
 import { TagValue } from "@/context/IoTTagsContext";
+import { getThresholdStatus } from "@/config/thresholds-v2";
 
 interface Props {
     mic5: Record<string, TagValue>;
@@ -8,19 +9,17 @@ interface Props {
 
 const n = (v?: TagValue) => v ? parseFloat(v.value) : null;
 
-const BOB_WARN   = 20;
-const BOB_DANGER = 28;
-
-function bobColor(val: number | null) {
+function bobColor(val: number | null, tagName: string) {
     if (val === null) return "border-border bg-card text-muted-foreground";
-    if (val >= BOB_DANGER) return "border-red-500/60 bg-red-500/10 text-red-400";
-    if (val >= BOB_WARN)   return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
+    const status = getThresholdStatus(tagName, val);
+    if (status === "critical") return "border-red-500/60 bg-red-500/10 text-red-400";
+    if (status === "warning")  return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
     return "border-[#60a5fa]/30 bg-[#60a5fa]/5 text-[#60a5fa]";
 }
 
-function BobinaCard({ id, value }: { id: string; value: number | null }) {
+function BobinaCard({ id, value, tagName }: { id: string; value: number | null; tagName: string }) {
     return (
-        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${bobColor(value)}`}>
+        <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${bobColor(value, tagName)}`}>
             <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">{id}</span>
             <span className="text-sm font-bold tabular-nums">{value !== null ? value.toFixed(1) : "--"}</span>
             <span className="text-[9px] text-muted-foreground">kV</span>
@@ -36,9 +35,11 @@ function MiniBarChart({ data, label }: { data: { id: string; value: number | nul
             <div className="flex items-end gap-1 h-16">
                 {data.map(({ id, value }) => {
                     const pct = value !== null ? (value / max) * 100 : 0;
+                    const tagKey = `Rx_Est_Sec_Volt_${id}`;
+                    const s = value !== null ? getThresholdStatus(tagKey, value) : "normal";
                     const color = value === null ? "bg-muted/20"
-                        : value >= BOB_DANGER ? "bg-red-500"
-                        : value >= BOB_WARN   ? "bg-yellow-400"
+                        : s === "critical" ? "bg-red-500"
+                        : s === "warning"  ? "bg-yellow-400"
                         : "bg-[#60a5fa]";
                     return (
                         <div key={id} className="flex-1 flex flex-col items-center gap-0.5">
@@ -107,7 +108,7 @@ export default function TabBobinas({ mic5 }: Props) {
                     </div>
                     <div className="grid grid-cols-10 gap-1.5 flex-1">
                         {grupoA.map(({ id, value }) => (
-                            <BobinaCard key={id} id={id} value={value} />
+                            <BobinaCard key={id} id={id} value={value} tagName={`Rx_Est_Sec_Volt_${id}`} />
                         ))}
                     </div>
                 </div>
@@ -120,7 +121,7 @@ export default function TabBobinas({ mic5 }: Props) {
                     </div>
                     <div className="grid grid-cols-10 gap-1.5 flex-1">
                         {grupoB.map(({ id, value }) => (
-                            <BobinaCard key={id} id={id} value={value} />
+                            <BobinaCard key={id} id={id} value={value} tagName={`Rx_Est_Sec_Volt_${id}`} />
                         ))}
                     </div>
                 </div>
