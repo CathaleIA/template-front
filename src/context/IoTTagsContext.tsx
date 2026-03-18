@@ -28,6 +28,18 @@ export const IoTTagsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    // Cargar cache después del montaje (evita hydration mismatch con SSR)
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem("iot_tags_cache");
+            if (stored) setTags(JSON.parse(stored));
+        } catch { /* ignore */ }
+    }, []);
+
+    useEffect(() => {
+        try { localStorage.setItem("iot_tags_cache", JSON.stringify(tags)); } catch { /* quota */ }
+    }, [tags]);
+
     const reconnectAttempts = useRef(0);
 
     const handleMessage = useCallback((msg: unknown) => {
