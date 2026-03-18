@@ -2,10 +2,9 @@
 
 import { useIoTTags } from "@/context/IoTTagsContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TabGeneral from "./tabs/TabGeneral";
-import TabCilindros from "./tabs/TabCilindros";
-import TabSistema from "./tabs/TabSistema";
-import TabVibraciones from "./tabs/TabVibraciones";
+import TabVistaGeneral from "./tabs/TabVistaGeneral";
+import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
+import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
 
 const GEN = "Generador_55";
 const EMPTY: Record<string, never> = {};
@@ -47,23 +46,19 @@ export default function DashboardGen01() {
 
             <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
                     <TabsList className="shrink-0 mx-4 mt-2 w-fit">
-                        <TabsTrigger value="general">General</TabsTrigger>
-                        <TabsTrigger value="cilindros">Cilindros</TabsTrigger>
-                        <TabsTrigger value="sistema">Sistema</TabsTrigger>
-                        <TabsTrigger value="vibraciones">Vibraciones</TabsTrigger>
+                        <TabsTrigger value="general">Vista General</TabsTrigger>
+                        <TabsTrigger value="motor">Conjunto Motor</TabsTrigger>
+                        <TabsTrigger value="electrico">Conjunto Eléctrico</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="general"    className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-                        <TabGeneral agc={agc} />
+                    <TabsContent value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                        <TabVistaGeneral agc={agc} engine={engine} raiz={raiz} />
                     </TabsContent>
-                    <TabsContent value="cilindros"  className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-                        <TabCilindros engine={engine} alarmas={alarmas} />
+                    <TabsContent value="motor"     className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                        <TabConjuntoMotor engine={engine} hmi={hmi} alarmas={alarmas} />
                     </TabsContent>
-                    <TabsContent value="sistema"    className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-                        <TabSistema engine={engine} raiz={raiz} />
-                    </TabsContent>
-                    <TabsContent value="vibraciones" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-                        <TabVibraciones hmi={hmi} />
+                    <TabsContent value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                        <TabConjuntoElectrico agc={agc} hmi={hmi} />
                     </TabsContent>
                 </Tabs>
         </div>
