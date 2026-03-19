@@ -1,141 +1,167 @@
+/**
+ * Server-side WebSocket cache for real-time IoT data.
+ * Connects to the IoT WebSocket API Gateway and keeps the latest
+ * tag values in memory so Bedrock can answer real-time queries.
+ *
+ * Message format received from WebSocket:
+ *   { generador: string, grupo: string, tags: [{displayName, value, quality, opcTimestamp}] }
+ */
+
+// ws is a transitive dependency of mqtt (already in package.json)
 import WebSocket from 'ws';
 
-// Cache global para almacenar los últimos mensajes del generador y motor
-let latestGeneratorMessage: any = null;
-let latestMotorMessage: any = null;
-let wsConnection: WebSocket | null = null;
-let reconnectTimer: NodeJS.Timeout | null = null;
+interface TagValue {
+    value: string;
+    quality: string;
+    opcTimestamp: number;
+}
 
-const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+// tags[generador][grupo][displayName] = TagValue
+type TagsState = Record<string, Record<string, Record<string, TagValue>>>;
+
+// Use globalThis so the cache survives Next.js hot-reloads
+declare global {
+    var __iotTagsCache: TagsState | undefined;
+    var __iotLastUpdate: Date | null | undefined;
+    var __iotWsConnection: WebSocket | null | undefined;
+    var __iotReconnectTimer: NodeJS.Timeout | null | undefined;
+}
+
+if (!global.__iotTagsCache) global.__iotTagsCache = {};
+if (global.__iotLastUpdate === undefined) global.__iotLastUpdate = null;
+if (global.__iotWsConnection === undefined) global.__iotWsConnection = null;
+if (global.__iotReconnectTimer === undefined) global.__iotReconnectTimer = null;
+
+const WEBSOCKET_URL =
+    process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
     'wss://657pcrk382.execute-api.us-east-1.amazonaws.com/production/';
 
-/**
- * Conecta al WebSocket y mantiene los últimos mensajes en caché
- */
 function connectToWebSocket() {
-    if (wsConnection?.readyState === WebSocket.OPEN) {
-        return; // Ya está conectado
-    }
+    if (global.__iotWsConnection?.readyState === WebSocket.OPEN) return;
 
-    console.log('🔌 Connecting to WebSocket for real-time data cache...');
-    wsConnection = new WebSocket(WEBSOCKET_URL);
+    console.log('🔌 [IoT Cache] Connecting to WebSocket...');
+    const ws = new WebSocket(WEBSOCKET_URL);
+    global.__iotWsConnection = ws;
 
-    wsConnection.on('open', () => {
-        console.log('✅ WebSocket connected for Bedrock real-time queries');
-        if (reconnectTimer) {
-            clearTimeout(reconnectTimer);
-            reconnectTimer = null;
+    ws.on('open', () => {
+        console.log('✅ [IoT Cache] WebSocket connected');
+        if (global.__iotReconnectTimer) {
+            clearTimeout(global.__iotReconnectTimer);
+            global.__iotReconnectTimer = null;
         }
     });
 
-    wsConnection.on('message', (data: WebSocket.Data) => {
+    ws.on('message', (data: WebSocket.Data) => {
         try {
-            const message = JSON.parse(data.toString());
+            const msg = JSON.parse(data.toString());
 
-            // Ignorar mensajes de control
-            if (message.type) return;
+            // Skip control/ping messages
+            if (msg.type) return;
 
-            // Detectar si es generador o motor basándose en la estructura de datos
-            const isGenerator = message.data && 'generator' in message.data;
-            const isMotor = message.data && 'cylinders' in message.data;
+            // Require the new tag structure
+            if (!msg.generador || !msg.grupo || !Array.isArray(msg.tags)) return;
 
-            if (isGenerator) {
-                latestGeneratorMessage = message;
-                console.log('📥 Generator data cached for Bedrock');
-            } else if (isMotor) {
-                latestMotorMessage = message;
-                console.log('📥 Motor data cached for Bedrock');
+            const generador = msg.generador as string;
+            const grupo = msg.grupo as string;
+            const tagArray = msg.tags as Array<{
+                displayName: string;
+                value: string;
+                quality: string;
+                opcTimestamp: number;
+            }>;
+
+            if (!global.__iotTagsCache![generador]) global.__iotTagsCache![generador] = {};
+            if (!global.__iotTagsCache![generador][grupo]) global.__iotTagsCache![generador][grupo] = {};
+
+            for (const tag of tagArray) {
+                if (!tag.displayName) continue;
+                global.__iotTagsCache![generador][grupo][tag.displayName] = {
+                    value: tag.value,
+                    quality: tag.quality,
+                    opcTimestamp: tag.opcTimestamp,
+                };
             }
-        } catch (error) {
-            console.error('❌ Error parsing WebSocket message:', error);
+
+            global.__iotLastUpdate = new Date();
+        } catch (e) {
+            console.error('❌ [IoT Cache] Error parsing message:', e);
         }
     });
 
-    wsConnection.on('close', () => {
-        console.log('🔌 WebSocket disconnected. Reconnecting in 5s...');
-        wsConnection = null;
-
-        // Reconectar después de 5 segundos
-        if (!reconnectTimer) {
-            reconnectTimer = setTimeout(connectToWebSocket, 5000);
+    ws.on('close', () => {
+        console.log('🔌 [IoT Cache] Disconnected. Reconnecting in 5s...');
+        global.__iotWsConnection = null;
+        if (!global.__iotReconnectTimer) {
+            global.__iotReconnectTimer = setTimeout(connectToWebSocket, 5000);
         }
     });
 
-    wsConnection.on('error', (error) => {
-        console.error('❌ WebSocket error:', error);
-    });
+    ws.on('error', (e) => console.error('❌ [IoT Cache] WebSocket error:', e));
 }
 
 /**
- * Obtiene el último estado reportado por el WebSocket
+ * Returns the latest IoT state from the WebSocket cache.
+ * Waits up to `maxWaitMs` for data if the cache is empty.
  */
-export async function getLatestRealtimeData(question?: string): Promise<any> {
-    // Asegurar que la conexión esté activa
-    if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+export async function getLatestRealtimeData(maxWaitMs = 6000): Promise<{
+    tags: TagsState;
+    lastUpdate: Date | null;
+    hasData: boolean;
+}> {
+    // Ensure connection is alive
+    if (!global.__iotWsConnection || global.__iotWsConnection.readyState !== WebSocket.OPEN) {
         connectToWebSocket();
     }
 
-    // Detectar qué tipo de datos necesita basándose en la pregunta
-    const needsGenerator = question && (
-        question.toLowerCase().includes('voltaje') ||
-        question.toLowerCase().includes('corriente') ||
-        question.toLowerCase().includes('potencia') ||
-        question.toLowerCase().includes('frecuencia') ||
-        question.toLowerCase().includes('breaker') ||
-        question.toLowerCase().includes('generador')
-    );
-
-    const needsMotor = question && (
-        question.toLowerCase().includes('temperatura') ||
-        question.toLowerCase().includes('cilindro') ||
-        question.toLowerCase().includes('aceite') ||
-        question.toLowerCase().includes('refrigerante') ||
-        question.toLowerCase().includes('enfriamiento') ||
-        question.toLowerCase().includes('motor')
-    );
-
-    // Si no hay datos, esperar hasta 5 segundos a que lleguen
-    const maxWaitTime = 5000; // 5 segundos
-    const checkInterval = 500; // Revisar cada 500ms
+    // Wait for data if cache is empty
+    const interval = 500;
     let waited = 0;
-
-    while (waited < maxWaitTime) {
-        // Si necesita datos específicos, esperar solo por esos
-        if (needsGenerator && !needsMotor) {
-            if (latestGeneratorMessage) break;
-        } else if (needsMotor && !needsGenerator) {
-            if (latestMotorMessage) break;
-        } else {
-            // Si no especifica o necesita ambos, esperar a tener al menos uno
-            if (latestGeneratorMessage || latestMotorMessage) break;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, checkInterval));
-        waited += checkInterval;
+    while (Object.keys(global.__iotTagsCache!).length === 0 && waited < maxWaitMs) {
+        await new Promise((r) => setTimeout(r, interval));
+        waited += interval;
     }
 
-    // Validar que tengamos los datos necesarios
-    if (needsGenerator && !latestGeneratorMessage) {
-        throw new Error('No hay datos del generador disponibles. Por favor, espera unos segundos y vuelve a intentar.');
-    }
-
-    if (needsMotor && !latestMotorMessage) {
-        throw new Error('No hay datos del motor disponibles. Por favor, espera unos segundos y vuelve a intentar.');
-    }
-
-    if (!latestGeneratorMessage && !latestMotorMessage) {
-        throw new Error('No real-time data available after waiting. The IoT device may not be sending data.');
-    }
-
-    // Retornar un objeto combinado con ambos tipos de datos
     return {
-        generator: latestGeneratorMessage,
-        motor: latestMotorMessage,
-        timestamp: new Date().toISOString()
+        tags: global.__iotTagsCache!,
+        lastUpdate: global.__iotLastUpdate ?? null,
+        hasData: Object.keys(global.__iotTagsCache!).length > 0,
     };
 }
 
-// Iniciar la conexión al cargar el módulo (solo en servidor)
+/**
+ * Formats the cached IoT state as a readable text block for Bedrock.
+ * Example output:
+ *   generador_55 — Global:
+ *     Presion_aceite = 4.41
+ *     Tem_cyl_1 = 546.95
+ *   ...
+ */
+export function formatRealtimeContext(tags: TagsState, lastUpdate: Date | null): string {
+    const lines: string[] = [];
+    const ts = lastUpdate
+        ? lastUpdate.toLocaleString('es-CO', { timeZone: 'America/Bogota' })
+        : 'desconocida';
+
+    lines.push(`[DATOS EN TIEMPO REAL — ${ts} hora Colombia]`);
+    lines.push('Fuente: WebSocket IoT (mismo canal que el dashboard)');
+    lines.push('');
+
+    for (const [generador, grupos] of Object.entries(tags)) {
+        for (const [grupo, displayNames] of Object.entries(grupos)) {
+            lines.push(`${generador} — ${grupo}:`);
+            for (const [displayName, tv] of Object.entries(displayNames)) {
+                if (tv.quality === 'Good') {
+                    lines.push(`  ${displayName} = ${tv.value}`);
+                }
+            }
+            lines.push('');
+        }
+    }
+
+    return lines.join('\n');
+}
+
+// Auto-connect when this module is loaded on the server
 if (typeof window === 'undefined') {
     connectToWebSocket();
 }

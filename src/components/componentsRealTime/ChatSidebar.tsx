@@ -116,6 +116,18 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     scrollToBottom();
   }, [messages]);
 
+  // Ref para limpiar el interval si el componente desmonta durante el polling
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+    };
+  }, []);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -168,15 +180,23 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         return;
       }
 
-      // Paso 2: Polling - consultar estado cada 2 segundos
+      // Paso 2: Polling con reintentos ante fallos de red transitorios
       const jobId = data.jobId;
-      const pollInterval = setInterval(async () => {
+      let consecutiveErrors = 0;
+      const MAX_CONSECUTIVE_ERRORS = 5;
+
+      pollIntervalRef.current = setInterval(async () => {
         try {
           const statusResponse = await fetch(`/api/agent-chat?jobId=${jobId}`);
+          if (!statusResponse.ok) {
+            throw new Error(`HTTP ${statusResponse.status}`);
+          }
           const jobData = await statusResponse.json();
+          consecutiveErrors = 0; // resetear en éxito
 
           if (jobData.status === 'completed') {
-            clearInterval(pollInterval);
+            clearInterval(pollIntervalRef.current!);
+            if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
             setIsLoading(false);
 
             setMessages(prev => [...prev, {
@@ -186,7 +206,8 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
               timestamp: new Date()
             }]);
           } else if (jobData.status === 'error') {
-            clearInterval(pollInterval);
+            clearInterval(pollIntervalRef.current!);
+            if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
             setIsLoading(false);
 
             setMessages(prev => [...prev, {
@@ -197,29 +218,33 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
           }
           // Si status es 'pending' o 'processing', continuar esperando
         } catch (pollError) {
-          console.error('Error polling job status:', pollError);
-          clearInterval(pollInterval);
-          setIsLoading(false);
+          consecutiveErrors++;
+          console.warn(`Poll error (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}):`, pollError);
 
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: 'Error al verificar el estado de la consulta. Por favor intenta de nuevo.',
-            timestamp: new Date()
-          }]);
-        }
-      }, 1000); // Poll cada 1 segundo
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            clearInterval(pollIntervalRef.current!);
+            if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+            setIsLoading(false);
 
-      // Timeout de seguridad (2 minutos)
-      setTimeout(() => {
-        clearInterval(pollInterval);
-        if (isLoading) {
-          setIsLoading(false);
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: 'La consulta tardó demasiado. Por favor intenta de nuevo.',
-            timestamp: new Date()
-          }]);
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: 'Error al verificar el estado de la consulta. Por favor intenta de nuevo.',
+              timestamp: new Date()
+            }]);
+          }
+          // Si son pocos errores consecutivos, seguir reintentando
         }
+      }, 1500); // Poll cada 1.5 segundos
+
+      // Timeout de seguridad (5 minutos)
+      pollTimeoutRef.current = setTimeout(() => {
+        clearInterval(pollIntervalRef.current!);
+        setIsLoading(false);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'La consulta tardó demasiado. Por favor intenta de nuevo.',
+          timestamp: new Date()
+        }]);
       }, 300000);
 
     } catch (error: any) {

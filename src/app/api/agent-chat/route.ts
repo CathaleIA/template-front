@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { invokeAgent, generateSessionId } from '@/lib/bedrock-agent';
+import { getLatestRealtimeData, formatRealtimeContext } from '@/lib/iot-realtime';
 
 // Configuración para extender el timeout en Amplify/Vercel
 export const maxDuration = 60; // segundos
@@ -66,8 +67,16 @@ export async function POST(request: Request) {
             createdAt: Date.now()
         });
 
-        // Ejecutar en background (sin await)
-        processJobInBackground(jobId, message, finalSessionId);
+        // Ejecutar en background (sin await) - .catch() evita unhandled rejection que crashea el server
+        processJobInBackground(jobId, message, finalSessionId).catch((err) => {
+            console.error(`❌ Unhandled error in background job ${jobId}:`, err);
+            const j = jobs.get(jobId);
+            if (j && j.status !== 'completed') {
+                j.status = 'error';
+                j.result = { answer: 'Error interno al procesar la consulta.', error: err.message };
+                jobs.set(jobId, j);
+            }
+        });
 
         // Devolver inmediatamente
         return NextResponse.json({
@@ -159,7 +168,7 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         const isReportRequest = /informe|reporte|resumen mensual|reporte mensual|análisis mensual|análisis del mes|gráficas|graficas|dashboard|generar reporte|comparar|comparativo|comparativa|diferencia entre|ejecutivo|vs\b/i.test(message);
         const isMaintenanceRequest = /manteni|manté|próximo mantenimiento|último mantenimiento|programar mantenimiento|recordatorio|agendar|correo de mantenimiento|notificación de mantenimiento/i.test(message);
 
-        const reportProtocol = `
+        let reportProtocol = `
         [INSTRUCCIÓN DE SISTEMA - CONTEXTO- REPORTES]
         - REGLA DE ORO DE VELOCIDAD: NUNCA escribas SQL. Pasa la pregunta del usuario al parámetro "question" de queryData.
         - Si el usuario pide un "reporte" o "comparativa", emite el JSON/XML en un bloque <report_data>.
@@ -304,11 +313,48 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         PREGUNTA DEL USUARIO: ${message}
         `;
 
+        // ── Inyectar datos en tiempo real desde WebSocket IoT ──────────────────
+        // Solo para consultas de datos en tiempo real (no reportes históricos)
+        if (!isReportRequest) {
+            try {
+                const iotData = await getLatestRealtimeData(5000);
+                if (iotData.hasData) {
+                    const realtimeBlock = formatRealtimeContext(iotData.tags, iotData.lastUpdate);
+                    reportProtocol = `${realtimeBlock}
+
+[INSTRUCCIÓN CRÍTICA - TIEMPO REAL]
+Los datos anteriores son el estado ACTUAL de los equipos en este momento.
+Para responder preguntas sobre valores actuales (presión, temperatura, voltaje, corriente, etc.),
+USA ESTOS DATOS DIRECTAMENTE. NO llames queryData ni ninguna otra herramienta.
+Solo llama herramientas si el usuario pide datos históricos, reportes o mantenimiento.
+
+${reportProtocol}`;
+                    console.log(`📡 [IoT Cache] Real-time data injected (last update: ${iotData.lastUpdate?.toISOString()})`);
+                } else {
+                    console.warn('⚠️ [IoT Cache] No real-time data available after waiting');
+                }
+            } catch (iotErr) {
+                console.error('⚠️ [IoT Cache] Failed to get real-time data:', iotErr);
+            }
+        }
+
         // Invocar el Bedrock Agent
         const agentResponse = await invokeAgent(reportProtocol, sessionId);
 
         // Procesar tags de reporte en la respuesta del agente
         let finalAnswer = agentResponse.answer;
+
+        // Bedrock quita las tags <thinking> al streamear pero mantiene el texto.
+        // Solo usar rawResponse cuando sea la respuesta FINAL (no pasos intermedios con <function_calls>).
+        if (agentResponse.trace) {
+            for (const t of agentResponse.trace) {
+                const rawContent = t.trace?.orchestrationTrace?.modelInvocationOutput?.rawResponse?.content;
+                if (rawContent && rawContent.includes('<thinking>') && !rawContent.includes('<function_calls>')) {
+                    finalAnswer = rawContent.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+                    break;
+                }
+            }
+        }
 
         // 1. Extraer datos del texto o del TRACE (Bedrock suele esconderlo si cree que es metadata)
         let reportDataMatch = finalAnswer.match(/<report_data>([\s\S]*?)(?:<\/report_data>|$)/);
