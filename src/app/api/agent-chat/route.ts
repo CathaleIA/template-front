@@ -67,22 +67,27 @@ export async function POST(request: Request) {
             createdAt: Date.now()
         });
 
-        // Ejecutar en background (sin await) - .catch() evita unhandled rejection que crashea el server
-        processJobInBackground(jobId, message, finalSessionId).catch((err) => {
-            console.error(`❌ Unhandled error in background job ${jobId}:`, err);
+        // Procesar de forma SÍNCRONA: en Lambda serverless (Amplify) el proceso
+        // se congela al devolver la respuesta, matando cualquier tarea en background.
+        // Con maxDuration:60 tenemos margen suficiente para esperar a Bedrock.
+        try {
+            await processJobInBackground(jobId, message, finalSessionId);
+        } catch (err: any) {
+            console.error(`❌ Error processing job ${jobId}:`, err);
             const j = jobs.get(jobId);
             if (j && j.status !== 'completed') {
                 j.status = 'error';
                 j.result = { answer: 'Error interno al procesar la consulta.', error: err.message };
                 jobs.set(jobId, j);
             }
-        });
+        }
 
-        // Devolver inmediatamente
+        // Devolver el job ya completado — el primer poll lo encontrará listo
+        const completedJob = jobs.get(jobId);
         return NextResponse.json({
             jobId,
-            status: 'pending',
-            message: 'Job started. Poll /api/agent-chat?jobId={jobId} for results.'
+            status: completedJob?.status ?? 'error',
+            result: completedJob?.result,
         });
 
     } catch (error: any) {
@@ -317,7 +322,9 @@ async function processJobInBackground(jobId: string, message: string, sessionId:
         // Solo para consultas de datos en tiempo real (no reportes históricos)
         if (!isReportRequest) {
             try {
-                const iotData = await getLatestRealtimeData(5000);
+                // 10s: el PLC publica cada ~3s por grupo; necesitamos al menos 2-3 ciclos
+                // para recibir todos los grupos (Global, GVL_HMI_3, TEC_FLUJO_CALCULADO)
+                const iotData = await getLatestRealtimeData(10000);
                 if (iotData.hasData) {
                     const realtimeBlock = formatRealtimeContext(iotData.tags, iotData.lastUpdate);
                     reportProtocol = `${realtimeBlock}

@@ -180,7 +180,28 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         return;
       }
 
-      // Paso 2: Polling con reintentos ante fallos de red transitorios
+      // Si el POST ya devolvió el resultado (backend síncrono), usarlo directamente
+      if (data.status === 'completed' && data.result) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.result.answer || 'Respuesta recibida.',
+          sources: data.result.sources,
+          timestamp: new Date()
+        }]);
+        setIsLoading(false);
+        return;
+      }
+      if (data.status === 'error' && data.result) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.result.answer || 'Hubo un error al procesar tu consulta.',
+          timestamp: new Date()
+        }]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Paso 2: Polling (fallback si el backend devuelve pending)
       const jobId = data.jobId;
       let consecutiveErrors = 0;
       const MAX_CONSECUTIVE_ERRORS = 5;
