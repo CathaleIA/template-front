@@ -142,96 +142,94 @@ export default function FrequencyTrendChart({
           paper_bgcolor: colors.paperColor,
           plot_bgcolor: colors.plotColor,
           font: { color: colors.textColor },
-          shapes: operatingZones, // Agregar zonas de colores
+          shapes: operatingZones,
+          hovermode: 'x unified',
+          hoverlabel: {
+            bgcolor: colors.paperColor,
+            bordercolor: colors.gridColor,
+            font: { color: colors.textColor, size: 12 },
+          },
           xaxis: {
             type: 'date',
             autorange: true,
+            automargin: true,
             zeroline: false,
             gridcolor: colors.gridColor,
             linewidth: 1,
-            linecolor: isMaximized
-              ? colors.textColor
-              : colors.rangeSelectorColor,
-            ticklen: 3,
+            linecolor: colors.gridColor,
+            ticklen: 4,
             tickfont: {
-              size: isMaximized
-                ? 14
-                : 10,
-              color: colors.textColor
+              size: isMaximized ? 12 : 10,
+              color: colors.textColor,
             },
+            // Formato adaptativo según el zoom
+            tickformatstops: [
+              { dtickrange: [null, 60000],      value: '%H:%M:%S'       },
+              { dtickrange: [60000, 3600000],   value: '%H:%M'          },
+              { dtickrange: [3600000, 86400000],value: '%H:%M\n%d %b'   },
+              { dtickrange: [86400000, null],   value: '%d %b\n%Y'      },
+            ],
             rangeselector: {
               font: {
                 color: colors.textColor,
-                size: isMaximized
-                  ? 14
-                  : 10,
+                size: isMaximized ? 13 : 10,
               },
               buttons: [
-                { count: 1, label: '1h', step: 'hour', stepmode: 'backward' },
-                { count: 24, label: '1d', step: 'hour', stepmode: 'backward' },
-                { count: 7, label: '1w', step: 'day', stepmode: 'backward' },
-                { count: 1, label: '1m', step: 'month', stepmode: 'backward' },
-                { step: 'all', label: 'Todo' }
+                { count: 1,  label: '1h', step: 'hour',  stepmode: 'backward' },
+                { count: 24, label: '1d', step: 'hour',  stepmode: 'backward' },
+                { count: 7,  label: '1s', step: 'day',   stepmode: 'backward' },
+                { count: 1,  label: '1m', step: 'month', stepmode: 'backward' },
+                { step: 'all', label: 'Todo' },
               ],
-              x: 1,
-              xanchor: 'right',
-              y: 1,
+              x: 0,
+              xanchor: 'left',
+              y: 1.02,
               yanchor: 'bottom',
               bgcolor: colors.rangeSelectorColor,
-              activecolor: colors.paperColor,
+              activecolor: colors.blueTenue,
             },
+            // Rangeslider solo en modo maximizado
             rangeslider: {
-              visible: true,
-              thickness: 0.1,
+              visible: isMaximized,
+              thickness: 0.08,
               bgcolor: colors.plotColor,
-            }
+            },
           },
           yaxis: {
             range: [minPF - 1, maxPF + 1],
             zerolinecolor: colors.gridColor,
-            title: variablesMaximazed.titleAxisYTwo,
+            title: isMaximized ? variablesMaximazed.titleAxisYTwo : undefined,
             gridcolor: colors.gridColor,
             zeroline: false,
             linewidth: 1,
-            linecolor: isMaximized
-              ? colors.textColor
-              : colors.rangeSelectorColor,
+            linecolor: colors.gridColor,
             fixedrange: false,
-            automargin: false,
+            automargin: true,
             tickfont: {
-              size: isMaximized
-                ? 14
-                : 10,
-              color: colors.textColor
+              size: isMaximized ? 12 : 10,
+              color: colors.textColor,
             },
-            ticklabelposition: "outside",
-            tickangle: variablesMaximazed.anguleTicks,
-            ticklen: 5,
+            ticklen: 4,
+            tickangle: 0,
           },
           margin: isMaximized
-            ? { r: 100, b: 30, t: 80, l: 100, }
-            : { r: 60, b: 0, t: 10, l: 35 },
+            ? { r: 80, b: 60, t: 80, l: 80 }
+            : { r: 10, b: 45, t: 28, l: 10 },
           legend: {
-            orientation: "h",
+            orientation: 'h',
             x: 0.5,
-            xanchor: "center",
-            y: isMaximized
-              ? 1
-              : -0.4,
-            yanchor: isMaximized
-              ? "bottom"
-              : "top",
+            xanchor: 'center',
+            y: isMaximized ? -0.12 : -0.35,
+            yanchor: 'top',
             font: {
-              size: isMaximized
-                ? 14
-                : 10,
-              color: colors.textColor
-            }
+              size: isMaximized ? 13 : 10,
+              color: colors.textColor,
+            },
           },
           modebar: {
-            orientation: "v",
+            orientation: 'v',
             bgcolor: colors.blueTenue,
-          }
+          },
         };
 
         const config = {
@@ -259,11 +257,12 @@ export default function FrequencyTrendChart({
           type: 'scatter',
           mode: trace.mode || 'lines',
           name: trace.name,
+          hovertemplate: `<b>%{y:.2f}</b><extra>%{fullData.name}</extra>`,
           line: {
-            color: trace.lineColor || '',
-            width: 1,
+            color: trace.lineColor || undefined,
+            width: isMaximized ? 2 : 1.5,
             simplify: true,
-          }
+          },
         }));
 
         // Crear gráfico nuevo

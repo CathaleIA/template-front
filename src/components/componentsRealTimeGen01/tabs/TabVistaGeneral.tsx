@@ -5,8 +5,8 @@ import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
 import {
-    LineChart,
-    Line,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     Tooltip,
@@ -82,39 +82,55 @@ function SmallLineChart({
 }) {
     const valColor = statusColor(tagName, currentVal);
     const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
+    // ~4 ticks visibles que se van desplazando conforme llegan datos
+    const tickInterval = data.length > 4 ? Math.floor(data.length / 4) : 0;
 
     return (
-        <div className="flex items-center gap-2 bg-card border rounded-lg px-2 py-1.5 min-w-0">
+        <div className="flex items-stretch gap-3 bg-card border rounded-xl px-3 pt-2 pb-0 min-w-0 flex-1">
             {/* Valor actual */}
-            <div className="shrink-0 w-20">
+            <div className="shrink-0 w-19 flex flex-col justify-center">
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
-                <p className={`text-base font-bold tabular-nums ${valColor}`}>
+                <p className={`text-xl font-bold tabular-nums leading-none mt-1 ${valColor}`}>
                     {displayVal}
                     <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
                 </p>
             </div>
-            {/* Gráfica */}
-            <div className="flex-1 h-10 min-w-0">
+            {/* Gráfica — ocupa todo el alto disponible, eje pegado al suelo */}
+            <div className="flex-1 min-w-0" style={{ height: "100%" }}>
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+                    <AreaChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
+                        <defs>
+                            <linearGradient id={`fill-${tagName}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%"  stopColor={color} stopOpacity={0.3} />
+                                <stop offset="95%" stopColor={color} stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
                         <YAxis domain={["auto", "auto"]} hide />
-                        <XAxis dataKey="t" hide />
+                        <XAxis
+                            dataKey="t"
+                            interval={tickInterval}
+                            tick={{ fontSize: 8, fill: "var(--muted-foreground)", dy: 2 }}
+                            tickLine={false}
+                            axisLine={{ stroke: color, strokeOpacity: 0.2, strokeWidth: 1 }}
+                            height={18}
+                        />
                         <Tooltip
-                            contentStyle={{ background: "#111", border: "1px solid #333", borderRadius: 6, padding: "2px 8px" }}
-                            labelStyle={{ display: "none" }}
+                            contentStyle={{ background: "#0f0f0f", border: `1px solid ${color}55`, borderRadius: 8, padding: "3px 10px" }}
+                            labelStyle={{ fontSize: 10, color: "#888" }}
                             formatter={(val: number) => [`${val.toFixed(0)} ${unit}`, label]}
                             itemStyle={{ color, fontSize: 11 }}
                         />
-                        <Line
+                        <Area
                             type="monotone"
                             dataKey="v"
                             stroke={color}
-                            strokeWidth={1.5}
+                            strokeWidth={2}
+                            fill={`url(#fill-${tagName})`}
                             dot={false}
                             isAnimationActive={false}
                             connectNulls
                         />
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>
@@ -172,7 +188,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 </div>
 
                 {/* 3 gráficas apiladas */}
-                <div className="flex-1 flex flex-col gap-1.5 justify-between">
+                <div className="flex-1 flex flex-col gap-1.5 min-h-40">
                     <SmallLineChart
                         data={histActive.current}
                         color="#00ffc2"

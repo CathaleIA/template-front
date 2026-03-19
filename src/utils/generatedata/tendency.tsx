@@ -171,23 +171,26 @@ const energyTraces = [
 
 // Potencia Activa (820 ±1.5 kW)
 const PotenciaActiva: TraceData = {
-  ...generatePowerData(30, 820, 1.5), // baseValue=820, variación=±1.5
+  ...generatePowerData(30, 820, 1.5),
   name: 'Potencia Activa',
-  mode: 'lines'
+  mode: 'lines',
+  lineColor: '#3b82f6', // azul
 };
 
 // Potencia Reactiva (275 ±1.5 kVAr)
 const PotenciaReactiva: TraceData = {
-  ...generatePowerData(30, 275, 1.5), // baseValue=275, variación=±1.5
+  ...generatePowerData(30, 275, 1.5),
   name: 'Potencia Reactiva',
-  mode: 'lines'
+  mode: 'lines',
+  lineColor: '#f59e0b', // ámbar
 };
 
 // Potencia Aparente (875 ±1.5 kVA)
 const PotenciaAparente: TraceData = {
-  ...generatePowerData(30, 875, 1.5), // baseValue=875, variación=±1.5
+  ...generatePowerData(30, 875, 1.5),
   name: 'Potencia Aparente',
-  mode: 'lines'
+  mode: 'lines',
+  lineColor: '#a855f7', // violeta
 };
 
 //VELOCIDAD|FRECUENCIA
