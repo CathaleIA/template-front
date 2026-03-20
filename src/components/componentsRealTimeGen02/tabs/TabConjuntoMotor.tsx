@@ -112,7 +112,7 @@ function KnockBar({ num, value }: { num: number; value: number | null }) {
             <span className={`text-[8px] font-bold tabular-nums ${textColor}`}>
                 {value !== null ? value.toFixed(0) : "--"}
             </span>
-            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden" style={{ height: "48px" }}>
+            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden flex-1">
                 <div
                     className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${barColor}`}
                     style={{ height: `${pct}%` }}

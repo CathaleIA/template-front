@@ -1,19 +1,25 @@
 "use client";
 
+import { useRef, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "@/components/componentsRealTimeGen01/shared/HalfGauge";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Props {
     gd: Record<string, TagValue>;
     engine: Record<string, TagValue>;
 }
 
+interface PowerPoint {
+    t: number; // epoch ms
+    v: number;
+}
+
+const HISTORY_MS = 5 * 60_000;
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
-const fmt = (v?: TagValue, dec = 1) => {
-    const val = n(v);
-    return val !== null ? val.toFixed(dec) : "--";
-};
 
 const STATUS_TEXT: Record<string, string> = {
     critical: "text-red-500",
@@ -22,350 +28,300 @@ const STATUS_TEXT: Record<string, string> = {
     normal:   "text-[#60a5fa]",
 };
 
-function BigKpi({
-    label,
-    value,
-    unit,
-    tagName,
-}: {
-    label: string;
-    value: string;
-    unit: string;
-    tagName?: string;
-}) {
-    const numVal = parseFloat(value);
-    const status = tagName && !isNaN(numVal) ? getThresholdStatus(tagName, numVal) : "normal";
-    const color = STATUS_TEXT[status] ?? "text-[#60a5fa]";
-    const border =
-        status === "critical"
-            ? "border-red-500/40 bg-red-500/5"
-            : status === "warning"
-            ? "border-yellow-400/40 bg-yellow-400/5"
-            : "border-[#60a5fa]/30 bg-[#60a5fa]/5";
-    return (
-        <div className={`rounded-xl border p-3 flex flex-col gap-1 ${border}`}>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground leading-tight truncate">
-                {label}
-            </p>
-            <div className="flex items-baseline gap-1">
-                <span className={`text-2xl font-bold tabular-nums ${color}`}>{value}</span>
-                <span className="text-xs text-muted-foreground">{unit}</span>
-            </div>
-        </div>
-    );
+function statusColor(tagName: string, val: number | null) {
+    if (val === null) return "text-[#60a5fa]";
+    return STATUS_TEXT[getThresholdStatus(tagName, val)] ?? "text-[#60a5fa]";
 }
 
-function MidCard({
-    label,
-    value,
-    unit,
-    tagName,
-}: {
-    label: string;
-    value: string;
-    unit: string;
-    tagName?: string;
-}) {
+function BottomCard({ label, value, unit, tagName }: { label: string; value: string; unit: string; tagName?: string }) {
     const numVal = parseFloat(value);
-    const status = tagName && !isNaN(numVal) ? getThresholdStatus(tagName, numVal) : "normal";
-    const color = STATUS_TEXT[status] ?? "text-[#60a5fa]";
-    return (
-        <div className="rounded-lg border bg-card px-3 py-2 flex flex-col gap-0.5">
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">
-                {label}
-            </p>
-            <p className={`text-lg font-bold tabular-nums ${color}`}>
-                {value}
-                <span className="text-xs font-normal text-muted-foreground ml-0.5">{unit}</span>
-            </p>
-        </div>
-    );
-}
-
-function BottomCard({
-    label,
-    value,
-    unit,
-    tagName,
-}: {
-    label: string;
-    value: string;
-    unit: string;
-    tagName?: string;
-}) {
-    const numVal = parseFloat(value);
-    const status = tagName && !isNaN(numVal) ? getThresholdStatus(tagName, numVal) : "normal";
-    const color = STATUS_TEXT[status] ?? "text-[#60a5fa]";
+    const color = tagName && !isNaN(numVal) ? statusColor(tagName, numVal) : "text-[#60a5fa]";
     return (
         <div className="rounded-lg border bg-card px-2 py-1.5 flex flex-col gap-0.5">
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">
-                {label}
-            </p>
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
             <p className={`text-base font-bold tabular-nums ${color}`}>
-                {value}
-                <span className="text-xs font-normal text-muted-foreground ml-0.5">{unit}</span>
+                {value}<span className="text-xs font-normal text-muted-foreground ml-0.5">{unit}</span>
             </p>
+        </div>
+    );
+}
+
+function PowerChart({
+    data,
+    color,
+    unit,
+    label,
+    tagName,
+    currentVal,
+}: {
+    data: PowerPoint[];
+    color: string;
+    unit: string;
+    label: string;
+    tagName: string;
+    currentVal: number | null;
+}) {
+    const valColor = statusColor(tagName, currentVal);
+    const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
+    const [xRange, setXRange]    = useState<[number, number] | null>(null);
+    const [rangeKey, setRangeKey] = useState(0);
+    const [activeBtn, setActiveBtn] = useState<"1m" | "3m" | "∞">("∞");
+
+    const xs = data.map(p => p.t);
+    const ys = data.map(p => p.v);
+
+    const applyRange = (minutes: number | null, btn: "1m" | "3m" | "∞") => {
+        setActiveBtn(btn);
+        setRangeKey(k => k + 1);
+        if (minutes === null || data.length === 0) { setXRange(null); return; }
+        const end   = data[data.length - 1].t;
+        const start = end - minutes * 60_000;
+        setXRange([start, end]);
+    };
+
+    return (
+        <div className="flex items-stretch gap-2 bg-card border rounded-xl px-3 py-1 min-w-0 flex-1 min-h-0">
+            {/* Valor actual */}
+            <div className="shrink-0 w-20 flex flex-col justify-center">
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
+                <p className={`text-xl font-bold tabular-nums leading-none mt-1 ${valColor}`}>
+                    {displayVal}
+                    <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
+                </p>
+            </div>
+
+            {/* Botones de rango — verticales */}
+            <div className="shrink-0 flex flex-col gap-1 items-stretch justify-center self-stretch border-l border-border/30 pl-2">
+                {(["1m", "3m", "∞"] as const).map((btn) => (
+                    <button
+                        key={btn}
+                        onClick={() => applyRange(btn === "1m" ? 1 : btn === "3m" ? 3 : null, btn)}
+                        title={btn === "1m" ? "Último minuto" : btn === "3m" ? "Últimos 3 min" : "Todo el historial"}
+                        className="text-[11px] font-bold px-2 py-1 rounded transition-all leading-none"
+                        style={{
+                            background: activeBtn === btn ? `${color}22` : "transparent",
+                            color: activeBtn === btn ? color : "#6b7280",
+                            border: `1px solid ${activeBtn === btn ? `${color}55` : "transparent"}`,
+                        }}
+                    >{btn}</button>
+                ))}
+            </div>
+
+            {/* Gráfica Plotly */}
+            <div className="flex-1 min-w-0 min-h-0">
+                <Plot
+                    data={[{
+                        x: xs,
+                        y: ys,
+                        type: "scatter",
+                        mode: "lines",
+                        line: { color, width: 1.5, shape: "spline" },
+                        fill: "tozeroy",
+                        fillcolor: `${color}28`,
+                        hovertemplate: `%{x|%H:%M:%S}<br><b>%{y:.0f} ${unit}</b><extra></extra>`,
+                    }]}
+                    layout={{
+                        uirevision: `${tagName}-${rangeKey}`,
+                        autosize: true,
+                        margin: { l: 0, r: 8, t: 2, b: 14 },
+                        paper_bgcolor: "rgba(0,0,0,0)",
+                        plot_bgcolor: "rgba(0,0,0,0)",
+                        showlegend: false,
+                        xaxis: {
+                            type: "date",
+                            tickformat: "%H:%M:%S",
+                            tickfont: { size: 8, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.04)",
+                            linecolor: `${color}30`,
+                            ...(xRange ? { range: xRange } : {}),
+                            rangeslider: {
+                                visible: true,
+                                bgcolor: "rgba(0,0,0,0.15)",
+                                bordercolor: `${color}25`,
+                                borderwidth: 1,
+                                thickness: 0.08,
+                            },
+                        },
+                        yaxis: { visible: false, fixedrange: false },
+                    }}
+                    config={{ displayModeBar: false, responsive: true, scrollZoom: true }}
+                    style={{ width: "100%", height: "100%" }}
+                    useResizeHandler
+                />
+            </div>
         </div>
     );
 }
 
 export default function TabVistaGeneral({ gd, engine }: Props) {
-    const rpm = n(gd["RPM"]);
-    // GEN02 la frecuencia ya viene en Hz (sin escalar)
+    const histActive   = useRef<PowerPoint[]>([]);
+    const histReactive = useRef<PowerPoint[]>([]);
+    const histApparent = useRef<PowerPoint[]>([]);
+    const [, setRev] = useState(0);
+
+    const activePow   = n(gd["Potencia_Generador"]);
+    const reactivePow = n(gd["Generator_reactive_power"]);
+    const apparentPow = n(gd["Generator_apparent_power"]);
+
+    useEffect(() => {
+        const t = Date.now();
+        const cutoff = t - HISTORY_MS;
+        const push = (ref: React.RefObject<PowerPoint[]>, v: number | null) => {
+            if (v === null) return;
+            ref.current = [...ref.current!.filter(p => p.t >= cutoff), { t, v }];
+        };
+        push(histActive,   activePow);
+        push(histReactive, reactivePow);
+        push(histApparent, apparentPow);
+        setRev(r => r + 1);
+    }, [activePow, reactivePow, apparentPow]);
+
+    const rpm  = n(gd["RPM"]);
+    // GEN02: frecuencia ya viene en Hz (sin escalar)
     const freq = n(gd["Generator_frequency_L1"]);
+    const pf   = n(gd["Generator_PF"]);
+
+    const promCyl    = n(engine["Promedio_tem_cyl"]);
+    const presAceite = n(engine["Presion_aceite"]);
+    const tempAceite = n(engine["Temperatura_aceite"]);
+    const devanadoU  = n(engine["Devanado_U"]);
+    const energiaExp = n(gd["EnergiaExp"]);
+    const freqBusB   = n(gd["Bus_B_frequency_L1"]);
+    const iMax = (() => {
+        const vals = [n(gd["Generator_current_L1"]), n(gd["Generator_current_L2"]), n(gd["Generator_current_L3"])].filter(v => v !== null) as number[];
+        return vals.length ? Math.max(...vals) : null;
+    })();
+    const tempFiltro = n(engine["Tempe_filtro"]);
+    const map        = n(engine["MAP"]);
 
     return (
-        <div className="h-full flex flex-col gap-2 p-3 overflow-hidden">
-            {/* FILA TOP: Gauges + KPIs grandes */}
-            <div className="flex gap-3 items-start shrink-0">
-                {/* RPM Gauge */}
-                <div className="w-32 shrink-0">
-                    <HalfGauge
-                        label="RPM"
-                        value={rpm}
-                        unit="rpm"
-                        min={0}
-                        max={2000}
-                        warning={1750}
-                        danger={1900}
-                        size="sm"
-                    />
+        <div className="h-full flex flex-col gap-2 p-2 overflow-hidden">
+
+            {/* FILA TOP: Gauges apilados + 3 gráficas de potencia + PF */}
+            <div className="flex gap-3 items-stretch flex-3 min-h-0">
+                {/* Gauges apilados */}
+                <div className="w-28 shrink-0 flex flex-col gap-2">
+                    <HalfGauge label="RPM" value={rpm} unit="rpm" min={0} max={2000} warning={1750} danger={1900} size="sm" />
+                    <HalfGauge label="Frecuencia" value={freq} unit="Hz" min={55} max={65} warning={59} danger={61} size="sm" />
                 </div>
-                {/* Frecuencia Gauge */}
-                <div className="w-32 shrink-0">
-                    <HalfGauge
-                        label="Frecuencia"
-                        value={freq}
-                        unit="Hz"
-                        min={55}
-                        max={65}
-                        warning={59}
-                        danger={61}
-                        size="sm"
-                    />
-                </div>
-                {/* 4 KPIs grandes */}
-                <div className="flex-1 grid grid-cols-4 gap-2">
-                    <BigKpi
-                        label="Potencia Activa"
-                        value={fmt(gd["Potencia_Generador"], 0)}
+
+                {/* 3 gráficas apiladas */}
+                <div className="flex-1 flex flex-col gap-1.5">
+                    <PowerChart
+                        data={histActive.current}
+                        color="#60a5fa"
                         unit="kW"
+                        label="Potencia Activa"
                         tagName="Potencia_Generador"
+                        currentVal={activePow}
                     />
-                    <BigKpi
-                        label="Pot. Reactiva"
-                        value={fmt(gd["Generator_reactive_power"], 0)}
+                    <PowerChart
+                        data={histReactive.current}
+                        color="#facc15"
                         unit="kVAr"
+                        label="Pot. Reactiva"
                         tagName="Generator_reactive_power"
+                        currentVal={reactivePow}
                     />
-                    <BigKpi
-                        label="Pot. Aparente"
-                        value={fmt(gd["Generator_apparent_power"], 0)}
+                    <PowerChart
+                        data={histApparent.current}
+                        color="#818cf8"
                         unit="kVA"
+                        label="Pot. Aparente"
                         tagName="Generator_apparent_power"
+                        currentVal={apparentPow}
                     />
-                    <BigKpi
-                        label="Factor Potencia"
-                        value={fmt(gd["Generator_PF"], 3)}
-                        unit=""
-                        tagName="Generator_PF"
-                    />
+                </div>
+
+                {/* Factor de Potencia */}
+                <div className="w-24 shrink-0 rounded-xl border bg-card flex flex-col items-center justify-center gap-1 px-2">
+                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground text-center leading-tight">Factor Potencia</p>
+                    <p className={`text-2xl font-bold tabular-nums ${statusColor("Generator_PF", pf)}`}>
+                        {pf !== null ? pf.toFixed(3) : "--"}
+                    </p>
                 </div>
             </div>
 
-            {/* FILA MEDIO: Motor health (4 cols) */}
-            <div className="grid grid-cols-4 gap-2 shrink-0">
-                <MidCard
-                    label="Prom. Temp Cil."
-                    value={n(engine["Promedio_tem_cyl"])?.toFixed(0) ?? "--"}
-                    unit="°C"
-                    tagName="Promedio_tem_cyl"
-                />
-                <MidCard
-                    label="Presión Aceite"
-                    value={n(engine["Presion_aceite"])?.toFixed(2) ?? "--"}
-                    unit="bar"
-                    tagName="Presion_aceite"
-                />
-                <MidCard
-                    label="Temp. Aceite"
-                    value={n(engine["Temperatura_aceite"])?.toFixed(1) ?? "--"}
-                    unit="°C"
-                    tagName="Temperatura_aceite"
-                />
-                <MidCard
-                    label="Devanado U"
-                    value={n(engine["Devanado_U"])?.toFixed(0) ?? "--"}
-                    unit="°C"
-                    tagName="Devanado_U"
-                />
+            {/* FILA KPIs */}
+            <div className="grid grid-cols-9 gap-1.5 shrink-0">
+                <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°F" tagName="Promedio_tem_cyl" />
+                <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Presion_aceite" />
+                <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temperatura_aceite" />
+                <BottomCard label="Devanado U"      value={devanadoU !== null ? devanadoU.toFixed(0) : "--"} unit="°C" tagName="Devanado_U" />
+                <BottomCard label="Energía Export." value={energiaExp !== null ? energiaExp.toFixed(0) : "--"} unit="kWh" tagName="EnergiaExp" />
+                <BottomCard label="Frec. Bus B L1"  value={freqBusB !== null ? freqBusB.toFixed(2) : "--"} unit="Hz" tagName="Bus_B_frequency_L1" />
+                <BottomCard label="I Máx. Gen."     value={iMax !== null ? iMax.toFixed(0) : "--"} unit="A" tagName="Generator_current_L1" />
+                <BottomCard label="Temp. Filtro"    value={tempFiltro !== null ? tempFiltro.toFixed(1) : "--"} unit="°C" tagName="Tempe_filtro" />
+                <BottomCard label="MAP"             value={map !== null ? map.toFixed(1) : "--"} unit="mbar" tagName="MAP" />
             </div>
 
-            {/* FILA BOTTOM: Energía y extras */}
-            <div className="grid grid-cols-5 gap-2 shrink-0">
-                <BottomCard
-                    label="Energía Exportada"
-                    value={fmt(gd["EnergiaExp"], 0)}
-                    unit="kWh"
-                    tagName="EnergiaExp"
-                />
-                <BottomCard
-                    label="Frec. L1"
-                    value={fmt(gd["Generator_frequency_L1"], 2)}
-                    unit="Hz"
-                    tagName="Generator_frequency_L1"
-                />
-                <BottomCard
-                    label="Frec. Bus B L1"
-                    value={fmt(gd["Bus_B_frequency_L1"], 2)}
-                    unit="Hz"
-                    tagName="Bus_B_frequency_L1"
-                />
-                <BottomCard
-                    label="I Máx. Generador"
-                    value={(() => {
-                        const vals = [n(gd["Generator_current_L1"]), n(gd["Generator_current_L2"]), n(gd["Generator_current_L3"])].filter(v => v !== null) as number[];
-                        const mx = vals.length ? Math.max(...vals) : null;
-                        return mx !== null ? mx.toFixed(0) : "--";
-                    })()}
-                    unit="A"
-                    tagName="Generator_current_L1"
-                />
-                <BottomCard
-                    label="Temp. Filtro"
-                    value={n(engine["Tempe_filtro"])?.toFixed(1) ?? "--"}
-                    unit="°C"
-                    tagName="Tempe_filtro"
-                />
-            </div>
+            {/* TABLA ELÉCTRICA: Generador + Bus B */}
+            <div className="flex-2 grid grid-cols-2 gap-3 min-h-0">
 
-            {/* Tablas de datos eléctricos */}
-            <div className="flex-1 grid grid-cols-2 gap-3 min-h-0 overflow-hidden">
                 {/* Generador */}
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#60a5fa] mb-2">
-                        Generador — Datos por Fase
-                    </h3>
-                    <div className="grid grid-cols-2 gap-x-4">
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-N</p>
-                            {[
-                                ["V L1-N", "Generator_voltage_L1_N", "V"],
-                                ["V L2-N", "Generator_voltage_L2_N", "V"],
-                                ["V L3-N", "Generator_voltage_L3_N", "V"],
-                            ].map(([label, key, unit]) => {
-                                const val = n(gd[key]);
-                                const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                                return (
-                                    <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                        <span className="text-xs text-muted-foreground">{label}</span>
-                                        <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status] ?? "text-foreground"}`}>
-                                            {val !== null ? val.toFixed(0) : "--"}{" "}
-                                            <span className="text-muted-foreground font-normal">{unit}</span>
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1.5 mb-1">Voltajes L-L</p>
-                            {[
-                                ["V L1-L2", "Generator_voltage_L1_L2", "V"],
-                                ["V L2-L3", "Generator_voltage_L2_L3", "V"],
-                                ["V L3-L1", "Generator_voltage_L3_L1", "V"],
-                            ].map(([label, key, unit]) => {
-                                const val = n(gd[key]);
-                                const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                                return (
-                                    <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                        <span className="text-xs text-muted-foreground">{label}</span>
-                                        <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status] ?? "text-foreground"}`}>
-                                            {val !== null ? val.toFixed(0) : "--"}{" "}
-                                            <span className="text-muted-foreground font-normal">{unit}</span>
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Generador — Datos por Fase</h3>
+                    <div className="flex-1 grid grid-cols-2 gap-x-4 min-h-0">
+                        {/* Col izquierda: V L-N + V L-L */}
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-N</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-N","Generator_voltage_L1_N","V"],["V L2-N","Generator_voltage_L2_N","V"],["V L3-N","Generator_voltage_L3_N","V"]].map(([label,key,unit]) => {
+                                    const val = n(gd[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Voltajes L-L</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-L2","Generator_voltage_L1_L2","V"],["V L2-L3","Generator_voltage_L2_L3","V"],["V L3-L1","Generator_voltage_L3_L1","V"]].map(([label,key,unit]) => {
+                                    const val = n(gd[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Corrientes</p>
-                            {[
-                                ["I L1", "Generator_current_L1", "A"],
-                                ["I L2", "Generator_current_L2", "A"],
-                                ["I L3", "Generator_current_L3", "A"],
-                            ].map(([label, key, unit]) => {
-                                const val = n(gd[key]);
-                                const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                                return (
-                                    <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                        <span className="text-xs text-muted-foreground">{label}</span>
-                                        <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status] ?? "text-foreground"}`}>
-                                            {val !== null ? val.toFixed(0) : "--"}{" "}
-                                            <span className="text-muted-foreground font-normal">{unit}</span>
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1.5 mb-1">Potencias</p>
-                            {[
-                                ["P Activa", "Potencia_Generador", "kW"],
-                                ["P Reactiva", "Generator_reactive_power", "kVAr"],
-                                ["P Aparente", "Generator_apparent_power", "kVA"],
-                            ].map(([label, key, unit]) => {
-                                const val = n(gd[key]);
-                                const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                                return (
-                                    <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                        <span className="text-xs text-muted-foreground">{label}</span>
-                                        <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status] ?? "text-foreground"}`}>
-                                            {val !== null ? val.toFixed(0) : "--"}{" "}
-                                            <span className="text-muted-foreground font-normal">{unit}</span>
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                        {/* Col derecha: Corrientes + Potencias */}
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Corrientes</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["I L1","Generator_current_L1","A"],["I L2","Generator_current_L2","A"],["I L3","Generator_current_L3","A"]].map(([label,key,unit]) => {
+                                    const val = n(gd[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["P Act.","Potencia_Generador","kW"],["P React.","Generator_reactive_power","kVAr"],["P Apar.","Generator_apparent_power","kVA"]].map(([label,key,unit]) => {
+                                    const val = n(gd[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Barra Bus B */}
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#93c5fd] mb-2">
-                        Barra Bus B
-                    </h3>
-                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-L</p>
-                    {[
-                        ["V L1-L2", "Bus_B_voltage_L1_L2", "V"],
-                        ["V L2-L3", "Bus_B_voltage_L2_L3", "V"],
-                        ["V L3-L1", "Bus_B_voltage_L3_L1", "V"],
-                    ].map(([label, key, unit]) => {
-                        const val = n(gd[key]);
-                        const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                        return (
-                            <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                <span className="text-xs text-muted-foreground">{label}</span>
-                                <span className={`text-xs font-semibold tabular-nums ${STATUS_TEXT[status] ?? "text-foreground"}`}>
-                                    {val !== null ? val.toFixed(0) : "--"}{" "}
-                                    <span className="text-muted-foreground font-normal">{unit}</span>
-                                </span>
+                <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#60a5fa]/70 mb-1">Barra Bus B</h3>
+                    <div className="flex-1 grid grid-cols-2 gap-x-4 min-h-0">
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-L</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-L2","Bus_B_voltage_L1_L2","V"],["V L2-L3","Bus_B_voltage_L2_L3","V"],["V L3-L1","Bus_B_voltage_L3_L1","V"]].map(([label,key,unit]) => {
+                                    const val = n(gd[key]);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
                             </div>
-                        );
-                    })}
-                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Frecuencias</p>
-                    {[
-                        ["F L1", "Bus_B_frequency_L1"],
-                        ["F L2", "Bus_B_frequency_L2"],
-                        ["F L3", "Bus_B_frequency_L3"],
-                    ].map(([label, key]) => {
-                        const val = n(gd[key]);
-                        return (
-                            <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-                                <span className="text-xs text-muted-foreground">{label}</span>
-                                <span className="text-xs font-semibold tabular-nums text-foreground">
-                                    {val !== null ? val.toFixed(2) : "--"}{" "}
-                                    <span className="text-muted-foreground font-normal">Hz</span>
-                                </span>
+                        </div>
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Frecuencias</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["F L1","Bus_B_frequency_L1"],["F L2","Bus_B_frequency_L2"],["F L3","Bus_B_frequency_L3"]].map(([label,key]) => {
+                                    const val = n(gd[key]);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? val.toFixed(2) : "--"} <span className="text-muted-foreground font-normal">Hz</span></span></div>;
+                                })}
                             </div>
-                        );
-                    })}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -167,59 +167,79 @@ export default function TabConjuntoElectrico({ gd, mic5 }: Props) {
             {/* GRID 2 COLUMNAS */}
             <div className="flex-1 grid grid-cols-2 gap-3 min-h-0 overflow-hidden">
                 {/* Columna 1: Generador */}
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#60a5fa] mb-2">
+                <div className="rounded-lg border bg-card p-3 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">
                         Generador
                     </h3>
-                    <div className="grid grid-cols-2 gap-x-4">
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-L</p>
-                            <ElecRow label="V L1-L2" value={fmt(gd["Generator_voltage_L1_L2"])} unit="V" tagName="Generator_voltage_L1_L2" />
-                            <ElecRow label="V L2-L3" value={fmt(gd["Generator_voltage_L2_L3"])} unit="V" tagName="Generator_voltage_L2_L3" />
-                            <ElecRow label="V L3-L1" value={fmt(gd["Generator_voltage_L3_L1"])} unit="V" tagName="Generator_voltage_L3_L1" />
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Voltajes L-N</p>
-                            <ElecRow label="V L1-N" value={fmt(gd["Generator_voltage_L1_N"])} unit="V" tagName="Generator_voltage_L1_N" />
-                            <ElecRow label="V L2-N" value={fmt(gd["Generator_voltage_L2_N"])} unit="V" tagName="Generator_voltage_L2_N" />
-                            <ElecRow label="V L3-N" value={fmt(gd["Generator_voltage_L3_N"])} unit="V" tagName="Generator_voltage_L3_N" />
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Corrientes</p>
-                            <ElecRow label="I L1" value={fmt(gd["Generator_current_L1"])} unit="A" tagName="Generator_current_L1" />
-                            <ElecRow label="I L2" value={fmt(gd["Generator_current_L2"])} unit="A" tagName="Generator_current_L2" />
-                            <ElecRow label="I L3" value={fmt(gd["Generator_current_L3"])} unit="A" tagName="Generator_current_L3" />
+                    <div className="flex-1 grid grid-cols-2 gap-x-4 min-h-0">
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-L</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="V L1-L2" value={fmt(gd["Generator_voltage_L1_L2"])} unit="V" tagName="Generator_voltage_L1_L2" />
+                                <ElecRow label="V L2-L3" value={fmt(gd["Generator_voltage_L2_L3"])} unit="V" tagName="Generator_voltage_L2_L3" />
+                                <ElecRow label="V L3-L1" value={fmt(gd["Generator_voltage_L3_L1"])} unit="V" tagName="Generator_voltage_L3_L1" />
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Voltajes L-N</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="V L1-N" value={fmt(gd["Generator_voltage_L1_N"])} unit="V" tagName="Generator_voltage_L1_N" />
+                                <ElecRow label="V L2-N" value={fmt(gd["Generator_voltage_L2_N"])} unit="V" tagName="Generator_voltage_L2_N" />
+                                <ElecRow label="V L3-N" value={fmt(gd["Generator_voltage_L3_N"])} unit="V" tagName="Generator_voltage_L3_N" />
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Corrientes</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="I L1" value={fmt(gd["Generator_current_L1"])} unit="A" tagName="Generator_current_L1" />
+                                <ElecRow label="I L2" value={fmt(gd["Generator_current_L2"])} unit="A" tagName="Generator_current_L2" />
+                                <ElecRow label="I L3" value={fmt(gd["Generator_current_L3"])} unit="A" tagName="Generator_current_L3" />
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Potencias Activas/Fase</p>
-                            <ElecRow label="P L1" value={fmt(gd["Generator_power_L1"])} unit="kW" tagName="Generator_power_L1" />
-                            <ElecRow label="P L2" value={fmt(gd["Generator_power_L2"])} unit="kW" tagName="Generator_power_L2" />
-                            <ElecRow label="P L3" value={fmt(gd["Generator_power_L3"])} unit="kW" tagName="Generator_power_L3" />
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Potencias Reactivas/Fase</p>
-                            <ElecRow label="Q L1" value={fmt(gd["Generator_reactive_power_L1"])} unit="kVAr" tagName="Generator_reactive_power_L1" />
-                            <ElecRow label="Q L2" value={fmt(gd["Generator_reactive_power_L2"])} unit="kVAr" tagName="Generator_reactive_power_L2" />
-                            <ElecRow label="Q L3" value={fmt(gd["Generator_reactive_power_L3"])} unit="kVAr" tagName="Generator_reactive_power_L3" />
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Potencias Aparentes/Fase</p>
-                            <ElecRow label="S L1" value={fmt(gd["Generator_apparent_power_L1"])} unit="kVA" tagName="Generator_apparent_power_L1" />
-                            <ElecRow label="S L2" value={fmt(gd["Generator_apparent_power_L2"])} unit="kVA" tagName="Generator_apparent_power_L2" />
-                            <ElecRow label="S L3" value={fmt(gd["Generator_apparent_power_L3"])} unit="kVA" tagName="Generator_apparent_power_L3" />
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Potencias Activas/Fase</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="P L1" value={fmt(gd["Generator_power_L1"])} unit="kW" tagName="Generator_power_L1" />
+                                <ElecRow label="P L2" value={fmt(gd["Generator_power_L2"])} unit="kW" tagName="Generator_power_L2" />
+                                <ElecRow label="P L3" value={fmt(gd["Generator_power_L3"])} unit="kW" tagName="Generator_power_L3" />
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias Reactivas/Fase</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="Q L1" value={fmt(gd["Generator_reactive_power_L1"])} unit="kVAr" tagName="Generator_reactive_power_L1" />
+                                <ElecRow label="Q L2" value={fmt(gd["Generator_reactive_power_L2"])} unit="kVAr" tagName="Generator_reactive_power_L2" />
+                                <ElecRow label="Q L3" value={fmt(gd["Generator_reactive_power_L3"])} unit="kVAr" tagName="Generator_reactive_power_L3" />
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias Aparentes/Fase</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <ElecRow label="S L1" value={fmt(gd["Generator_apparent_power_L1"])} unit="kVA" tagName="Generator_apparent_power_L1" />
+                                <ElecRow label="S L2" value={fmt(gd["Generator_apparent_power_L2"])} unit="kVA" tagName="Generator_apparent_power_L2" />
+                                <ElecRow label="S L3" value={fmt(gd["Generator_apparent_power_L3"])} unit="kVA" tagName="Generator_apparent_power_L3" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Columna 2: Barra Bus B */}
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#93c5fd] mb-2">
+                <div className="rounded-lg border bg-card p-3 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#93c5fd] mb-1">
                         Barra Bus B
                     </h3>
-                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-L</p>
-                    <ElecRow label="V L1-L2" value={fmt(gd["Bus_B_voltage_L1_L2"])} unit="V" tagName="Bus_B_voltage_L1_L2" />
-                    <ElecRow label="V L2-L3" value={fmt(gd["Bus_B_voltage_L2_L3"])} unit="V" tagName="Bus_B_voltage_L2_L3" />
-                    <ElecRow label="V L3-L1" value={fmt(gd["Bus_B_voltage_L3_L1"])} unit="V" tagName="Bus_B_voltage_L3_L1" />
-                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Frecuencias</p>
-                    <ElecRow label="F L1" value={fmt(gd["Bus_B_frequency_L1"], 2)} unit="Hz" tagName="Bus_B_frequency_L1" />
-                    <ElecRow label="F L2" value={fmt(gd["Bus_B_frequency_L2"], 2)} unit="Hz" tagName="Bus_B_frequency_L2" />
-                    <ElecRow label="F L3" value={fmt(gd["Bus_B_frequency_L3"], 2)} unit="Hz" tagName="Bus_B_frequency_L3" />
-                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-2 mb-1">Potencias Aparentes/Fase</p>
-                    <ElecRow label="S L1" value={fmt(gd["Generator_apparent_power_L1"])} unit="kVA" tagName="Generator_apparent_power_L1" />
-                    <ElecRow label="S L2" value={fmt(gd["Generator_apparent_power_L2"])} unit="kVA" tagName="Generator_apparent_power_L2" />
-                    <ElecRow label="S L3" value={fmt(gd["Generator_apparent_power_L3"])} unit="kVA" tagName="Generator_apparent_power_L3" />
+                    <div className="flex-1 flex flex-col min-h-0">
+                        <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-L</p>
+                        <div className="flex-1 flex flex-col justify-evenly">
+                            <ElecRow label="V L1-L2" value={fmt(gd["Bus_B_voltage_L1_L2"])} unit="V" tagName="Bus_B_voltage_L1_L2" />
+                            <ElecRow label="V L2-L3" value={fmt(gd["Bus_B_voltage_L2_L3"])} unit="V" tagName="Bus_B_voltage_L2_L3" />
+                            <ElecRow label="V L3-L1" value={fmt(gd["Bus_B_voltage_L3_L1"])} unit="V" tagName="Bus_B_voltage_L3_L1" />
+                        </div>
+                        <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Frecuencias</p>
+                        <div className="flex-1 flex flex-col justify-evenly">
+                            <ElecRow label="F L1" value={fmt(gd["Bus_B_frequency_L1"], 2)} unit="Hz" tagName="Bus_B_frequency_L1" />
+                            <ElecRow label="F L2" value={fmt(gd["Bus_B_frequency_L2"], 2)} unit="Hz" tagName="Bus_B_frequency_L2" />
+                            <ElecRow label="F L3" value={fmt(gd["Bus_B_frequency_L3"], 2)} unit="Hz" tagName="Bus_B_frequency_L3" />
+                        </div>
+                        <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias Aparentes/Fase</p>
+                        <div className="flex-1 flex flex-col justify-evenly">
+                            <ElecRow label="S L1" value={fmt(gd["Generator_apparent_power_L1"])} unit="kVA" tagName="Generator_apparent_power_L1" />
+                            <ElecRow label="S L2" value={fmt(gd["Generator_apparent_power_L2"])} unit="kVA" tagName="Generator_apparent_power_L2" />
+                            <ElecRow label="S L3" value={fmt(gd["Generator_apparent_power_L3"])} unit="kVA" tagName="Generator_apparent_power_L3" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
