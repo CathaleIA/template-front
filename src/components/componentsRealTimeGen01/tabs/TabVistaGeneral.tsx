@@ -1,18 +1,12 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    Brush,
-} from "recharts";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Props {
     agc: Record<string, TagValue>;
@@ -21,11 +15,11 @@ interface Props {
 }
 
 interface PowerPoint {
-    t: string;
-    v: number | null;
+    t: number;     // epoch ms — misma unidad que Plotly usa internamente
+    v: number;
 }
 
-const MAX_POINTS = 100; // ~5 min a 3 s/punto
+const HISTORY_MS = 5 * 60_000; // mantener últimos 5 minutos sin importar la frecuencia
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
 const STATUS_TEXT: Record<string, string> = {
@@ -38,19 +32,6 @@ const STATUS_TEXT: Record<string, string> = {
 function statusColor(tagName: string, val: number | null) {
     if (val === null) return "text-[#00ffc2]";
     return STATUS_TEXT[getThresholdStatus(tagName, val)] ?? "text-[#00ffc2]";
-}
-
-function MidCard({ label, value, unit, tagName }: { label: string; value: string; unit: string; tagName?: string }) {
-    const numVal = parseFloat(value);
-    const color = tagName && !isNaN(numVal) ? statusColor(tagName, numVal) : "text-[#00ffc2]";
-    return (
-        <div className="rounded-lg border bg-card px-3 py-2 flex flex-col gap-0.5">
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
-            <p className={`text-lg font-bold tabular-nums ${color}`}>
-                {value}<span className="text-xs font-normal text-muted-foreground ml-0.5">{unit}</span>
-            </p>
-        </div>
-    );
 }
 
 function BottomCard({ label, value, unit, tagName }: { label: string; value: string; unit: string; tagName?: string }) {
@@ -66,10 +47,7 @@ function BottomCard({ label, value, unit, tagName }: { label: string; value: str
     );
 }
 
-// Cuántos puntos mostrar por defecto en la ventana del Brush (~30 s)
-const WINDOW_POINTS = 10;
-
-function SmallLineChart({
+function PowerChart({
     data,
     color,
     unit,
@@ -86,16 +64,26 @@ function SmallLineChart({
 }) {
     const valColor = statusColor(tagName, currentVal);
     const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
+    // null = auto; [number, number] = rango en epoch ms (misma unidad que los datos)
+    const [xRange, setXRange]   = useState<[number, number] | null>(null);
+    // rangeKey: al cambiar, Plotly acepta el nuevo rango (rompe uirevision momentáneamente)
+    const [rangeKey, setRangeKey] = useState(0);
+    const [activeBtn, setActiveBtn] = useState<"1m" | "3m" | "∞">("∞");
 
-    // Brush: ventana deslizante — siempre arrancada al final (datos más recientes)
-    const startIdx = Math.max(0, data.length - WINDOW_POINTS);
-    const endIdx   = data.length > 0 ? data.length - 1 : 0;
+    const xs = data.map(p => p.t);
+    const ys = data.map(p => p.v);
 
-    // 4 ticks visibles dentro de la ventana visible
-    const tickInterval = data.length > 4 ? Math.floor(data.length / 4) : 0;
+    const applyRange = (minutes: number | null, btn: "1m" | "3m" | "∞") => {
+        setActiveBtn(btn);
+        setRangeKey(k => k + 1); // fuerza a Plotly a aceptar el nuevo rango
+        if (minutes === null || data.length === 0) { setXRange(null); return; }
+        const end   = data[data.length - 1].t;           // epoch ms
+        const start = end - minutes * 60_000;             // epoch ms
+        setXRange([start, end]);
+    };
 
     return (
-        <div className="flex items-stretch gap-3 bg-card border rounded-xl px-3 pt-2 pb-1 min-w-0 flex-1">
+        <div className="flex items-stretch gap-2 bg-card border rounded-xl px-3 py-1 min-w-0 flex-1 min-h-0">
             {/* Valor actual */}
             <div className="shrink-0 w-20 flex flex-col justify-center">
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
@@ -104,56 +92,71 @@ function SmallLineChart({
                     <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
                 </p>
             </div>
-            {/* Gráfica */}
-            <div className="flex-1 min-w-0 h-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
-                        <defs>
-                            <linearGradient id={`fill-${tagName}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor={color} stopOpacity={0.35} />
-                                <stop offset="95%" stopColor={color} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <YAxis domain={["auto", "auto"]} hide />
-                        <XAxis
-                            dataKey="t"
-                            interval={tickInterval}
-                            tick={{ fontSize: 8, fill: "var(--muted-foreground)", dy: 2 }}
-                            tickLine={false}
-                            axisLine={{ stroke: color, strokeOpacity: 0.25, strokeWidth: 1 }}
-                            height={16}
-                        />
-                        {/* Brush: scrollbar para moverse por el historial de 5 min */}
-                        {data.length > WINDOW_POINTS && (
-                            <Brush
-                                dataKey="t"
-                                height={10}
-                                startIndex={startIdx}
-                                endIndex={endIdx}
-                                stroke={color}
-                                fill="var(--card)"
-                                travellerWidth={6}
-                                tickFormatter={() => ""}
-                            />
-                        )}
-                        <Tooltip
-                            contentStyle={{ background: "#0f0f0f", border: `1px solid ${color}55`, borderRadius: 8, padding: "3px 10px" }}
-                            labelStyle={{ fontSize: 10, color: "#888" }}
-                            formatter={(val: number) => [`${val.toFixed(0)} ${unit}`, label]}
-                            itemStyle={{ color, fontSize: 11 }}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="v"
-                            stroke={color}
-                            strokeWidth={2}
-                            fill={`url(#fill-${tagName})`}
-                            dot={false}
-                            isAnimationActive={false}
-                            connectNulls
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
+
+            {/* Botones de rango — verticales, al costado del valor */}
+            <div className="shrink-0 flex flex-col gap-1 items-stretch justify-center self-stretch border-l border-border/30 pl-2">
+                {(["1m", "3m", "∞"] as const).map((btn) => (
+                    <button
+                        key={btn}
+                        onClick={() => applyRange(btn === "1m" ? 1 : btn === "3m" ? 3 : null, btn)}
+                        title={btn === "1m" ? "Último minuto" : btn === "3m" ? "Últimos 3 min" : "Todo el historial"}
+                        className="text-[11px] font-bold px-2 py-1 rounded transition-all leading-none"
+                        style={{
+                            background: activeBtn === btn ? `${color}22` : "transparent",
+                            color: activeBtn === btn ? color : "#6b7280",
+                            border: `1px solid ${activeBtn === btn ? `${color}55` : "transparent"}`,
+                        }}
+                    >{btn}</button>
+                ))}
+            </div>
+
+            {/* Gráfica Plotly — crece con la altura del card */}
+            <div className="flex-1 min-w-0 min-h-0">
+                <Plot
+                    data={[{
+                        x: xs,
+                        y: ys,
+                        type: "scatter",
+                        mode: "lines",
+                        line: { color, width: 1.5, shape: "spline" },
+                        fill: "tozeroy",
+                        fillcolor: `${color}28`,
+                        hovertemplate: `%{x|%H:%M:%S}<br><b>%{y:.0f} ${unit}</b><extra></extra>`,
+                    }]}
+                    layout={{
+                        // rangeKey cambia al presionar un botón → Plotly acepta el nuevo rango
+                        // luego se estabiliza → uirevision protege el zoom del usuario en updates de datos
+                        uirevision: `${tagName}-${rangeKey}`,
+                        autosize: true,
+                        margin: { l: 0, r: 8, t: 2, b: 14 },
+                        paper_bgcolor: "rgba(0,0,0,0)",
+                        plot_bgcolor: "rgba(0,0,0,0)",
+                        showlegend: false,
+                        xaxis: {
+                            type: "date",
+                            tickformat: "%H:%M:%S",
+                            tickfont: { size: 8, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.04)",
+                            linecolor: `${color}30`,
+                            ...(xRange ? { range: xRange } : {}),
+                            rangeslider: {
+                                visible: true,
+                                bgcolor: "rgba(0,0,0,0.15)",
+                                bordercolor: `${color}25`,
+                                borderwidth: 1,
+                                thickness: 0.08,
+                            },
+                        },
+                        yaxis: { visible: false, fixedrange: false },
+                    }}
+                    config={{
+                        displayModeBar: false,
+                        responsive: true,
+                        scrollZoom: true,
+                    }}
+                    style={{ width: "100%", height: "100%" }}
+                    useResizeHandler
+                />
             </div>
         </div>
     );
@@ -163,6 +166,8 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
     const histActive   = useRef<PowerPoint[]>([]);
     const histReactive = useRef<PowerPoint[]>([]);
     const histApparent = useRef<PowerPoint[]>([]);
+    // contador para forzar re-render cuando los refs se actualizan
+    const [, setRev] = useState(0);
 
     const activePow   = n(agc["Generator_active_power"]);
     const reactivePow = n(agc["Generator_reactive_power"]);
@@ -170,14 +175,18 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
 
     // Acumular historial cuando llegan nuevos datos
     useEffect(() => {
-        const t = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        const push = (ref: React.MutableRefObject<PowerPoint[]>, v: number | null) => {
+        const t = Date.now(); // epoch ms
+        const cutoff = t - HISTORY_MS;
+        const push = (ref: React.RefObject<PowerPoint[]>, v: number | null) => {
             if (v === null) return;
-            ref.current = [...ref.current.slice(-(MAX_POINTS - 1)), { t, v }];
+            // Descartar puntos más viejos que 5 minutos y agregar el nuevo
+            ref.current = [...ref.current!.filter(p => p.t >= cutoff), { t, v }];
         };
         push(histActive,   activePow);
         push(histReactive, reactivePow);
         push(histApparent, apparentPow);
+        // forzar re-render para que Plotly reciba los nuevos arrays
+        setRev(r => r + 1);
     }, [activePow, reactivePow, apparentPow]);
 
     const rpm      = n(agc["RPM"]);
@@ -197,21 +206,19 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
     const tecFlujo   = n(raiz["TEC_FLUJO_CALCULADO"]);
 
     return (
-        <div className="h-full flex flex-col gap-2 p-3 overflow-hidden">
+        <div className="h-full flex flex-col gap-2 p-2 overflow-hidden">
 
-            {/* FILA TOP: Gauges + 3 gráficas de potencia + PF */}
-            <div className="flex gap-3 items-stretch shrink-0">
-                {/* Gauges */}
-                <div className="w-28 shrink-0">
+            {/* FILA TOP: Gauges + 3 gráficas de potencia + PF — crece con la pantalla */}
+            <div className="flex gap-3 items-stretch flex-3 min-h-0">
+                {/* Gauges apilados verticalmente */}
+                <div className="w-28 shrink-0 flex flex-col gap-2">
                     <HalfGauge label="RPM" value={rpm} unit="rpm" min={0} max={2000} warning={1750} danger={1900} size="sm" />
-                </div>
-                <div className="w-28 shrink-0">
                     <HalfGauge label="Frecuencia" value={freqHz} unit="Hz" min={55} max={65} warning={59} danger={61} size="sm" />
                 </div>
 
                 {/* 3 gráficas apiladas */}
-                <div className="flex-1 flex flex-col gap-1.5 min-h-70">
-                    <SmallLineChart
+                <div className="flex-1 flex flex-col gap-1.5">
+                    <PowerChart
                         data={histActive.current}
                         color="#00ffc2"
                         unit="kW"
@@ -219,7 +226,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                         tagName="Generator_active_power"
                         currentVal={activePow}
                     />
-                    <SmallLineChart
+                    <PowerChart
                         data={histReactive.current}
                         color="#facc15"
                         unit="kVAr"
@@ -227,7 +234,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                         tagName="Generator_reactive_power"
                         currentVal={reactivePow}
                     />
-                    <SmallLineChart
+                    <PowerChart
                         data={histApparent.current}
                         color="#818cf8"
                         unit="kVA"
@@ -246,71 +253,84 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 </div>
             </div>
 
-            {/* FILA MEDIO: Motor health */}
-            <div className="grid grid-cols-4 gap-2 shrink-0">
-                <MidCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°F" tagName="Promedio_tem_cyl" />
-                <MidCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Pres_Aceite_Motor" />
-                <MidCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temp_Aceite" />
-                <MidCard label="Devanado W"       value={devanadoW !== null ? devanadoW.toFixed(0) : "--"} unit="°C" tagName="Devanado_W" />
+            {/* FILA KPIs: todos los valores en una fila */}
+            <div className="grid grid-cols-9 gap-1.5 shrink-0">
+                <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°F" tagName="Promedio_tem_cyl" />
+                <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Pres_Aceite_Motor" />
+                <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temp_Aceite" />
+                <BottomCard label="Devanado W"      value={devanadoW !== null ? devanadoW.toFixed(0) : "--"} unit="°C" tagName="Devanado_W" />
+                <BottomCard label="Energía Export." value={energiaExp !== null ? energiaExp.toFixed(0) : "--"} unit="kWh" tagName="EnergiaExp" />
+                <BottomCard label="VDC Battery"     value={vdcBattery !== null ? vdcBattery.toFixed(1) : "--"} unit="VDC" tagName="VDCbattery" />
+                <BottomCard label="IexcGen"         value={iexcGen !== null ? iexcGen.toFixed(2) : "--"} unit="A" tagName="IexcGen" />
+                <BottomCard label="FreqEscale"      value={freqEscale !== null ? freqEscale.toFixed(2) : "--"} unit="" tagName="FreqEscale" />
+                <BottomCard label="Flujo Calc."     value={tecFlujo !== null ? tecFlujo.toFixed(2) : "--"} unit="L/s" tagName="TEC_FLUJO_CALCULADO" />
             </div>
 
-            {/* FILA BOTTOM: Extras */}
-            <div className="grid grid-cols-5 gap-2 shrink-0">
-                <BottomCard label="Energía Exportada" value={energiaExp !== null ? energiaExp.toFixed(0) : "--"} unit="kWh" tagName="EnergiaExp" />
-                <BottomCard label="VDC Battery"        value={vdcBattery !== null ? vdcBattery.toFixed(1) : "--"} unit="VDC" tagName="VDCbattery" />
-                <BottomCard label="IexcGen"            value={iexcGen !== null ? iexcGen.toFixed(2) : "--"} unit="A" tagName="IexcGen" />
-                <BottomCard label="FreqEscale"         value={freqEscale !== null ? freqEscale.toFixed(2) : "--"} unit="" tagName="FreqEscale" />
-                <BottomCard label="Flujo Calculado"    value={tecFlujo !== null ? tecFlujo.toFixed(2) : "--"} unit="L/s" tagName="TEC_FLUJO_CALCULADO" />
-            </div>
+            {/* TABLA ELÉCTRICA: Generador + Bus B — filas con flex para llenar el espacio */}
+            <div className="flex-2 grid grid-cols-2 gap-3 min-h-0">
 
-            {/* TABLA ELÉCTRICA: Generador + Bus B */}
-            <div className="flex-1 grid grid-cols-2 gap-3 min-h-0 overflow-hidden">
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#00ffc2] mb-2">Generador — Datos por Fase</h3>
-                    <div className="grid grid-cols-2 gap-x-4">
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-N</p>
-                            {[["V L1-N","Generator_voltage_L1_N","V"],["V L2-N","Generator_voltage_L2_N","V"],["V L3-N","Generator_voltage_L3_N","V"]].map(([label,key,unit]) => {
-                                const val = n(agc[key]); const color = statusColor(key, val);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
-                            })}
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1.5 mb-1">Voltajes L-L</p>
-                            {[["V L1-L2","Generator_voltage_L1_L2","V"],["V L2-L3","Generator_voltage_L2_L3","V"],["V L3-L1","Generator_voltage_L3_L1","V"]].map(([label,key,unit]) => {
-                                const val = n(agc[key]); const color = statusColor(key, val);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
-                            })}
+                {/* Generador */}
+                <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Generador — Datos por Fase</h3>
+                    <div className="flex-1 grid grid-cols-2 gap-x-4 min-h-0">
+                        {/* Col izquierda: V L-N + V L-L */}
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-N</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-N","Generator_voltage_L1_N","V"],["V L2-N","Generator_voltage_L2_N","V"],["V L3-N","Generator_voltage_L3_N","V"]].map(([label,key,unit]) => {
+                                    const val = n(agc[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Voltajes L-L</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-L2","Generator_voltage_L1_L2","V"],["V L2-L3","Generator_voltage_L2_L3","V"],["V L3-L1","Generator_voltage_L3_L1","V"]].map(([label,key,unit]) => {
+                                    const val = n(agc[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Corrientes</p>
-                            {[["I L1","Generator_current_L1","A"],["I L2","Generator_current_L2","A"],["I L3","Generator_current_L3","A"]].map(([label,key,unit]) => {
-                                const val = n(agc[key]); const color = statusColor(key, val);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
-                            })}
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1.5 mb-1">Potencias</p>
-                            {[["P Act.","Generator_active_power","kW"],["P React.","Generator_reactive_power","kVAr"],["P Apar.","Generator_apparent_power","kVA"]].map(([label,key,unit]) => {
-                                const val = n(agc[key]); const color = statusColor(key, val);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
-                            })}
+                        {/* Col derecha: Corrientes + Potencias */}
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Corrientes</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["I L1","Generator_current_L1","A"],["I L2","Generator_current_L2","A"],["I L3","Generator_current_L3","A"]].map(([label,key,unit]) => {
+                                    const val = n(agc[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["P Act.","Generator_active_power","kW"],["P React.","Generator_reactive_power","kVAr"],["P Apar.","Generator_apparent_power","kVA"]].map(([label,key,unit]) => {
+                                    const val = n(agc[key]); const color = statusColor(key, val);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className={`text-xs font-semibold tabular-nums ${color}`}>{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="rounded-lg border bg-card p-3 overflow-y-auto">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#00ffc2]/70 mb-2">Barra Bus B</h3>
-                    <div className="grid grid-cols-2 gap-x-4">
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Voltajes L-L</p>
-                            {[["V L1-L2","BusB_voltage_L1_L2","V"],["V L2-L3","BusB_voltage_L2_L3","V"],["V L3-L1","BusB_voltage_L3_L1","V"]].map(([label,key,unit]) => {
-                                const val = n(agc[key]);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
-                            })}
+                {/* Barra Bus B */}
+                <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                    <h3 className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#00ffc2]/70 mb-1">Barra Bus B</h3>
+                    <div className="flex-1 grid grid-cols-2 gap-x-4 min-h-0">
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Voltajes L-L</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["V L1-L2","BusB_voltage_L1_L2","V"],["V L2-L3","BusB_voltage_L2_L3","V"],["V L3-L1","BusB_voltage_L3_L1","V"]].map(([label,key,unit]) => {
+                                    const val = n(agc[key]);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? val.toFixed(0) : "--"} <span className="text-muted-foreground font-normal">{unit}</span></span></div>;
+                                })}
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Frecuencias</p>
-                            {[["F L1","BusB_frequency_L1"],["F L2","BusB_frequency_L2"],["F L3","BusB_frequency_L3"]].map(([label,key]) => {
-                                const val = n(agc[key]);
-                                return <div key={key} className="flex items-center justify-between py-1 border-b border-border/40 last:border-0"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? (val/100).toFixed(2) : "--"} <span className="text-muted-foreground font-normal">Hz</span></span></div>;
-                            })}
+                        <div className="flex flex-col min-h-0">
+                            <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Frecuencias</p>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                {[["F L1","BusB_frequency_L1"],["F L2","BusB_frequency_L2"],["F L3","BusB_frequency_L3"]].map(([label,key]) => {
+                                    const val = n(agc[key]);
+                                    return <div key={key} className="flex items-center justify-between border-b border-border/30 last:border-0 py-px"><span className="text-xs text-muted-foreground">{label}</span><span className="text-xs font-semibold tabular-nums text-foreground">{val !== null ? (val/100).toFixed(2) : "--"} <span className="text-muted-foreground font-normal">Hz</span></span></div>;
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

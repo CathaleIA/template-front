@@ -110,11 +110,11 @@ function VibBar({ num, value }: { num: number; value: number | null }) {
     // Use an assumed max of 20 mm/s for display scaling
     const pct = value !== null ? Math.min(100, (value / 20) * 100) : 0;
     return (
-        <div className="flex flex-col items-center gap-0.5">
+        <div className="flex flex-col items-center gap-0.5 h-full">
             <span className={`text-[9px] font-bold tabular-nums ${textColor}`}>
                 {value !== null ? value.toFixed(1) : "--"}
             </span>
-            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden" style={{ height: "52px" }}>
+            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden flex-1">
                 <div
                     className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${barColor}`}
                     style={{ height: `${pct}%` }}
@@ -220,83 +220,32 @@ export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
             {/* SECCION MEDIO: 3 columnas */}
             <div className="flex-1 grid grid-cols-3 gap-2 min-h-0 overflow-hidden">
                 {/* Refrigeración */}
-                <div className="rounded-lg border bg-card p-2.5 overflow-y-auto">
-                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1.5">
+                <div className="rounded-lg border bg-card p-2.5 flex flex-col">
+                    <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">
                         Refrigeración
                     </h3>
-                    <SectionRow
-                        label="T. Ref. HT Entrada"
-                        value={n(engine["Temp_Refrigerante_HT_Entrada"])?.toFixed(1) ?? "--"}
-                        unit="°C"
-                        tagName="Temp_Refrigerante_HT_Entrada"
-                    />
-                    <SectionRow
-                        label="T. Ref. HT Salida"
-                        value={n(engine["Temp_Refrigerante_HT_Salida"])?.toFixed(1) ?? "--"}
-                        unit="°C"
-                        tagName="Temp_Refrigerante_HT_Salida"
-                    />
-                    <SectionRow
-                        label="T. Ref. LT Entrada"
-                        value={n(engine["Temp_Refrigerante_LT_Entrada"])?.toFixed(1) ?? "--"}
-                        unit="°C"
-                        tagName="Temp_Refrigerante_LT_Entrada"
-                    />
-                    <SectionRow
-                        label="T. Ref. LT Salida"
-                        value={n(engine["Temp_Refrigerante_LT_Salida"])?.toFixed(1) ?? "--"}
-                        unit="°C"
-                        tagName="Temp_Refrigerante_LT_Salida"
-                    />
+                    <div className="flex-1 flex flex-col justify-evenly">
+                        <SectionRow label="T. Ref. HT Entrada" value={n(engine["Temp_Refrigerante_HT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Entrada" />
+                        <SectionRow label="T. Ref. HT Salida"  value={n(engine["Temp_Refrigerante_HT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Salida" />
+                        <SectionRow label="T. Ref. LT Entrada" value={n(engine["Temp_Refrigerante_LT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Entrada" />
+                        <SectionRow label="T. Ref. LT Salida"  value={n(engine["Temp_Refrigerante_LT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Salida" />
+                    </div>
                 </div>
 
                 {/* Aceite y Gas */}
-                <div className="rounded-lg border bg-card p-2.5 overflow-y-auto">
-                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1.5">
+                <div className="rounded-lg border bg-card p-2.5 flex flex-col">
+                    <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">
                         Aceite y Gas
                     </h3>
-                    <SectionRow
-                        label="Pres. Aceite"
-                        value={n(engine["Pres_Aceite_Motor"])?.toFixed(2) ?? "--"}
-                        unit="bar"
-                        tagName="Pres_Aceite_Motor"
-                    />
-                    <SectionRow
-                        label="Temp. Aceite"
-                        value={n(engine["Temp_Aceite"])?.toFixed(1) ?? "--"}
-                        unit="°C"
-                        tagName="Temp_Aceite"
-                    />
-                    <SectionRow
-                        label="Gas Entrada"
-                        value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"}
-                        unit="bar"
-                        tagName="Pres_Gas_Entrada_Motor"
-                    />
-                    <SectionRow
-                        label="Gas (PSI)"
-                        value={n(engine["Pres_Gas_Entrada_PSI"])?.toFixed(1) ?? "--"}
-                        unit="PSI"
-                        tagName="Pres_Gas_Entrada_PSI"
-                    />
-                    <SectionRow
-                        label="MAP P1"
-                        value={n(engine["MAP_P1"])?.toFixed(1) ?? "--"}
-                        unit="mbar"
-                        tagName="MAP_P1"
-                    />
-                    <SectionRow
-                        label="MAP P2"
-                        value={n(engine["MAP_P2"])?.toFixed(1) ?? "--"}
-                        unit="mbar"
-                        tagName="MAP_P2"
-                    />
-                    <SectionRow
-                        label="Pres. Diferencial"
-                        value={n(engine["PresDiff"])?.toFixed(1) ?? "--"}
-                        unit="mbar"
-                        tagName="PresDiff"
-                    />
+                    <div className="flex-1 flex flex-col justify-evenly">
+                        <SectionRow label="Pres. Aceite"      value={n(engine["Pres_Aceite_Motor"])?.toFixed(2)      ?? "--"} unit="bar"  tagName="Pres_Aceite_Motor" />
+                        <SectionRow label="Temp. Aceite"      value={n(engine["Temp_Aceite"])?.toFixed(1)            ?? "--"} unit="°C"   tagName="Temp_Aceite" />
+                        <SectionRow label="Gas Entrada"       value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"} unit="bar"  tagName="Pres_Gas_Entrada_Motor" />
+                        <SectionRow label="Gas (PSI)"         value={n(engine["Pres_Gas_Entrada_PSI"])?.toFixed(1)   ?? "--"} unit="PSI"  tagName="Pres_Gas_Entrada_PSI" />
+                        <SectionRow label="MAP P1"            value={n(engine["MAP_P1"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P1" />
+                        <SectionRow label="MAP P2"            value={n(engine["MAP_P2"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P2" />
+                        <SectionRow label="Pres. Diferencial" value={n(engine["PresDiff"])?.toFixed(1)               ?? "--"} unit="mbar" tagName="PresDiff" />
+                    </div>
                 </div>
 
                 {/* Vibraciones */}
@@ -305,7 +254,7 @@ export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
                         Vibraciones Cilindros
                     </h3>
                     <div
-                        className="grid gap-0.5 flex-1"
+                        className="grid gap-0.5 flex-1 min-h-0"
                         style={{ gridTemplateColumns: `repeat(${VIB_CYLS.length}, 1fr)` }}
                     >
                         {VIB_CYLS.map((num) => (
