@@ -11,6 +11,7 @@ import {
     YAxis,
     Tooltip,
     ResponsiveContainer,
+    Brush,
 } from "recharts";
 
 interface Props {
@@ -24,7 +25,7 @@ interface PowerPoint {
     v: number | null;
 }
 
-const MAX_POINTS = 60;
+const MAX_POINTS = 100; // ~5 min a 3 s/punto
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
 const STATUS_TEXT: Record<string, string> = {
@@ -65,6 +66,9 @@ function BottomCard({ label, value, unit, tagName }: { label: string; value: str
     );
 }
 
+// Cuántos puntos mostrar por defecto en la ventana del Brush (~30 s)
+const WINDOW_POINTS = 10;
+
 function SmallLineChart({
     data,
     color,
@@ -82,26 +86,31 @@ function SmallLineChart({
 }) {
     const valColor = statusColor(tagName, currentVal);
     const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
-    // ~4 ticks visibles que se van desplazando conforme llegan datos
+
+    // Brush: ventana deslizante — siempre arrancada al final (datos más recientes)
+    const startIdx = Math.max(0, data.length - WINDOW_POINTS);
+    const endIdx   = data.length > 0 ? data.length - 1 : 0;
+
+    // 4 ticks visibles dentro de la ventana visible
     const tickInterval = data.length > 4 ? Math.floor(data.length / 4) : 0;
 
     return (
-        <div className="flex items-stretch gap-3 bg-card border rounded-xl px-3 pt-2 pb-0 min-w-0 flex-1">
+        <div className="flex items-stretch gap-3 bg-card border rounded-xl px-3 pt-2 pb-1 min-w-0 flex-1">
             {/* Valor actual */}
-            <div className="shrink-0 w-19 flex flex-col justify-center">
+            <div className="shrink-0 w-20 flex flex-col justify-center">
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight truncate">{label}</p>
                 <p className={`text-xl font-bold tabular-nums leading-none mt-1 ${valColor}`}>
                     {displayVal}
                     <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
                 </p>
             </div>
-            {/* Gráfica — ocupa todo el alto disponible, eje pegado al suelo */}
-            <div className="flex-1 min-w-0" style={{ height: "100%" }}>
+            {/* Gráfica */}
+            <div className="flex-1 min-w-0 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
                         <defs>
                             <linearGradient id={`fill-${tagName}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor={color} stopOpacity={0.3} />
+                                <stop offset="5%"  stopColor={color} stopOpacity={0.35} />
                                 <stop offset="95%" stopColor={color} stopOpacity={0} />
                             </linearGradient>
                         </defs>
@@ -111,9 +120,22 @@ function SmallLineChart({
                             interval={tickInterval}
                             tick={{ fontSize: 8, fill: "var(--muted-foreground)", dy: 2 }}
                             tickLine={false}
-                            axisLine={{ stroke: color, strokeOpacity: 0.2, strokeWidth: 1 }}
-                            height={18}
+                            axisLine={{ stroke: color, strokeOpacity: 0.25, strokeWidth: 1 }}
+                            height={16}
                         />
+                        {/* Brush: scrollbar para moverse por el historial de 5 min */}
+                        {data.length > WINDOW_POINTS && (
+                            <Brush
+                                dataKey="t"
+                                height={10}
+                                startIndex={startIdx}
+                                endIndex={endIdx}
+                                stroke={color}
+                                fill="var(--card)"
+                                travellerWidth={6}
+                                tickFormatter={() => ""}
+                            />
+                        )}
                         <Tooltip
                             contentStyle={{ background: "#0f0f0f", border: `1px solid ${color}55`, borderRadius: 8, padding: "3px 10px" }}
                             labelStyle={{ fontSize: 10, color: "#888" }}
@@ -188,7 +210,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 </div>
 
                 {/* 3 gráficas apiladas */}
-                <div className="flex-1 flex flex-col gap-1.5 min-h-40">
+                <div className="flex-1 flex flex-col gap-1.5 min-h-70">
                     <SmallLineChart
                         data={histActive.current}
                         color="#00ffc2"
