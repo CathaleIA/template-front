@@ -99,9 +99,24 @@ function connectToWebSocket() {
     ws.on('error', (e) => console.error('❌ [IoT Cache] WebSocket error:', e));
 }
 
+// Key groups we want to be populated before returning data
+// AGC_4 contains electrical measurements (currents, voltages, power)
+const REQUIRED_GROUPS: Array<[string, string]> = [
+    ['Generador_55', 'AGC_4'],
+];
+
+function hasRequiredGroups(): boolean {
+    for (const [gen, grupo] of REQUIRED_GROUPS) {
+        const g = global.__iotTagsCache?.[gen]?.[grupo];
+        if (!g || Object.keys(g).length === 0) return false;
+    }
+    return true;
+}
+
 /**
  * Returns the latest IoT state from the WebSocket cache.
- * Waits up to `maxWaitMs` for data if the cache is empty.
+ * Waits up to `maxWaitMs` for all required groups (including AGC_4)
+ * to be populated before returning.
  */
 export async function getLatestRealtimeData(maxWaitMs = 6000): Promise<{
     tags: TagsState;
@@ -113,12 +128,16 @@ export async function getLatestRealtimeData(maxWaitMs = 6000): Promise<{
         connectToWebSocket();
     }
 
-    // Wait for data if cache is empty
+    // Wait until required groups (AGC_4 etc.) are in the cache
     const interval = 500;
     let waited = 0;
-    while (Object.keys(global.__iotTagsCache!).length === 0 && waited < maxWaitMs) {
+    while (!hasRequiredGroups() && waited < maxWaitMs) {
         await new Promise((r) => setTimeout(r, interval));
         waited += interval;
+    }
+
+    if (!hasRequiredGroups()) {
+        console.warn('⚠️ [IoT Cache] AGC_4 group not received within timeout — returning partial cache');
     }
 
     return {

@@ -118,7 +118,12 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
 
   // Ref para limpiar el interval si el componente desmonta durante el polling
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollTimeoutRef  = useRef<ReturnType<typeof setTimeout>  | null>(null);
+
+  // sessionId estable para toda la sesión del chat — Bedrock mantiene el hilo de conversación
+  const sessionIdRef = useRef<string>(
+    `user-${(userr?.userName ?? 'anon').replace(/[^a-zA-Z0-9_-]/g, '')}-${Date.now()}`
+  );
 
   // Cleanup al desmontar
   useEffect(() => {
@@ -148,7 +153,8 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
-          userId: userr?.userName || 'anonymous'
+          userId: userr?.userName || 'anonymous',
+          sessionId: sessionIdRef.current,   // mismo ID en todos los mensajes → Bedrock recuerda el hilo
         }),
       });
 

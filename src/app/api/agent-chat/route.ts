@@ -335,6 +335,18 @@ Para responder preguntas sobre valores actuales (presión, temperatura, voltaje,
 USA ESTOS DATOS DIRECTAMENTE. NO llames queryData ni ninguna otra herramienta.
 Solo llama herramientas si el usuario pide datos históricos, reportes o mantenimiento.
 
+[MAPEO CRÍTICO DE VARIABLES - NO CONFUNDIR]
+Usa EXACTAMENTE estos nombres de variable para cada concepto. Si no aparece en los datos, responde "no disponible" — NUNCA sustituyas con otra variable similar:
+- Corriente fase L1 → Generator_current_L1  (grupo AGC_4)
+- Corriente fase L2 → Generator_current_L2  (grupo AGC_4)
+- Corriente fase L3 → Generator_current_L3  (grupo AGC_4)
+- Voltaje L1-L2     → Generator_voltage_L1_L2  (grupo AGC_4)
+- Voltaje L1-N      → Generator_voltage_L1_N   (grupo AGC_4)
+- Potencia activa total → Generator_active_power_total  (grupo AGC_4)
+- Factor de potencia    → Generator_PF  (grupo AGC_4)
+- rVolt_Bob_A1..A10 y rVolt_Bob_B1..B10 son VOLTAJES DE BOBINAS del alternador (grupo GVL_HMI_3), NO son corrientes de fase.
+REGLA: Si el usuario pregunta por "corriente" o "amperaje", SOLO usa Generator_current_L1/L2/L3. Jamás uses rVolt_Bob_* para responder preguntas de corriente.
+
 ${reportProtocol}`;
                     console.log(`📡 [IoT Cache] Real-time data injected (last update: ${iotData.lastUpdate?.toISOString()})`);
                 } else {
