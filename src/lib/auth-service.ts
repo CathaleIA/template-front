@@ -73,19 +73,12 @@ export class AuthService {
         tokens.id_token = newTokens.id_token;
       }
 
-      // Decodificar el ID token para obtener el username
+      // Decodificar el ID token para obtener información del usuario
+      // Usamos la información del JWT directamente en lugar de hacer una llamada a la API
+      // para evitar problemas de CORS y autenticación
       const payload = this.decodeJWT(tokens.id_token);
       const username = payload['cognito:username'] || payload.sub;
 
-      const user = await this.getUserByUsername(username, tokens.id_token);
-
-      if (user) {
-        return user;
-      }
-
-      // Si falla la obtención del usuario, construimos un objeto básico con la info del token
-      // Esto permite que el chat y otras funciones básicas sigan operando
-      console.warn(`[AuthService] API returned null for user ${username}. Returning fallback user from token.`);
       return {
         userName: username,
         tenantId: payload['custom:tenant_id'] || 'unknown',

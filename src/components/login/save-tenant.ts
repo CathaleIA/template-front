@@ -12,8 +12,8 @@ export async function setTenantConfig(tenantName: string): Promise<{
     throw new Error("Falta NEXT_PUBLIC_REG_API_GATEWAY_URL en variables de entorno")
   }
 
-  // 1. Obtener datos del tenant desde tu API externa
-  const res = await fetch(`${apiBaseUrl}/tenant/init/${tenantName}`, {
+  // 1. Obtener datos del tenant desde la ruta proxy local (evita CORS)
+  const res = await fetch(`/api/tenant/init/${tenantName}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

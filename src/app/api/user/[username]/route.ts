@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const cookiesStorage = await cookies();
   const API_BASE_URL = process.env.NEXT_PUBLIC_REG_API_GATEWAY_URL;
-  const TOKEN_ID = cookiesStorage.get('cognito_id_token')?.value;
+  const TOKEN_ID = cookiesStorage.get('cognito_access_token')?.value;
 
   if (!TOKEN_ID) {
     return NextResponse.json({ error: 'No token found' }, { status: 401 });
@@ -47,7 +47,7 @@ export async function PUT(
 ) {
   const cookiesStorage = await cookies();
   const API_BASE_URL = process.env.NEXT_PUBLIC_REG_API_GATEWAY_URL;
-  const TOKEN_ID = cookiesStorage.get('cognito_id_token')?.value;
+  const TOKEN_ID = cookiesStorage.get('cognito_access_token')?.value;
 
   if (!TOKEN_ID) {
     return NextResponse.json({ error: 'No token found' }, { status: 401 });
@@ -84,7 +84,7 @@ export async function DELETE(
 ) {
   const cookiesStorage = await cookies();
   const API_BASE_URL = process.env.NEXT_PUBLIC_REG_API_GATEWAY_URL;
-  const TOKEN_ID = cookiesStorage.get('cognito_id_token')?.value;
+  const TOKEN_ID = cookiesStorage.get('cognito_access_token')?.value;
 
   if (!TOKEN_ID) {
     return NextResponse.json({ error: 'No token found' }, { status: 401 });

@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
+import { appendChartRow, loadChartHistory } from "@/lib/chartHistory";
 
 interface Props {
     engine: Record<string, TagValue>;
@@ -112,17 +113,50 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
     const PlotlyRef = useRef<any>(null);
     const initialized = useRef(false);
     const [hidden, setHidden] = useState<Set<number>>(new Set());
+    const [activeRangeBtn, setActiveRangeBtn] = useState<"30s" | "1m" | "3m" | "1h" | "∞">("∞");
+    const activeMinsRef = useRef<number | null>(null);
 
-    // Initialize chart once
+    const applyRange = (label: "30s" | "1m" | "3m" | "1h" | "∞", minutes: number | null) => {
+        setActiveRangeBtn(label);
+        activeMinsRef.current = minutes;
+        if (!PlotlyRef.current || !divRef.current) return;
+        if (minutes === null) {
+            PlotlyRef.current.relayout(divRef.current, { "xaxis.autorange": true });
+        } else {
+            const end = Date.now();
+            PlotlyRef.current.relayout(divRef.current, { "xaxis.range": [end - minutes * 60_000, end] });
+        }
+    };
+
+    // Initialize chart — load 12 h history from IndexedDB
     useEffect(() => {
         if (!divRef.current) return;
-        import("plotly.js-dist-min").then((mod) => {
+        const div = divRef.current;
+        Promise.all([
+            import("plotly.js-dist-min"),
+            loadChartHistory("gen01_vibrations"),
+        ]).then(([mod, history]) => {
+            if (!div.isConnected) return; // unmounted while loading
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const Plotly: any = (mod as any).default ?? mod;
             PlotlyRef.current = Plotly;
+
+            // Build per-trace arrays from history
+            const traceX: number[][] = VIB_CYLS.map(() => []);
+            const traceY: number[][] = VIB_CYLS.map(() => []);
+            history.forEach((row) => {
+                VIB_CYLS.forEach((_, i) => {
+                    const v = row.values[i];
+                    if (v != null && !isNaN(v)) {
+                        traceX[i].push(row.t);
+                        traceY[i].push(v);
+                    }
+                });
+            });
+
             const traces = VIB_CYLS.map((num, i) => ({
-                x: [] as number[],
-                y: [] as number[],
+                x: traceX[i],
+                y: traceY[i],
                 type: "scatter",
                 mode: "lines",
                 name: `C${String(num).padStart(2, "0")}`,
@@ -156,6 +190,7 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                             { count: 30, label: "30s", step: "second", stepmode: "backward" },
                             { count: 1,  label: "1m",  step: "minute", stepmode: "backward" },
                             { count: 3,  label: "3m",  step: "minute", stepmode: "backward" },
+                            { count: 1,  label: "1h",  step: "hour",   stepmode: "backward" },
                             { step: "all", label: "Todo" },
                         ],
                         font: { size: 8, color: "#9ca3af" },
@@ -178,31 +213,35 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
             initialized.current = true;
         });
         return () => {
-            if (divRef.current && PlotlyRef.current) {
-                PlotlyRef.current.purge(divRef.current);
-                initialized.current = false;
-            }
+            PlotlyRef.current?.purge(div);
+            initialized.current = false;
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Append new point per trace — no full redraw
+    // Append new point — persist to IndexedDB + extend chart
     useEffect(() => {
         if (!initialized.current || !PlotlyRef.current || !divRef.current) return;
         const t = Date.now();
+        const values = VIB_CYLS.map((num) => n(hmi[`rVib_Cil_${num}`]) ?? NaN);
+        appendChartRow("gen01_vibrations", t, values);
         const newX: number[][] = [];
         const newY: number[][] = [];
         const indices: number[] = [];
-        VIB_CYLS.forEach((num, i) => {
-            const v = n(hmi[`rVib_Cil_${num}`]);
-            if (v === null) return;
+        VIB_CYLS.forEach((_, i) => {
+            const v = values[i];
+            if (isNaN(v)) return;
             newX.push([t]);
             newY.push([v]);
             indices.push(i);
         });
         if (indices.length > 0) {
-            // 360 puntos max ≈ 6 min a 1 Hz
-            PlotlyRef.current.extendTraces(divRef.current, { x: newX, y: newY }, indices, 360);
+            PlotlyRef.current.extendTraces(divRef.current, { x: newX, y: newY }, indices);
+            // If user selected a time range, update it to show latest data
+            if (activeMinsRef.current !== null) {
+                const end = Date.now();
+                PlotlyRef.current.relayout(divRef.current, { "xaxis.range": [end - activeMinsRef.current * 60_000, end] });
+            }
         }
     }, [hmi]);
 
@@ -219,7 +258,26 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
 
     return (
         <div className="flex-1 min-h-0 flex flex-col gap-1">
-            {/* Chips de cilindros */}
+            <div className="shrink-0 flex flex-wrap gap-1">
+                {["30s", "1m", "3m", "1h", "∞"].map((label) => {
+                    const isActive = activeRangeBtn === label;
+                    const mins = label === "30s" ? 0.5 : label === "1m" ? 1 : label === "3m" ? 3 : label === "1h" ? 60 : null;
+                    return (
+                        <button
+                            key={label}
+                            onClick={() => applyRange(label as "30s" | "1m" | "3m" | "1h" | "∞", mins)}
+                            className="rounded px-2 py-1 text-[8px] font-semibold leading-none transition-all"
+                            style={{
+                                background: isActive ? "rgba(0,255,194,0.2)" : "transparent",
+                                color: isActive ? "#00ffc2" : "#9ca3af",
+                                border: `1px solid ${isActive ? "rgba(0,255,194,0.5)" : "rgba(0,255,194,0.2)"}`,
+                            }}
+                        >
+                            {label}
+                        </button>
+                    );
+                })}
+            </div>
             <div className="shrink-0 flex flex-wrap gap-0.5">
                 {VIB_CYLS.map((num, i) => {
                     const color = VIB_COLORS[i % VIB_COLORS.length];
@@ -239,7 +297,6 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                     );
                 })}
             </div>
-            {/* Contenedor imperativo */}
             <div ref={divRef} className="flex-1 min-h-0" style={{ width: "100%", height: "100%" }} />
         </div>
     );
