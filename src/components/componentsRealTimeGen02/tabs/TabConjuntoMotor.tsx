@@ -1,8 +1,12 @@
 "use client";
 
+import { useRef, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "@/components/componentsRealTimeGen01/shared/HalfGauge";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Props {
     engine: Record<string, TagValue>;
@@ -15,6 +19,14 @@ const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 const CYL_NUMS = [1, 3, 4, 10, 11, 17, 19, 20];
 // Todos los knock sensors (1..20)
 const KNOCK_NUMS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+const HISTORY_MS = 5 * 60_000;
+const KNOCK_COLORS = [
+    "#f87171","#fb923c","#fbbf24","#a3e635","#34d399",
+    "#22d3ee","#60a5fa","#a78bfa","#f472b6","#e879f9",
+    "#ef4444","#f97316","#eab308","#84cc16","#10b981",
+    "#06b6d4","#3b82f6","#8b5cf6","#ec4899","#d946ef",
+];
 
 function cylCardColors(val: number | null, num: number) {
     if (val === null) return "border-border bg-card text-muted-foreground";
@@ -96,29 +108,129 @@ function BarActuator({
     );
 }
 
-function KnockBar({ num, value }: { num: number; value: number | null }) {
-    const status = value !== null ? getThresholdStatus(`Rx_Knc_Int_${num}`, value) : "normal";
-    const barColor =
-        status === "critical" ? "bg-red-500" : status === "warning" ? "bg-yellow-400" : "bg-[#60a5fa]";
-    const textColor =
-        status === "critical"
-            ? "text-red-500"
-            : status === "warning"
-            ? "text-yellow-400"
-            : "text-[#60a5fa]";
-    const pct = value !== null ? Math.min(100, (value / 100) * 100) : 0;
+function KnockTrendsChart({ knock }: { knock: Record<string, TagValue> }) {
+    const histMap = useRef<Map<number, { t: number; v: number }[]>>(new Map());
+    const [, setRev] = useState(0);
+    const [hidden, setHidden] = useState<Set<number>>(new Set());
+
+    const toggleKnock = (i: number) =>
+        setHidden(prev => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
+
+    useEffect(() => {
+        const t = Date.now();
+        const cutoff = t - HISTORY_MS;
+        KNOCK_NUMS.forEach((num, i) => {
+            const v = n(knock[`Rx_Knc_Int_${num}`]);
+            if (v === null) return;
+            const prev = histMap.current.get(i) ?? [];
+            histMap.current.set(i, [...prev.filter(p => p.t >= cutoff), { t, v }]);
+        });
+        setRev(r => r + 1);
+    }, [knock]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shapes: any[] = [
+        { type:"line", xref:"paper", x0:0, x1:1, y0:20, y1:20, line:{ color:"rgba(250,204,21,0.65)", width:1.5, dash:"dash" } },
+        { type:"line", xref:"paper", x0:0, x1:1, y0:40, y1:40, line:{ color:"rgba(239,68,68,0.65)",  width:1.5, dash:"dot"  } },
+    ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const annotations: any[] = [
+        { xref:"paper", x:1, yref:"y", y:20, text:"warn", showarrow:false, font:{ size:7, color:"rgba(250,204,21,0.8)" }, xanchor:"right", yanchor:"bottom" },
+        { xref:"paper", x:1, yref:"y", y:40, text:"crit", showarrow:false, font:{ size:7, color:"rgba(239,68,68,0.8)"  }, xanchor:"right", yanchor:"bottom" },
+    ];
+
+    const traces = KNOCK_NUMS.map((num, i) => {
+        const pts = histMap.current.get(i) ?? [];
+        const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
+        return {
+            x: pts.map(p => p.t),
+            y: pts.map(p => p.v),
+            type: "scatter" as const,
+            mode: "lines" as const,
+            name: `C${String(num).padStart(2,"0")}`,
+            showlegend: false,
+            visible: (hidden.has(i) ? false : true) as boolean,
+            line: { color, width: 1.5 },
+            hovertemplate: `C${num}: <b>%{y:.1f} % LEL</b>  %{x|%H:%M:%S}<extra></extra>`,
+        };
+    });
+
     return (
-        <div className="flex flex-col items-center gap-0.5">
-            <span className={`text-[8px] font-bold tabular-nums ${textColor}`}>
-                {value !== null ? value.toFixed(0) : "--"}
-            </span>
-            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden flex-1">
-                <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${barColor}`}
-                    style={{ height: `${pct}%` }}
+        <div className="flex-1 min-h-0 flex flex-col gap-1">
+            {/* Chips toggle por cilindro */}
+            <div className="shrink-0 flex flex-wrap gap-0.5">
+                {KNOCK_NUMS.map((num, i) => {
+                    const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
+                    const off = hidden.has(i);
+                    return (
+                        <button
+                            key={num}
+                            onClick={() => toggleKnock(i)}
+                            title={off ? `Mostrar C${num}` : `Ocultar C${num}`}
+                            className="rounded px-1 py-0.5 text-[8px] font-bold leading-none transition-all"
+                            style={{
+                                background: off ? "transparent" : `${color}22`,
+                                color:      off ? "#374151"     : color,
+                                border:     `1px solid ${off ? "#374151" : `${color}55`}`,
+                            }}
+                        >C{num}</button>
+                    );
+                })}
+            </div>
+            {/* Gráfica */}
+            <div className="flex-1 min-h-0">
+                <Plot
+                    data={traces}
+                    layout={{
+                        uirevision: "knock-chart",
+                        autosize: true,
+                        margin: { l: 36, r: 8, t: 28, b: 22 },
+                        paper_bgcolor: "rgba(0,0,0,0)",
+                        plot_bgcolor:  "rgba(0,0,0,0)",
+                        showlegend: false,
+                        shapes,
+                        annotations,
+                        xaxis: {
+                            type: "date",
+                            tickformat: "%H:%M:%S",
+                            tickfont: { size: 7, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.05)",
+                            linecolor: "rgba(96,165,250,0.15)",
+                            rangeselector: {
+                                buttons: [
+                                    { count: 30, label: "30s", step: "second", stepmode: "backward" },
+                                    { count: 1,  label: "1m",  step: "minute", stepmode: "backward" },
+                                    { count: 3,  label: "3m",  step: "minute", stepmode: "backward" },
+                                    { step: "all", label: "Todo" },
+                                ],
+                                font: { size: 8, color: "#9ca3af" },
+                                bgcolor: "rgba(255,255,255,0.04)",
+                                activecolor: "rgba(96,165,250,0.18)",
+                                bordercolor: "rgba(96,165,250,0.2)",
+                                borderwidth: 1,
+                                x: 0, y: 1.1,
+                            },
+                            rangeslider: {
+                                visible: true,
+                                bgcolor: "rgba(0,0,0,0.15)",
+                                bordercolor: "rgba(96,165,250,0.15)",
+                                borderwidth: 1,
+                                thickness: 0.06,
+                            },
+                        },
+                        yaxis: {
+                            tickfont: { size: 7, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.05)",
+                            rangemode: "tozero",
+                            fixedrange: false,
+                            title: { text: "% LEL", font: { size: 7, color: "#6b7280" }, standoff: 2 },
+                        },
+                    }}
+                    config={{ displayModeBar: false, responsive: true, scrollZoom: true }}
+                    style={{ width: "100%", height: "100%" }}
+                    useResizeHandler
                 />
             </div>
-            <span className="text-[7px] text-muted-foreground">C{num}</span>
         </div>
     );
 }
@@ -163,7 +275,7 @@ export default function TabConjuntoMotor({ engine, knock }: Props) {
                                 ? "text-foreground"
                                 : "text-[#60a5fa]";
                         return (
-                            <div key={d} className="rounded-lg border bg-card px-2 py-1 min-w-[68px]">
+                            <div key={d} className="rounded-lg border bg-card px-2 py-1 min-w-17">
                                 <p className="text-[8px] uppercase tracking-widest text-muted-foreground">Dev. {d}</p>
                                 <p className={`text-sm font-bold tabular-nums ${color}`}>
                                     {val !== null ? val.toFixed(0) : "--"}{" "}
@@ -269,14 +381,7 @@ export default function TabConjuntoMotor({ engine, knock }: Props) {
                 <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1.5 shrink-0">
                     Knock Sensors — 20 Cilindros
                 </h3>
-                <div
-                    className="grid gap-1 flex-1"
-                    style={{ gridTemplateColumns: "repeat(20, 1fr)" }}
-                >
-                    {KNOCK_NUMS.map((num) => (
-                        <KnockBar key={num} num={num} value={n(knock[`Rx_Knc_Int_${num}`])} />
-                    ))}
-                </div>
+                <KnockTrendsChart knock={knock} />
             </div>
         </div>
     );
