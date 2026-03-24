@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
-import { getThresholdStatus } from "@/config/thresholds-v2";
+import { getThresholdStatus, ALL_THRESHOLDS } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -82,6 +82,25 @@ function PowerChart({
         setXRange([start, end]);
     };
 
+    // Líneas de umbral (warning/critical) desde el archivo de thresholds
+    const th = ALL_THRESHOLDS[tagName];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const thresholdShapes: any[] = [];
+    if (th) {
+        const addLine = (val: number | undefined, lineColor: string, dash: string) => {
+            if (val === undefined) return;
+            thresholdShapes.push({
+                type: "line", xref: "paper", x0: 0, x1: 1,
+                y0: val, y1: val,
+                line: { color: lineColor, width: 1, dash },
+            });
+        };
+        addLine(th.warning_high,  "rgba(250,204,21,0.55)",  "dash");
+        addLine(th.warning_low,   "rgba(250,204,21,0.55)",  "dash");
+        addLine(th.critical_high, "rgba(239,68,68,0.55)",   "dot");
+        addLine(th.critical_low,  "rgba(239,68,68,0.55)",   "dot");
+    }
+
     return (
         <div className="flex items-stretch gap-2 bg-card border rounded-xl px-3 py-1 min-w-0 flex-1 min-h-0">
             {/* Valor actual */}
@@ -124,14 +143,26 @@ function PowerChart({
                         hovertemplate: `%{x|%H:%M:%S}<br><b>%{y:.0f} ${unit}</b><extra></extra>`,
                     }]}
                     layout={{
-                        // rangeKey cambia al presionar un botón → Plotly acepta el nuevo rango
-                        // luego se estabiliza → uirevision protege el zoom del usuario en updates de datos
                         uirevision: `${tagName}-${rangeKey}`,
                         autosize: true,
-                        margin: { l: 0, r: 8, t: 2, b: 14 },
+                        margin: { l: 30, r: 8, t: 2, b: 14 },
                         paper_bgcolor: "rgba(0,0,0,0)",
                         plot_bgcolor: "rgba(0,0,0,0)",
                         showlegend: false,
+                        shapes: thresholdShapes,
+                        annotations: currentVal !== null ? [{
+                            xref: "paper", x: 0,
+                            yref: "y",     y: currentVal,
+                            text: `<b>${currentVal.toFixed(0)}</b>`,
+                            showarrow: false,
+                            font: { color, size: 9 },
+                            xanchor: "right",
+                            yanchor: "middle",
+                            bgcolor: "rgba(13,13,15,0.75)",
+                            borderpad: 2,
+                            bordercolor: `${color}70`,
+                            borderwidth: 1,
+                        }] : [],
                         xaxis: {
                             type: "date",
                             tickformat: "%H:%M:%S",
@@ -147,7 +178,13 @@ function PowerChart({
                                 thickness: 0.08,
                             },
                         },
-                        yaxis: { visible: false, fixedrange: false },
+                        yaxis: {
+                            visible: true,
+                            tickfont: { size: 8, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.04)",
+                            tickformat: "~s",
+                            fixedrange: false,
+                        },
                     }}
                     config={{
                         displayModeBar: false,
