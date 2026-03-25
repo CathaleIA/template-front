@@ -51,13 +51,13 @@ export default function DashboardGen01() {
                         <TabsTrigger value="electrico">Conjunto Eléctrico</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                    <TabsContent forceMount value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                         <TabVistaGeneral agc={agc} engine={engine} raiz={raiz} />
                     </TabsContent>
-                    <TabsContent value="motor"     className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                    <TabsContent forceMount value="motor"     className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                         <TabConjuntoMotor engine={engine} hmi={hmi} alarmas={alarmas} />
                     </TabsContent>
-                    <TabsContent value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                    <TabsContent forceMount value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                         <TabConjuntoElectrico agc={agc} hmi={hmi} />
                     </TabsContent>
                 </Tabs>

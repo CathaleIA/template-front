@@ -75,7 +75,12 @@ export const IoTTagsProvider: React.FC<{ children: React.ReactNode }> = ({ child
             return next;
         });
 
-        setLastUpdate(new Date());
+        setLastUpdate(prev => {
+            const now = Date.now();
+            // Solo actualizar si han pasado más de 500ms (evita re-renders excesivos)
+            if (prev && now - prev.getTime() < 500) return prev;
+            return new Date(now);
+        });
     }, []);
 
     useEffect(() => {

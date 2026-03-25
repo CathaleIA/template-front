@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus, ALL_THRESHOLDS } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
+import { appendChartRow, loadChartHistory, MAX_AGE_MS } from "@/lib/chartHistory";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -19,7 +20,7 @@ interface PowerPoint {
     v: number;
 }
 
-const HISTORY_MS = 5 * 60_000; // mantener últimos 5 minutos sin importar la frecuencia
+const HISTORY_MS = MAX_AGE_MS; // mantener últimas 12 horas (persistido en IndexedDB + S3)
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
 const STATUS_TEXT: Record<string, string> = {
@@ -64,23 +65,40 @@ function PowerChart({
 }) {
     const valColor = statusColor(tagName, currentVal);
     const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
-    // null = auto; [number, number] = rango en epoch ms (misma unidad que los datos)
-    const [xRange, setXRange]   = useState<[number, number] | null>(null);
-    // rangeKey: al cambiar, Plotly acepta el nuevo rango (rompe uirevision momentáneamente)
     const [rangeKey, setRangeKey] = useState(0);
-    const [activeBtn, setActiveBtn] = useState<"1m" | "3m" | "∞">("∞");
+    const [activeBtn, setActiveBtn] = useState<"1m" | "3m" | "1h" | "∞">("∞");
+    const activeMinsRef = useRef<number | null>(null);
+    // ID estable para acceder al div de Plotly de forma imperativa
+    const plotDivId = `power-chart-${tagName}`;
 
     const xs = data.map(p => p.t);
     const ys = data.map(p => p.v);
 
-    const applyRange = (minutes: number | null, btn: "1m" | "3m" | "∞") => {
+    const applyRange = (minutes: number | null, btn: "1m" | "3m" | "1h" | "∞") => {
         setActiveBtn(btn);
-        setRangeKey(k => k + 1); // fuerza a Plotly a aceptar el nuevo rango
-        if (minutes === null || data.length === 0) { setXRange(null); return; }
-        const end   = data[data.length - 1].t;           // epoch ms
-        const start = end - minutes * 60_000;             // epoch ms
-        setXRange([start, end]);
+        activeMinsRef.current = minutes;
+        // Incrementar rangeKey resetea uirevision para que Plotly acepte el nuevo rango
+        setRangeKey(k => k + 1);
+        if (minutes === null || data.length === 0) return;
+        const end   = data[data.length - 1].t;
+        const start = end - minutes * 60_000;
+        // Timeout para que Plotly procese el reset de uirevision primero
+        setTimeout(() => {
+            const el = document.getElementById(plotDivId);
+            if (el) (window as Window & { Plotly?: { relayout: (el: HTMLElement, update: object) => void } }).Plotly?.relayout(el, { 'xaxis.range': [start, end] });
+        }, 50);
     };
+
+    // Seguir el rango con nuevos datos — imperativo para evitar conflicto con uirevision
+    useEffect(() => {
+        const mins = activeMinsRef.current;
+        if (mins === null || data.length === 0) return;
+        const end   = data[data.length - 1].t;
+        const start = end - mins * 60_000;
+        const el = document.getElementById(plotDivId);
+        if (el) (window as Window & { Plotly?: { relayout: (el: HTMLElement, update: object) => void } }).Plotly?.relayout(el, { 'xaxis.range': [start, end] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]);
 
     // Líneas de umbral (warning/critical) desde el archivo de thresholds
     const th = ALL_THRESHOLDS[tagName];
@@ -114,11 +132,11 @@ function PowerChart({
 
             {/* Botones de rango — verticales, al costado del valor */}
             <div className="shrink-0 flex flex-col gap-1 items-stretch justify-center self-stretch border-l border-border/30 pl-2">
-                {(["1m", "3m", "∞"] as const).map((btn) => (
+                {(["1m", "3m", "1h", "∞"] as const).map((btn) => (
                     <button
                         key={btn}
-                        onClick={() => applyRange(btn === "1m" ? 1 : btn === "3m" ? 3 : null, btn)}
-                        title={btn === "1m" ? "Último minuto" : btn === "3m" ? "Últimos 3 min" : "Todo el historial"}
+                        onClick={() => applyRange(btn === "1m" ? 1 : btn === "3m" ? 3 : btn === "1h" ? 60 : null, btn)}
+                        title={btn === "1m" ? "Último minuto" : btn === "3m" ? "Últimos 3 min" : btn === "1h" ? "Última hora" : "Todo el historial"}
                         className="text-[11px] font-bold px-2 py-1 rounded transition-all leading-none"
                         style={{
                             background: activeBtn === btn ? `${color}22` : "transparent",
@@ -132,6 +150,7 @@ function PowerChart({
             {/* Gráfica Plotly — crece con la altura del card */}
             <div className="flex-1 min-w-0 min-h-0">
                 <Plot
+                    divId={plotDivId}
                     data={[{
                         x: xs,
                         y: ys,
@@ -169,7 +188,6 @@ function PowerChart({
                             tickfont: { size: 8, color: "#6b7280" },
                             gridcolor: "rgba(255,255,255,0.04)",
                             linecolor: `${color}30`,
-                            ...(xRange ? { range: xRange } : {}),
                             rangeslider: {
                                 visible: true,
                                 bgcolor: "rgba(0,0,0,0.15)",
@@ -210,19 +228,33 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
     const reactivePow = n(agc["Generator_reactive_power"]);
     const apparentPow = n(agc["Generator_apparent_power"]);
 
+    // Cargar historial desde S3/IndexedDB al montar
+    useEffect(() => {
+        loadChartHistory("gen01_potencies").then(rows => {
+            if (rows.length === 0) return;
+            histActive.current   = rows.map(r => ({ t: r.t, v: r.values[0] ?? 0 })).filter(p => p.v !== 0);
+            histReactive.current = rows.map(r => ({ t: r.t, v: r.values[1] ?? 0 })).filter(p => p.v !== 0);
+            histApparent.current = rows.map(r => ({ t: r.t, v: r.values[2] ?? 0 })).filter(p => p.v !== 0);
+            setRev(r => r + 1);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Acumular historial cuando llegan nuevos datos
     useEffect(() => {
         const t = Date.now(); // epoch ms
         const cutoff = t - HISTORY_MS;
         const push = (ref: React.RefObject<PowerPoint[]>, v: number | null) => {
             if (v === null) return;
-            // Descartar puntos más viejos que 5 minutos y agregar el nuevo
             ref.current = [...ref.current!.filter(p => p.t >= cutoff), { t, v }];
         };
         push(histActive,   activePow);
         push(histReactive, reactivePow);
         push(histApparent, apparentPow);
-        // forzar re-render para que Plotly reciba los nuevos arrays
+        // Persistir en IndexedDB para recargas futuras
+        if (activePow !== null && reactivePow !== null && apparentPow !== null) {
+            appendChartRow("gen01_potencies", t, [activePow, reactivePow, apparentPow]);
+        }
         setRev(r => r + 1);
     }, [activePow, reactivePow, apparentPow]);
 
