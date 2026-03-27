@@ -30,6 +30,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: any[];
+  agentUsed?: string;
   timestamp: Date;
 }
 
@@ -146,9 +147,11 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
     }]);
     setIsLoading(true);
 
+    const apiBase = '/api/orchestrator-chat';
+
     try {
       // Paso 1: Iniciar el job
-      const response = await fetch('/api/agent-chat', {
+      const response = await fetch(apiBase, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -214,7 +217,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
 
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const statusResponse = await fetch(`/api/agent-chat?jobId=${jobId}`);
+          const statusResponse = await fetch(`${apiBase}?jobId=${jobId}`);
           if (!statusResponse.ok) {
             throw new Error(`HTTP ${statusResponse.status}`);
           }
@@ -226,10 +229,15 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
             setIsLoading(false);
 
+            const answer    = jobData.answer;
+            const sources   = undefined;
+            const agentUsed = jobData.agent_used;
+
             setMessages(prev => [...prev, {
               role: 'assistant',
-              content: jobData.result?.answer || 'Respuesta recibida.',
-              sources: jobData.result?.sources,
+              content: answer || 'Respuesta recibida.',
+              sources,
+              agentUsed,
               timestamp: new Date()
             }]);
           } else if (jobData.status === 'error') {
@@ -237,9 +245,10 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
             if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
             setIsLoading(false);
 
+            const errAnswer = jobData.error;
             setMessages(prev => [...prev, {
               role: 'assistant',
-              content: jobData.result?.answer || 'Hubo un error al procesar tu consulta.',
+              content: errAnswer || 'Hubo un error al procesar tu consulta.',
               timestamp: new Date()
             }]);
           }
@@ -294,9 +303,9 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
 
   const exampleQuestions = [
     '¿Cuál es la potencia actual del generador?',
-    '¿Hay alguna alerta de temperatura?',
-    '¿Cuál es el voltaje en L1?',
-    'Dame un resumen del estado del sistema',
+    '¿Hay alguna alerta de temperatura activa?',
+    '¿Cuál fue la potencia promedio la semana pasada?',
+    'Muéstrame la tendencia de voltaje del último mes',
   ];
 
   // Botón flotante cuando está cerrado
@@ -336,7 +345,7 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
           </div>
           <div>
             <h2 className="font-semibold text-sm">{hasAlarms ? 'Diagnóstico Crítico' : 'Asistente IA'}</h2>
-            <p className="text-xs opacity-80">{hasAlarms ? `${activeAlarms.length} Alertas Activas` : 'Bedrock Agent + Tiempo Real'}</p>
+            <p className="text-xs opacity-80">{hasAlarms ? `${activeAlarms.length} Alertas Activas` : 'Orquestador Multi-Agente'}</p>
           </div>
         </div>
         <button
@@ -391,9 +400,20 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                 />
 
-                <span className="text-xs opacity-60 mt-2 block">
-                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs opacity-60">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {msg.agentUsed && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      msg.agentUsed === 'historical' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                      msg.agentUsed === 'both'       ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' :
+                                                       'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                    }`}>
+                      {msg.agentUsed === 'historical' ? '📊 histórico' : msg.agentUsed === 'both' ? '🔀 ambos' : '⚡ tiempo real'}
+                    </span>
+                  )}
+                </div>
 
                 {/* Sources Citation adapted for both modes */}
                 {msg.sources && msg.sources.length > 0 && (
