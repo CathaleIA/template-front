@@ -114,18 +114,31 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
     const initialized = useRef(false);
     const [hidden, setHidden] = useState<Set<number>>(new Set());
     const [activeRangeBtn, setActiveRangeBtn] = useState<"30s" | "1m" | "3m" | "1h" | "∞">("∞");
-    const activeMinsRef = useRef<number | null>(null);
 
-    const applyRange = (label: "30s" | "1m" | "3m" | "1h" | "∞", minutes: number | null) => {
+    // ── LIVE / EXPLORE mode ──────────────────────────────────────────────────
+    // true  = LIVE MODE:    viewport slides with latest data
+    // false = EXPLORE MODE: viewport frozen, user is panning/zooming freely
+    const isLiveModeRef = useRef(true);
+    // Ventana activa en minutos (null = ∞ / autorange)
+    const windowMinsRef = useRef<number | null>(null);
+    // Guard: true while we do internal Plotly calls → listener ignores these
+    const isInternalRef = useRef(false);
+
+    // Button click → activate LIVE MODE and jump to latest data
+    const activateLive = (label: "30s" | "1m" | "3m" | "1h" | "∞", minutes: number | null) => {
+        isLiveModeRef.current = true;
+        windowMinsRef.current = minutes;
         setActiveRangeBtn(label);
-        activeMinsRef.current = minutes;
         if (!PlotlyRef.current || !divRef.current) return;
-        if (minutes === null) {
-            PlotlyRef.current.relayout(divRef.current, { "xaxis.autorange": true });
-        } else {
-            const end = Date.now();
-            PlotlyRef.current.relayout(divRef.current, { "xaxis.range": [end - minutes * 60_000, end] });
-        }
+        isInternalRef.current = true;
+        const update = minutes === null
+            ? { "xaxis.autorange": true }
+            : { "xaxis.range": [Date.now() - minutes * 60_000, Date.now()], "xaxis.autorange": false };
+        // Keep guard true until the async redraw completes — otherwise the
+        // relayout event from the redraw fires after isInternalRef is cleared
+        // and the listener mistakes it for a user pan, resetting the button
+        PlotlyRef.current.relayout(divRef.current, update)
+            .finally(() => { isInternalRef.current = false; });
     };
 
     // Initialize chart — load 12 h history from IndexedDB
@@ -136,12 +149,11 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
             import("plotly.js-dist-min"),
             loadChartHistory("gen01_vibrations"),
         ]).then(([mod, history]) => {
-            if (!div.isConnected) return; // unmounted while loading
+            if (!div.isConnected) return;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const Plotly: any = (mod as any).default ?? mod;
             PlotlyRef.current = Plotly;
 
-            // Build per-trace arrays from history
             const traceX: number[][] = VIB_CYLS.map(() => []);
             const traceY: number[][] = VIB_CYLS.map(() => []);
             history.forEach((row) => {
@@ -164,7 +176,7 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                 line: { color: VIB_COLORS[i % VIB_COLORS.length], width: 1.5 },
                 hovertemplate: `C${num}: <b>%{y:.2f} mm/s</b>  %{x|%H:%M:%S}<extra></extra>`,
             }));
-            Plotly.newPlot(divRef.current!, traces, {
+            Plotly.newPlot(div, traces, {
                 uirevision: "vib-chart",
                 autosize: true,
                 margin: { l: 36, r: 8, t: 28, b: 22 },
@@ -185,21 +197,6 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                     tickfont: { size: 7, color: "#6b7280" },
                     gridcolor: "rgba(255,255,255,0.05)",
                     linecolor: "rgba(0,255,194,0.15)",
-                    rangeselector: {
-                        buttons: [
-                            { count: 30, label: "30s", step: "second", stepmode: "backward" },
-                            { count: 1,  label: "1m",  step: "minute", stepmode: "backward" },
-                            { count: 3,  label: "3m",  step: "minute", stepmode: "backward" },
-                            { count: 1,  label: "1h",  step: "hour",   stepmode: "backward" },
-                            { step: "all", label: "Todo" },
-                        ],
-                        font: { size: 8, color: "#9ca3af" },
-                        bgcolor: "rgba(255,255,255,0.04)",
-                        activecolor: "rgba(0,255,194,0.18)",
-                        bordercolor: "rgba(0,255,194,0.2)",
-                        borderwidth: 1,
-                        x: 0, y: 1.1,
-                    },
                     rangeslider: { visible: true, bgcolor: "rgba(0,0,0,0.15)", bordercolor: "rgba(0,255,194,0.15)", borderwidth: 1, thickness: 0.06 },
                 },
                 yaxis: {
@@ -210,21 +207,34 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                     title: { text: "mm/s", font: { size: 7, color: "#6b7280" }, standoff: 2 },
                 },
             }, { displayModeBar: false, responsive: true, scrollZoom: true });
+
+            // Listener: detect manual pan/zoom → switch to EXPLORE MODE
+            (div as any).on("plotly_relayout", (eventData: any) => {
+                if (isInternalRef.current) return;
+                // Manual pan/zoom on X axis → EXPLORE MODE
+                if (eventData["xaxis.range[0]"] !== undefined ||
+                    eventData["xaxis.range"] !== undefined) {
+                    isLiveModeRef.current = false;
+                    setActiveRangeBtn("∞");
+                }
+            });
+
             initialized.current = true;
         });
         return () => {
-            PlotlyRef.current?.purge(div);
             initialized.current = false;
+            PlotlyRef.current?.purge(div);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Append new point — persist to IndexedDB + extend chart
+    // Append new point — ALWAYS persist + extend traces, ONLY move viewport in LIVE MODE
     useEffect(() => {
         if (!initialized.current || !PlotlyRef.current || !divRef.current) return;
         const t = Date.now();
         const values = VIB_CYLS.map((num) => n(hmi[`rVib_Cil_${num}`]) ?? NaN);
         appendChartRow("gen01_vibrations", t, values);
+
         const newX: number[][] = [];
         const newY: number[][] = [];
         const indices: number[] = [];
@@ -235,14 +245,29 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
             newY.push([v]);
             indices.push(i);
         });
-        if (indices.length > 0) {
-            PlotlyRef.current.extendTraces(divRef.current, { x: newX, y: newY }, indices);
-            // If user selected a time range, update it to show latest data
-            if (activeMinsRef.current !== null) {
+        if (indices.length === 0) return;
+
+        // Guard stays true until the FULL async redraw completes.
+        // Plotly fires plotly_relayout during async redraws (e.g. autorange
+        // recalculation). If the guard is already cleared at that point, the
+        // listener mistakes those events for user pan and resets the button.
+        isInternalRef.current = true;
+
+        // ALWAYS extend traces — data accumulates regardless of mode
+        PlotlyRef.current
+            .extendTraces(divRef.current, { x: newX, y: newY }, indices)
+            .then(() => {
+                if (!isLiveModeRef.current) return;
                 const end = Date.now();
-                PlotlyRef.current.relayout(divRef.current, { "xaxis.range": [end - activeMinsRef.current * 60_000, end] });
-            }
-        }
+                return PlotlyRef.current.relayout(
+                    divRef.current,
+                    windowMinsRef.current === null
+                        ? { "xaxis.autorange": true }
+                        : { "xaxis.range": [end - windowMinsRef.current * 60_000, end], "xaxis.autorange": false }
+                );
+            })
+            .finally(() => { isInternalRef.current = false; });
+        // EXPLORE MODE: .then() skipped → guard clears via .finally()
     }, [hmi]);
 
     // Toggle visibility imperatively (no redraw)
@@ -265,7 +290,7 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                     return (
                         <button
                             key={label}
-                            onClick={() => applyRange(label as "30s" | "1m" | "3m" | "1h" | "∞", mins)}
+                            onClick={() => activateLive(label as "30s" | "1m" | "3m" | "1h" | "∞", mins)}
                             className="rounded px-2 py-1 text-[8px] font-semibold leading-none transition-all"
                             style={{
                                 background: isActive ? "rgba(0,255,194,0.2)" : "transparent",

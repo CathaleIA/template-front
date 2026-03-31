@@ -65,40 +65,70 @@ function PowerChart({
 }) {
     const valColor = statusColor(tagName, currentVal);
     const displayVal = currentVal !== null ? currentVal.toFixed(0) : "--";
-    const [rangeKey, setRangeKey] = useState(0);
     const [activeBtn, setActiveBtn] = useState<"1m" | "3m" | "1h" | "∞">("∞");
-    const activeMinsRef = useRef<number | null>(null);
-    // ID estable para acceder al div de Plotly de forma imperativa
     const plotDivId = `power-chart-${tagName}`;
+
+    // ── LIVE / EXPLORE mode ─────────────────────────────────────────────────
+    // true  = LIVE MODE:    viewport slides with latest data
+    // false = EXPLORE MODE: viewport frozen, user is panning/zooming freely
+    const isLiveModeRef = useRef(true);
+    const windowMinsRef = useRef<number | null>(null);
+    const isInternalRef = useRef(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const PlotlyRef = useRef<any>(null);
+
+    // Load Plotly module for imperative calls (same instance as react-plotly.js uses)
+    useEffect(() => {
+        import("plotly.js-dist-min").then(mod => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            PlotlyRef.current = (mod as any).default ?? mod;
+        });
+    }, []);
 
     const xs = data.map(p => p.t);
     const ys = data.map(p => p.v);
 
-    const applyRange = (minutes: number | null, btn: "1m" | "3m" | "1h" | "∞") => {
+    // Button click → LIVE MODE: jump to latest data
+    const activateLive = (minutes: number | null, btn: "1m" | "3m" | "1h" | "∞") => {
+        isLiveModeRef.current = true;
+        windowMinsRef.current = minutes;
         setActiveBtn(btn);
-        activeMinsRef.current = minutes;
-        // Incrementar rangeKey resetea uirevision para que Plotly acepte el nuevo rango
-        setRangeKey(k => k + 1);
-        if (minutes === null || data.length === 0) return;
-        const end   = data[data.length - 1].t;
-        const start = end - minutes * 60_000;
-        // Timeout para que Plotly procese el reset de uirevision primero
-        setTimeout(() => {
-            const el = document.getElementById(plotDivId);
-            if (el) (window as Window & { Plotly?: { relayout: (el: HTMLElement, update: object) => void } }).Plotly?.relayout(el, { 'xaxis.range': [start, end] });
-        }, 50);
+        const el = document.getElementById(plotDivId);
+        if (!el || !PlotlyRef.current) return;
+        isInternalRef.current = true;
+        const update = minutes === null
+            ? { "xaxis.autorange": true }
+            : data.length > 0
+                ? { "xaxis.range": [data[data.length - 1].t - minutes * 60_000, data[data.length - 1].t], "xaxis.autorange": false }
+                : { "xaxis.autorange": true };
+        PlotlyRef.current.relayout(el, update)
+            .finally(() => { isInternalRef.current = false; });
     };
 
-    // Seguir el rango con nuevos datos — imperativo para evitar conflicto con uirevision
+    // Slide viewport on new data — ONLY in LIVE MODE with a time window
     useEffect(() => {
-        const mins = activeMinsRef.current;
-        if (mins === null || data.length === 0) return;
-        const end   = data[data.length - 1].t;
-        const start = end - mins * 60_000;
+        if (!isLiveModeRef.current) return; // EXPLORE MODE → don't touch viewport
+        const mins = windowMinsRef.current;
+        if (mins === null || data.length === 0) return; // ∞ → autorange handles it
         const el = document.getElementById(plotDivId);
-        if (el) (window as Window & { Plotly?: { relayout: (el: HTMLElement, update: object) => void } }).Plotly?.relayout(el, { 'xaxis.range': [start, end] });
+        if (!el || !PlotlyRef.current) return;
+        const end = data[data.length - 1].t;
+        isInternalRef.current = true;
+        PlotlyRef.current.relayout(el, { "xaxis.range": [end - mins * 60_000, end] })
+            .finally(() => { isInternalRef.current = false; });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
+
+    // Detect user pan/zoom → EXPLORE MODE
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleRelayout = (eventData: any) => {
+        if (isInternalRef.current) return;
+        if (eventData["xaxis.range[0]"] !== undefined ||
+            eventData["xaxis.range"] !== undefined) {
+            isLiveModeRef.current = false;
+            setActiveBtn("∞");
+        }
+    };
 
     // Líneas de umbral (warning/critical) desde el archivo de thresholds
     const th = ALL_THRESHOLDS[tagName];
@@ -135,7 +165,7 @@ function PowerChart({
                 {(["1m", "3m", "1h", "∞"] as const).map((btn) => (
                     <button
                         key={btn}
-                        onClick={() => applyRange(btn === "1m" ? 1 : btn === "3m" ? 3 : btn === "1h" ? 60 : null, btn)}
+                        onClick={() => activateLive(btn === "1m" ? 1 : btn === "3m" ? 3 : btn === "1h" ? 60 : null, btn)}
                         title={btn === "1m" ? "Último minuto" : btn === "3m" ? "Últimos 3 min" : btn === "1h" ? "Última hora" : "Todo el historial"}
                         className="text-[11px] font-bold px-2 py-1 rounded transition-all leading-none"
                         style={{
@@ -162,7 +192,7 @@ function PowerChart({
                         hovertemplate: `%{x|%H:%M:%S}<br><b>%{y:.0f} ${unit}</b><extra></extra>`,
                     }]}
                     layout={{
-                        uirevision: `${tagName}-${rangeKey}`,
+                        uirevision: tagName,
                         autosize: true,
                         margin: { l: 30, r: 8, t: 2, b: 14 },
                         paper_bgcolor: "rgba(0,0,0,0)",
@@ -209,6 +239,7 @@ function PowerChart({
                         responsive: true,
                         scrollZoom: true,
                     }}
+                    onRelayout={handleRelayout}
                     style={{ width: "100%", height: "100%" }}
                     useResizeHandler
                 />

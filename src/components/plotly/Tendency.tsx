@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { compressIcon, expandIcon } from './CustomButtons';
 
+// Debe coincidir con los botones del rangeselector
+const TIME_BUTTONS = [
+  { count: 1,  step: 'hour',  stepmode: 'backward' },
+  { count: 24, step: 'hour',  stepmode: 'backward' },
+  { count: 7,  step: 'day',   stepmode: 'backward' },
+  { count: 1,  step: 'month', stepmode: 'backward' },
+  { step: 'all' },
+] as const;
+
 
 interface TraceData {
   x: Date[];
@@ -19,7 +28,7 @@ interface TendencyChartProps {
   traces: TraceData[];
   tittle?: string;
   yAxisTitle: string;
-  showOperatingZones?: boolean; // Nueva prop para activar/desactivar zonas
+  showOperatingZones?: boolean;
 }
 
 
@@ -29,7 +38,7 @@ export default function FrequencyTrendChart({
   traces = [],
   tittle = "Grafica de tendencia",
   yAxisTitle = "Eje Y",
-  showOperatingZones = false, // Por defecto desactivado
+  showOperatingZones = false,
 }: TendencyChartProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,25 +47,36 @@ export default function FrequencyTrendChart({
   const { state, open } = useSidebar();
   const [isMaximized, setIsMaximized] = useState(false);
 
-  // Detectar cambios de tema
+  // ── LIVE / EXPLORE mode ────────────────────────────────────────────────
+  // true  = LIVE MODE:    viewport follows latest data (autorange or button window)
+  // false = EXPLORE MODE: viewport frozen, user is panning/zooming freely
+  const isLiveModeRef = useRef(true);
+  // Which button is active (null = autorange / "Todo")
+  const activeBtnRef = useRef<typeof TIME_BUTTONS[number] | null>(null);
+
+  // Guard: true while we do internal Plotly calls → listener ignores these
+  const isInternalRef = useRef(false);
+
+  // Para remover el listener antes del purge
+  const relayoutHandlerRef = useRef<((data: any) => void) | null>(null);
+
+  // Indica si el gráfico fue inicializado (Effect 1) y Effect 2 puede actuar
+  const isChartInitializedRef = useRef(false);
+
+  // ── Detección de tema ──────────────────────────────────────────────────────
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
       if (newTheme !== currentTheme.current) {
         currentTheme.current = newTheme;
-        setThemeVersion(v => v + 1); // Incrementar para forzar recarga
+        setThemeVersion(v => v + 1);
       }
     });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
 
-  // Cargar el gráfico
+  // ── Effect 1: inicialización completa (incluye config con botón maximizar) ─
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -65,115 +85,51 @@ export default function FrequencyTrendChart({
         const Plotly = await import('plotly.js-dist-min');
         const style = getComputedStyle(document.documentElement);
 
-        // Obtener colores actuales
         const colors = {
-          paperColor: style.getPropertyValue('--third-paper').trim(),
-          plotColor: style.getPropertyValue('--third-plot').trim(),
-          textColor: style.getPropertyValue('--third-text').trim(),
-          gridColor: style.getPropertyValue('--third-grid').trim(),
-          rangeSelectorColor: style.getPropertyValue('--third-range-selector').trim(),
-          blueTenue: style.getPropertyValue('--third-bg-blue').trim(),
+          paperColor:        style.getPropertyValue('--third-paper').trim(),
+          plotColor:         style.getPropertyValue('--third-plot').trim(),
+          textColor:         style.getPropertyValue('--third-text').trim(),
+          gridColor:         style.getPropertyValue('--third-grid').trim(),
+          rangeSelectorColor:style.getPropertyValue('--third-range-selector').trim(),
+          blueTenue:         style.getPropertyValue('--third-bg-blue').trim(),
         };
 
-        const variablesMaximazed = {
-          titleAxisYOne: {
-            text: 'Velocidad [rpm]',
-            font: { color: colors.textColor, size: isMaximized ? 16 : 12, weight: 900 }
-          },
-          titleAxisYTwo: {
-            text: yAxisTitle + (yAxisTitle.includes('[') ? '' : ' [Hz]'),
-            font: { color: colors.textColor, size: isMaximized ? 16 : 12, weight: 900 }
-          },
-          anguleTicks: isMaximized ? 0 : 90
-        };
-
-        // Configuración de shapes (zonas de colores)
         const operatingZones = showOperatingZones ? [
-          // Zona verde (0-40) 🟢
-          {
-            type: 'rect' as const,
-            xref: 'paper' as const,
-            yref: 'y' as const,
-            x0: 0,
-            x1: 1,
-            y0: 0,
-            y1: 40,
-            fillcolor: 'rgba(34, 197, 94, 0.15)', // verde suave
-            line: { width: 0 },
-            layer: 'below' as const
-          },
-          // Zona amarilla (40-80) 🟡
-          {
-            type: 'rect' as const,
-            xref: 'paper' as const,
-            yref: 'y' as const,
-            x0: 0,
-            x1: 1,
-            y0: 40,
-            y1: 80,
-            fillcolor: 'rgba(234, 179, 8, 0.15)', // amarillo suave
-            line: { width: 0 },
-            layer: 'below' as const
-          },
-          // Zona roja (80-100) 🔴
-          {
-            type: 'rect' as const,
-            xref: 'paper' as const,
-            yref: 'y' as const,
-            x0: 0,
-            x1: 1,
-            y0: 80,
-            y1: 100,
-            fillcolor: 'rgba(239, 68, 68, 0.15)', // rojo suave
-            line: { width: 0 },
-            layer: 'below' as const
-          }
+          { type: 'rect' as const, xref: 'paper' as const, yref: 'y' as const,
+            x0: 0, x1: 1, y0: 0,  y1: 40,  fillcolor: 'rgba(34, 197, 94, 0.15)', line: { width: 0 }, layer: 'below' as const },
+          { type: 'rect' as const, xref: 'paper' as const, yref: 'y' as const,
+            x0: 0, x1: 1, y0: 40, y1: 80,  fillcolor: 'rgba(234, 179, 8, 0.15)',  line: { width: 0 }, layer: 'below' as const },
+          { type: 'rect' as const, xref: 'paper' as const, yref: 'y' as const,
+            x0: 0, x1: 1, y0: 80, y1: 100, fillcolor: 'rgba(239, 68, 68, 0.15)', line: { width: 0 }, layer: 'below' as const },
         ] : [];
 
-        // Configuración completa del layout
         const layout: Partial<Plotly.Layout> = {
-          title: isMaximized ? {
-            text: tittle,
-            font: {
-              size: 16,
-              weight: 900,
-            }
-          } : undefined,
+          uirevision: tittle,
+          title: isMaximized ? { text: tittle, font: { size: 16, weight: 900 } } : undefined,
           paper_bgcolor: colors.paperColor,
-          plot_bgcolor: colors.plotColor,
-          font: { color: colors.textColor },
-          shapes: operatingZones,
-          hovermode: 'x unified',
-          hoverlabel: {
-            bgcolor: colors.paperColor,
-            bordercolor: colors.gridColor,
-            font: { color: colors.textColor, size: 12 },
-          },
+          plot_bgcolor:  colors.plotColor,
+          font:          { color: colors.textColor },
+          shapes:        operatingZones,
+          hovermode:     'x unified',
+          hoverlabel:    { bgcolor: colors.paperColor, bordercolor: colors.gridColor, font: { color: colors.textColor, size: 12 } },
           xaxis: {
-            type: 'date',
-            autorange: true,
-            automargin: true,
-            zeroline: false,
-            gridcolor: colors.gridColor,
-            linewidth: 1,
-            linecolor: colors.gridColor,
-            ticklen: 4,
-            tickfont: {
-              size: isMaximized ? 12 : 10,
-              color: colors.textColor,
-            },
-            // Formato adaptativo según el zoom
+            type:        'date',
+            autorange:   true,
+            automargin:  true,
+            zeroline:    false,
+            gridcolor:   colors.gridColor,
+            linewidth:   1,
+            linecolor:   colors.gridColor,
+            ticklen:     4,
+            tickfont:    { size: isMaximized ? 12 : 10, color: colors.textColor },
             tickformatstops: [
-              { dtickrange: [null, 60000],      value: '%H:%M:%S'       },
-              { dtickrange: [60000, 3600000],   value: '%H:%M'          },
-              { dtickrange: [3600000, 86400000],value: '%H:%M\n%d %b'   },
-              { dtickrange: [86400000, null],   value: '%d %b\n%Y'      },
+              { dtickrange: [null, 60000],       value: '%H:%M:%S'     },
+              { dtickrange: [60000, 3600000],    value: '%H:%M'        },
+              { dtickrange: [3600000, 86400000], value: '%H:%M\n%d %b' },
+              { dtickrange: [86400000, null],    value: '%d %b\n%Y'    },
             ],
             rangeselector: {
-              font: {
-                color: colors.textColor,
-                size: isMaximized ? 13 : 10,
-              },
+              font:        { color: colors.textColor, size: isMaximized ? 13 : 10 },
               buttons: [
                 { count: 1,  label: '1h', step: 'hour',  stepmode: 'backward' },
                 { count: 24, label: '1d', step: 'hour',  stepmode: 'backward' },
@@ -181,57 +137,36 @@ export default function FrequencyTrendChart({
                 { count: 1,  label: '1m', step: 'month', stepmode: 'backward' },
                 { step: 'all', label: 'Todo' },
               ],
-              x: 0,
-              xanchor: 'left',
-              y: 1.02,
-              yanchor: 'bottom',
-              bgcolor: colors.rangeSelectorColor,
+              x: 0, xanchor: 'left', y: 1.02, yanchor: 'bottom',
+              bgcolor:     colors.rangeSelectorColor,
               activecolor: colors.blueTenue,
             },
-            // Rangeslider solo en modo maximizado
-            rangeslider: {
-              visible: isMaximized,
-              thickness: 0.08,
-              bgcolor: colors.plotColor,
-            },
+            rangeslider: { visible: isMaximized, thickness: 0.08, bgcolor: colors.plotColor },
           },
           yaxis: {
-            range: [minPF - 1, maxPF + 1],
+            range:      [minPF - 1, maxPF + 1],
+            title:      isMaximized ? { text: yAxisTitle + (yAxisTitle.includes('[') ? '' : ' [Hz]'), font: { color: colors.textColor, size: 16, weight: 900 } } : undefined,
+            gridcolor:  colors.gridColor,
             zerolinecolor: colors.gridColor,
-            title: isMaximized ? variablesMaximazed.titleAxisYTwo : undefined,
-            gridcolor: colors.gridColor,
-            zeroline: false,
-            linewidth: 1,
-            linecolor: colors.gridColor,
+            zeroline:   false,
+            linewidth:  1,
+            linecolor:  colors.gridColor,
             fixedrange: false,
             automargin: true,
-            tickfont: {
-              size: isMaximized ? 12 : 10,
-              color: colors.textColor,
-            },
-            ticklen: 4,
-            tickangle: 0,
+            tickfont:   { size: isMaximized ? 12 : 10, color: colors.textColor },
+            ticklen:    4,
+            tickangle:  0,
           },
-          margin: isMaximized
-            ? { r: 80, b: 60, t: 80, l: 80 }
-            : { r: 10, b: 45, t: 28, l: 10 },
+          margin: isMaximized ? { r: 80, b: 60, t: 80, l: 80 } : { r: 10, b: 45, t: 28, l: 10 },
           legend: {
-            orientation: 'h',
-            x: 0.5,
-            xanchor: 'center',
-            y: isMaximized ? -0.12 : -0.35,
-            yanchor: 'top',
-            font: {
-              size: isMaximized ? 13 : 10,
-              color: colors.textColor,
-            },
+            orientation: 'h', x: 0.5, xanchor: 'center',
+            y: isMaximized ? -0.12 : -0.35, yanchor: 'top',
+            font: { size: isMaximized ? 13 : 10, color: colors.textColor },
           },
-          modebar: {
-            orientation: 'v',
-            bgcolor: colors.blueTenue,
-          },
+          modebar: { orientation: 'v', bgcolor: colors.blueTenue },
         };
 
+        // Config solo se pasa en Effect 1 → evita duplicar el botón en cada render
         const config = {
           responsive: true,
           scrollZoom: true,
@@ -242,38 +177,45 @@ export default function FrequencyTrendChart({
               name: 'toggle-maximize',
               title: isMaximized ? 'Minimizar gráfico' : 'Maximizar gráfico',
               icon: isMaximized ? compressIcon : expandIcon,
-              click: () => {
-                // Solo cambia el estado → el useEffect se encarga del resto
-                setIsMaximized((prev) => !prev);
-              },
+              click: () => setIsMaximized(prev => !prev),
             },
           ],
         };
 
-        // Convertir los datos de entrada a traces de Plotly
         const plotlyTraces: Array<Plotly.Data> = traces.map(trace => ({
-          x: trace.x,
-          y: trace.y,
+          x: trace.x, y: trace.y,
           type: 'scatter',
           mode: trace.mode || 'lines',
           name: trace.name,
           hovertemplate: `<b>%{y:.2f}</b><extra>%{fullData.name}</extra>`,
-          line: {
-            color: trace.lineColor || undefined,
-            width: isMaximized ? 2 : 1.5,
-            simplify: true,
-          },
+          line: { color: trace.lineColor || undefined, width: isMaximized ? 2 : 1.5, simplify: true },
         }));
 
-        // Crear gráfico nuevo
-        await Plotly.react(
-          containerRef.current!,
-          plotlyTraces,
-          layout,
-          config
-        );
-
+        await Plotly.react(containerRef.current!, plotlyTraces, layout, config);
         Plotly.Plots.resize(containerRef.current!);
+
+        // Listener: detect user interaction to switch LIVE / EXPLORE
+        const handler = (eventData: any) => {
+          if (isInternalRef.current) return;
+
+          const btnIdx = eventData['xaxis.rangeselector.active'];
+          if (typeof btnIdx === 'number' && btnIdx >= 0) {
+            // Range button click → LIVE MODE with that button's window
+            isLiveModeRef.current = true;
+            activeBtnRef.current = TIME_BUTTONS[btnIdx];
+          } else if (eventData['xaxis.autorange'] === true) {
+            // "Todo" button → LIVE MODE with autorange
+            isLiveModeRef.current = true;
+            activeBtnRef.current = null;
+          } else if (eventData['xaxis.range[0]'] !== undefined ||
+                     eventData['xaxis.range'] !== undefined) {
+            // Manual pan/zoom → EXPLORE MODE (freeze viewport)
+            isLiveModeRef.current = false;
+          }
+        };
+        relayoutHandlerRef.current = handler;
+        (containerRef.current! as any).on('plotly_relayout', handler);
+        isChartInitializedRef.current = true;
 
       } catch (error) {
         console.error('Error al cargar Plotly:', error);
@@ -283,16 +225,81 @@ export default function FrequencyTrendChart({
     loadPlot();
 
     return () => {
+      isChartInitializedRef.current = false;
+      isLiveModeRef.current = true;
+      activeBtnRef.current = null;
       if (containerRef.current) {
+        const el = containerRef.current as any;
+        if (relayoutHandlerRef.current) {
+          el.removeListener?.('plotly_relayout', relayoutHandlerRef.current);
+          relayoutHandlerRef.current = null;
+        }
         const Plotly = require('plotly.js-dist-min');
-        Plotly.purge(containerRef.current);
+        Plotly.purge(el);
       }
     };
-  }, [themeVersion, minPF, maxPF, isMaximized, showOperatingZones]);
+  // traces NO está aquí → las actualizaciones de datos las maneja Effect 2
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeVersion, minPF, maxPF, isMaximized, showOperatingZones, tittle]);
 
+  // ── Effect 2: actualizar datos sin tocar el config ─────────────────────────
+  // Usa restyle (solo datos). Solo mueve viewport en LIVE MODE.
+  useEffect(() => {
+    if (!isChartInitializedRef.current || !containerRef.current) return;
+
+    const updateData = async () => {
+      const Plotly = await import('plotly.js-dist-min');
+      if (!isChartInitializedRef.current || !containerRef.current) return;
+
+      // Guard ALL Plotly calls — restyle can fire plotly_relayout internally
+      // (e.g. when autorange is true), which the listener must ignore
+      isInternalRef.current = true;
+
+      // ALWAYS update trace data
+      await (Plotly as any).restyle(containerRef.current, {
+        x: traces.map(t => t.x),
+        y: traces.map(t => t.y),
+      });
+
+      // ONLY update viewport in LIVE MODE
+      if (isLiveModeRef.current) {
+        const btn = activeBtnRef.current;
+        if (btn !== null && btn.step !== 'all' && 'count' in btn) {
+          let maxTime = -Infinity;
+          for (const trace of traces) {
+            if (trace.x.length > 0) {
+              const lastX = trace.x[trace.x.length - 1];
+              const ts = lastX instanceof Date ? lastX.getTime() : new Date(lastX as unknown as string).getTime();
+              if (ts > maxTime) maxTime = ts;
+            }
+          }
+          if (maxTime !== -Infinity && containerRef.current) {
+            const endDate = new Date(maxTime);
+            let startDate: Date;
+            if      (btn.step === 'hour')  startDate = new Date(maxTime - btn.count * 3_600_000);
+            else if (btn.step === 'day')   startDate = new Date(maxTime - btn.count * 86_400_000);
+            else { startDate = new Date(maxTime); startDate.setMonth(startDate.getMonth() - btn.count); }
+
+            await (Plotly as any).relayout(containerRef.current, {
+              'xaxis.range[0]': startDate,
+              'xaxis.range[1]': endDate,
+              'xaxis.autorange': false,
+            });
+          }
+        }
+      }
+      // EXPLORE MODE: viewport stays where user left it — no relayout
+
+      isInternalRef.current = false;
+    };
+
+    updateData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [traces]);
+
+  // ── Resize ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return;
-
     const resizeTimer = setTimeout(() => {
       try {
         const Plotly = require('plotly.js-dist-min');
@@ -301,16 +308,12 @@ export default function FrequencyTrendChart({
         console.error('Error al redimensionar:', error);
       }
     }, 160);
-
     return () => clearTimeout(resizeTimer);
   }, [state, open, isMaximized]);
 
   return (
     <>
-      {isMaximized && (
-        <div className="fixed inset-0 bg-black/50 z-40" />
-      )}
-
+      {isMaximized && <div className="fixed inset-0 bg-black/50 z-40" />}
       <div
         ref={containerRef}
         className={`
