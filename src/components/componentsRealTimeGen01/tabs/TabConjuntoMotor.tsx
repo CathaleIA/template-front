@@ -44,7 +44,6 @@ function CylCard({ num, value }: { num: number; value: number | null }) {
             <span className="text-sm font-bold tabular-nums leading-tight">
                 {value !== null ? value.toFixed(0) : "--"}
             </span>
-            <span className="text-[8px] text-muted-foreground">°F</span>
         </div>
     );
 }
@@ -361,9 +360,7 @@ export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
     const warning = alarmas["Warning_delta_temp"]?.value;
     const hasAlarm = warning === "true" || warning === "1";
 
-    // GEN55 Engine_1 solo tiene Devanado_W
     const devanadoW = n(engine["Devanado_W"]);
-
     const colorDev = devanadoW === null ? "text-foreground"
         : getThresholdStatus("Devanado_W", devanadoW) === "critical" ? "text-red-500"
         : getThresholdStatus("Devanado_W", devanadoW) === "warning"  ? "text-yellow-400"
@@ -379,103 +376,106 @@ export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
     return (
         <div className="h-full flex flex-col gap-2 p-3 overflow-hidden">
 
-            {/* ── FILA 1: Gauges | Alarma + Dev.W + 4 temps | Actuadores ── */}
+            {/* ── FILA TOP compacta: todo en una línea ── */}
             <div className="flex gap-2 items-stretch shrink-0">
                 {/* Gauges */}
-                <div className="w-28 shrink-0">
+                <div className="w-24 shrink-0">
                     <HalfGauge label="Prom. Cil." value={promedio} unit="°F" min={400} max={650} warning={580} danger={610} size="sm" />
                 </div>
-                <div className="w-28 shrink-0">
+                <div className="w-24 shrink-0">
                     <HalfGauge label="Delta Temp" value={delta} unit="°F" min={0} max={80} warning={30} danger={50} size="sm" />
                 </div>
 
-                {/* Alarma + Devanado W + 4 temps — grupo compacto */}
-                <div className="flex flex-col gap-1.5 justify-center shrink-0">
-                    {/* Fila superior: alarma + devanado */}
-                    <div className="flex gap-1.5">
-                        <div className={`rounded-lg border px-2.5 py-1 flex items-center gap-1.5 ${hasAlarm ? "border-red-500/60 bg-red-500/10" : "border-border bg-card"}`}>
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${hasAlarm ? "bg-red-500 animate-pulse" : "bg-[#22c55e]"}`} />
-                            <div>
-                                <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Δ Temp</p>
-                                <p className={`text-xs font-bold ${hasAlarm ? "text-red-400" : "text-[#00ffc2]"}`}>{hasAlarm ? "ALARMA" : "Normal"}</p>
+                {/* Alarma + Dev.W */}
+                <div className="flex gap-1 items-center shrink-0">
+                    <div className={`rounded-lg border px-2 py-1.5 flex items-center gap-1.5 ${hasAlarm ? "border-red-500/60 bg-red-500/10" : "border-border bg-card"}`}>
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${hasAlarm ? "bg-red-500 animate-pulse" : "bg-[#22c55e]"}`} />
+                        <div>
+                            <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Δ Temp</p>
+                            <p className={`text-xs font-bold ${hasAlarm ? "text-red-400" : "text-[#00ffc2]"}`}>{hasAlarm ? "ALARMA" : "Normal"}</p>
+                        </div>
+                    </div>
+                    <div className="rounded-lg border bg-card px-2 py-1.5">
+                        <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Dev. W</p>
+                        <p className={`text-sm font-bold tabular-nums ${colorDev}`}>
+                            {devanadoW !== null ? devanadoW.toFixed(0) : "--"}
+                            <span className="text-[10px] font-normal text-muted-foreground ml-0.5">°C</span>
+                        </p>
+                    </div>
+                </div>
+
+                {/* 4 temps aire */}
+                <div className="flex gap-1 items-center shrink-0">
+                    {airTags.map(([label, key, unit]) => {
+                        const val = n(engine[key]);
+                        const status = val !== null ? getThresholdStatus(key, val) : "normal";
+                        const c = status === "critical" ? "text-red-500" : status === "warning" ? "text-yellow-400" : "text-[#00ffc2]";
+                        return (
+                            <div key={key} className="rounded-lg border bg-card px-2 py-1.5">
+                                <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5 truncate">{label}</p>
+                                <p className={`text-sm font-bold tabular-nums ${c}`}>
+                                    {val !== null ? val.toFixed(1) : "--"}
+                                    <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
+                                </p>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Actuadores en fila horizontal — ocupa el resto */}
+                <div className="flex-1 rounded-lg border bg-card px-3 py-1.5 flex items-center gap-4">
+                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] shrink-0">Actuadores</h3>
+                    <div className="flex-1 grid grid-cols-3 gap-x-4">
+                        <BarActuator label="Throttle"    value={n(engine["Feedback_Throttle"])}  max={100} unit="%" />
+                        <BarActuator label="T. Bypass 1" value={n(engine["Feedback_TBypass_1"])} max={100} unit="%" />
+                        <BarActuator label="T. Bypass 2" value={n(engine["Feedback_TBypass_2"])} max={100} unit="%" />
+                    </div>
+                </div>
+            </div>
+
+            {/* ── ÁREA PRINCIPAL: sidebar izquierdo + Vibraciones ── */}
+            <div className="flex-1 min-h-0 flex gap-2">
+
+                {/* SIDEBAR: cilindros + sistema */}
+                <div className="w-72 shrink-0 flex flex-col gap-2 min-h-0">
+
+                    {/* 20 cilindros grid 5×4 */}
+                    <div className="shrink-0">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">
+                            Temperatura Cilindros <span className="normal-case font-normal">(°F)</span>
+                        </p>
+                        <div className="grid grid-cols-5 gap-1">
+                            {ALL_CYLS.map(num => <CylCard key={num} num={num} value={n(engine[`Tem_Cyl_${num}`])} />)}
+                        </div>
+                    </div>
+
+                    {/* Refrigeración + Aceite y Gas — lado a lado */}
+                    <div className="flex-1 min-h-0 grid grid-cols-2 gap-1.5">
+                        <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                            <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Refrigeración</h3>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <SectionRow label="HT Entrada" value={n(engine["Temp_Refrigerante_HT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Entrada" />
+                                <SectionRow label="HT Salida"  value={n(engine["Temp_Refrigerante_HT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Salida" />
+                                <SectionRow label="LT Entrada" value={n(engine["Temp_Refrigerante_LT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Entrada" />
+                                <SectionRow label="LT Salida"  value={n(engine["Temp_Refrigerante_LT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Salida" />
                             </div>
                         </div>
-                        <div className="rounded-lg border bg-card px-2.5 py-1">
-                            <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Dev. W</p>
-                            <p className={`text-sm font-bold tabular-nums ${colorDev}`}>
-                                {devanadoW !== null ? devanadoW.toFixed(0) : "--"}
-                                <span className="text-[10px] font-normal text-muted-foreground ml-0.5">°C</span>
-                            </p>
-                        </div>
-                    </div>
-                    {/* Fila inferior: 4 temps */}
-                    <div className="flex gap-1.5">
-                        {airTags.map(([label, key, unit]) => {
-                            const val = n(engine[key]);
-                            const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                            const c = status === "critical" ? "text-red-500" : status === "warning" ? "text-yellow-400" : "text-[#00ffc2]";
-                            return (
-                                <div key={key} className="rounded-lg border bg-card px-2.5 py-1">
-                                    <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5 truncate">{label}</p>
-                                    <p className={`text-sm font-bold tabular-nums ${c}`}>
-                                        {val !== null ? val.toFixed(1) : "--"}
-                                        <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
-                                    </p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Actuadores — ocupa el resto del ancho */}
-                <div className="flex-1 rounded-lg border bg-card px-3 py-2 flex flex-col justify-center gap-2">
-                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] shrink-0">Actuadores</h3>
-                    <BarActuator label="Throttle"    value={n(engine["Feedback_Throttle"])}  max={100} unit="%" />
-                    <BarActuator label="T. Bypass 1" value={n(engine["Feedback_TBypass_1"])} max={100} unit="%" />
-                    <BarActuator label="T. Bypass 2" value={n(engine["Feedback_TBypass_2"])} max={100} unit="%" />
-                </div>
-            </div>
-
-            {/* ── FILA 2: 20 cilindros ── */}
-            <div className="shrink-0">
-                <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Temperatura Cilindros</p>
-                <div className="grid grid-cols-10 gap-1">
-                    {ALL_CYLS.map(num => <CylCard key={num} num={num} value={n(engine[`Tem_Cyl_${num}`])} />)}
-                </div>
-            </div>
-
-            {/* ── FILA 3: Sidebar izq + Vibraciones ── */}
-            <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
-
-                {/* Sidebar angosto — Refrigeración + Aceite y Gas se reparten la altura */}
-                <div className="w-48 shrink-0 flex flex-col gap-2 min-h-0">
-                    {/* Refrigeración */}
-                    <div className="flex-4 min-h-0 rounded-lg border bg-card p-2 flex flex-col">
-                        <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Refrigeración</h3>
-                        <div className="flex-1 flex flex-col justify-evenly">
-                            <SectionRow label="HT Entrada" value={n(engine["Temp_Refrigerante_HT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Entrada" />
-                            <SectionRow label="HT Salida"  value={n(engine["Temp_Refrigerante_HT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Salida" />
-                            <SectionRow label="LT Entrada" value={n(engine["Temp_Refrigerante_LT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Entrada" />
-                            <SectionRow label="LT Salida"  value={n(engine["Temp_Refrigerante_LT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Salida" />
-                        </div>
-                    </div>
-
-                    {/* Aceite y Gas */}
-                    <div className="flex-7 min-h-0 rounded-lg border bg-card p-2 flex flex-col">
-                        <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Aceite y Gas</h3>
-                        <div className="flex-1 flex flex-col justify-evenly">
-                            <SectionRow label="Pres. Aceite" value={n(engine["Pres_Aceite_Motor"])?.toFixed(2)      ?? "--"} unit="bar"  tagName="Pres_Aceite_Motor" />
-                            <SectionRow label="Temp. Aceite" value={n(engine["Temp_Aceite"])?.toFixed(1)            ?? "--"} unit="°C"   tagName="Temp_Aceite" />
-                            <SectionRow label="Gas Entrada"  value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"} unit="bar"  tagName="Pres_Gas_Entrada_Motor" />
-                            <SectionRow label="Gas (PSI)"    value={n(engine["Pres_Gas_Entrada_PSI"])?.toFixed(1)   ?? "--"} unit="PSI"  tagName="Pres_Gas_Entrada_PSI" />
-                            <SectionRow label="MAP P1"       value={n(engine["MAP_P1"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P1" />
-                            <SectionRow label="MAP P2"       value={n(engine["MAP_P2"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P2" />
-                            <SectionRow label="Pres. Diff."  value={n(engine["PresDiff"])?.toFixed(1)               ?? "--"} unit="mbar" tagName="PresDiff" />
+                        <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
+                            <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Aceite y Gas</h3>
+                            <div className="flex-1 flex flex-col justify-evenly">
+                                <SectionRow label="Pres. Aceite" value={n(engine["Pres_Aceite_Motor"])?.toFixed(2)      ?? "--"} unit="bar"  tagName="Pres_Aceite_Motor" />
+                                <SectionRow label="Temp. Aceite" value={n(engine["Temp_Aceite"])?.toFixed(1)            ?? "--"} unit="°C"   tagName="Temp_Aceite" />
+                                <SectionRow label="Gas Entrada"  value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"} unit="bar"  tagName="Pres_Gas_Entrada_Motor" />
+                                <SectionRow label="Gas (PSI)"    value={n(engine["Pres_Gas_Entrada_PSI"])?.toFixed(1)   ?? "--"} unit="PSI"  tagName="Pres_Gas_Entrada_PSI" />
+                                <SectionRow label="MAP P1"       value={n(engine["MAP_P1"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P1" />
+                                <SectionRow label="MAP P2"       value={n(engine["MAP_P2"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P2" />
+                                <SectionRow label="Pres. Diff."  value={n(engine["PresDiff"])?.toFixed(1)               ?? "--"} unit="mbar" tagName="PresDiff" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Vibraciones — ocupa todo el resto */}
+                {/* VIBRACIONES — ocupa todo el espacio restante */}
                 <div className="flex-1 min-h-0 min-w-0 rounded-lg border bg-card p-2.5 flex flex-col">
                     <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-0.5">
                         Vibraciones Cilindros

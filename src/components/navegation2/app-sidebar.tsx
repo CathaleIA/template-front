@@ -114,6 +114,58 @@ const data = {
                 },
               ]
             },
+            {
+              title: "GEN 03",
+              url: "#",
+              items: [
+                {
+                  title: "Monitoreo en tiempo real",
+                  url: "/dashboard/realTimeGen03",
+                },
+                {
+                  title: "Analisis Inteligente",
+                  url: "/dashboard/analisis",
+                },
+                {
+                  title: "Tendencia de datos",
+                  url: "/dashboard/tendencydata/cty/gen51",
+                },
+                {
+                  title: "Administracion",
+                  url: "/dashboard/admin",
+                },
+                {
+                  title: "Activos Actuales",
+                  url: "/dashboard/activo",
+                },
+              ]
+            },
+            {
+              title: "GEN 04",
+              url: "#",
+              items: [
+                {
+                  title: "Monitoreo en tiempo real",
+                  url: "/dashboard/realTimeGen04",
+                },
+                {
+                  title: "Analisis Inteligente",
+                  url: "/dashboard/analisis",
+                },
+                {
+                  title: "Tendencia de datos",
+                  url: "/dashboard/tendencydata/cty/gen52",
+                },
+                {
+                  title: "Administracion",
+                  url: "/dashboard/admin",
+                },
+                {
+                  title: "Activos Actuales",
+                  url: "/dashboard/activo",
+                },
+              ]
+            },
           ],
         },
         {

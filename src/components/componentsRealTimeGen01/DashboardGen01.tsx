@@ -6,7 +6,7 @@ import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
 
-const GEN = "Generador_55";
+const GEN = "generador-55";
 const EMPTY: Record<string, never> = {};
 
 export default function DashboardGen01() {

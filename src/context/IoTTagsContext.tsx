@@ -49,7 +49,8 @@ export const IoTTagsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!m.tags || !Array.isArray(m.tags)) return;
         if (!m.generador || !m.grupo) return;
 
-        const generador = m.generador as string;
+        // Normalizar: minúsculas + guiones bajos → guiones (ej: Generador_51 → generador-51)
+        const generador = (m.generador as string).toLowerCase().replace(/_/g, "-");
         const grupo = m.grupo as string;
         const tagArray = m.tags as Array<{
             displayName: string;
