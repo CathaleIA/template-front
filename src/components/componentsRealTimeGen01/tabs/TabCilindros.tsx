@@ -50,7 +50,7 @@ export default function TabCilindros({ engine, alarmas }: Props) {
             <div className="flex gap-3 items-start shrink-0">
                 <div className="w-36 shrink-0">
                     <HalfGauge label="Prom. Temp Cil." value={promedio}
-                        unit="°F" min={400} max={650} warning={580} danger={610} size="sm" />
+                        unit="°C" min={400} max={650} warning={580} danger={610} size="sm" />
                 </div>
                 <div className="w-36 shrink-0">
                     <HalfGauge label="Delta Temp Cil." value={delta}

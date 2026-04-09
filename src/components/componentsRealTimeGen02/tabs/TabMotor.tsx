@@ -22,7 +22,7 @@ function CylCell({ num, value }: { num: number; value: number | null }) {
         <div className={`rounded-lg border p-2 flex flex-col items-center gap-0.5 ${cylColor(value, num)}`}>
             <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Cil {num}</span>
             <span className="text-sm font-bold tabular-nums">{value !== null ? value.toFixed(0) : "--"}</span>
-            <span className="text-[9px] text-muted-foreground">°F</span>
+            <span className="text-[9px] text-muted-foreground">°C</span>
         </div>
     );
 }
