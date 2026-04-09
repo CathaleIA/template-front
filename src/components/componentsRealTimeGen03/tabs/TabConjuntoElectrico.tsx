@@ -13,6 +13,11 @@ const fmt = (v?: TagValue, dec = 0) => {
     const val = n(v);
     return val !== null ? val.toFixed(dec) : "--";
 };
+// Frecuencia llega escalada ×100 (centi-Hz): 6000 → 60.00 Hz
+const fmtHz = (v?: TagValue) => {
+    const val = n(v);
+    return val !== null ? (val / 100).toFixed(2) : "--";
+};
 
 const COLOR_MAP: Record<string, string> = {
     critical: "text-red-500",
@@ -139,7 +144,7 @@ export default function TabConjuntoElectrico({ gd, gvl }: Props) {
                 />
                 <BigKpi
                     label="Frecuencia L1"
-                    value={fmt(gd["Generator_frequency_L1"], 2)}
+                    value={fmtHz(gd["Generator_frequency_L1"])}
                     unit="Hz"
                     tagName="Generator_frequency_L1"
                 />
@@ -228,9 +233,9 @@ export default function TabConjuntoElectrico({ gd, gvl }: Props) {
                         </div>
                         <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Frecuencias</p>
                         <div className="flex-1 flex flex-col justify-evenly">
-                            <ElecRow label="F L1" value={fmt(gd["Bus_B_frequency_L1"], 2)} unit="Hz" tagName="Bus_B_frequency_L1" />
-                            <ElecRow label="F L2" value={fmt(gd["Bus_B_frequency_L2"], 2)} unit="Hz" tagName="Bus_B_frequency_L2" />
-                            <ElecRow label="F L3" value={fmt(gd["Bus_B_frequency_L3"], 2)} unit="Hz" tagName="Bus_B_frequency_L3" />
+                            <ElecRow label="F L1" value={fmtHz(gd["Bus_B_frequency_L1"])} unit="Hz" tagName="Bus_B_frequency_L1" />
+                            <ElecRow label="F L2" value={fmtHz(gd["Bus_B_frequency_L2"])} unit="Hz" tagName="Bus_B_frequency_L2" />
+                            <ElecRow label="F L3" value={fmtHz(gd["Bus_B_frequency_L3"])} unit="Hz" tagName="Bus_B_frequency_L3" />
                         </div>
                         <p className="shrink-0 text-[9px] uppercase tracking-widest text-muted-foreground mt-1 mb-0.5">Potencias Aparentes/Fase</p>
                         <div className="flex-1 flex flex-col justify-evenly">

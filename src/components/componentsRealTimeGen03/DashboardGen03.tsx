@@ -6,7 +6,7 @@ import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
 
-const GEN = "generador-51";
+const GEN = "generador-53";
 const EMPTY: Record<string, never> = {};
 
 export default function DashboardGen03() {
@@ -23,7 +23,7 @@ export default function DashboardGen03() {
             <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
                 <div>
                     <h1 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                        Generador 51 — Monitoreo en Tiempo Real
+                        Generador 53 — Monitoreo en Tiempo Real
                     </h1>
                     {lastUpdate && (
                         <p className="text-[10px] text-muted-foreground">

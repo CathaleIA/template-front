@@ -253,7 +253,7 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
 
     // Cargar historial desde S3/IndexedDB al montar
     useEffect(() => {
-        loadChartHistory("gen02_potencies").then(rows => {
+        loadChartHistory("gen04_potencies").then(rows => {
             if (rows.length === 0) return;
             histActive.current   = rows.map(r => ({ t: r.t, v: r.values[0] ?? 0 })).filter(p => p.v !== 0);
             histReactive.current = rows.map(r => ({ t: r.t, v: r.values[1] ?? 0 })).filter(p => p.v !== 0);
@@ -276,14 +276,15 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
         push(histApparent, apparentPow);
         // Persistir en IndexedDB para recargas futuras
         if (activePow !== null && reactivePow !== null && apparentPow !== null) {
-            appendChartRow("gen02_potencies", t, [activePow, reactivePow, apparentPow]);
+            appendChartRow("gen04_potencies", t, [activePow, reactivePow, apparentPow]);
         }
         setRev(r => r + 1);
     }, [activePow, reactivePow, apparentPow]);
 
     const rpm  = n(gd["RPM"]);
-    // GEN02: frecuencia ya viene en Hz (sin escalar)
-    const freq = n(gd["Generator_frequency_L1"]);
+    // Frecuencia llega escalada ×100 (centi-Hz): 6000 → 60.00 Hz
+    const freqRaw  = n(gd["Generator_frequency_L1"]);
+    const freq     = freqRaw  !== null ? freqRaw  / 100 : null;
     const pf   = n(gd["Generator_PF"]);
 
     const promCyl    = n(engine["Promedio_tem_cyl"]);
@@ -291,7 +292,8 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
     const tempAceite = n(engine["Temperatura_aceite"]);
     const devanadoU  = n(engine["Devanado_U"]);
     const energiaExp = n(gd["EnergiaExp"]);
-    const freqBusB   = n(gd["Bus_B_frequency_L1"]);
+    const freqBusBRaw = n(gd["Bus_B_frequency_L1"]);
+    const freqBusB    = freqBusBRaw !== null ? freqBusBRaw / 100 : null;
     const iMax = (() => {
         const vals = [n(gd["Generator_current_L1"]), n(gd["Generator_current_L2"]), n(gd["Generator_current_L3"])].filter(v => v !== null) as number[];
         return vals.length ? Math.max(...vals) : null;
@@ -349,7 +351,7 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
 
             {/* FILA KPIs */}
             <div className="grid grid-cols-9 gap-1.5 shrink-0">
-                <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°F" tagName="Promedio_tem_cyl" />
+                <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°C" tagName="Promedio_tem_cyl" />
                 <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Presion_aceite" />
                 <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temperatura_aceite" />
                 <BottomCard label="Devanado U"      value={devanadoU !== null ? devanadoU.toFixed(0) : "--"} unit="°C" tagName="Devanado_U" />

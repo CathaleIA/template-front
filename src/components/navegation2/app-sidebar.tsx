@@ -141,12 +141,12 @@ const data = {
               ]
             },
             {
-              title: "GEN 04",
+              title: "GEN 05",
               url: "#",
               items: [
                 {
                   title: "Monitoreo en tiempo real",
-                  url: "/dashboard/realTimeGen04",
+                  url: "/dashboard/realTimeGen05",
                 },
                 {
                   title: "Analisis Inteligente",
@@ -154,7 +154,7 @@ const data = {
                 },
                 {
                   title: "Tendencia de datos",
-                  url: "/dashboard/tendencydata/cty/gen52",
+                  url: "/dashboard/tendencydata/cty/gen55",
                 },
                 {
                   title: "Administracion",

@@ -6,16 +6,18 @@ import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
 
-const GEN = "generador-51";
+const GEN = "generador-55";
 const EMPTY: Record<string, never> = {};
 
-export default function DashboardGen02() {
+export default function DashboardGen05() {
     const { tags, connected, lastUpdate, error } = useIoTTags();
 
     const gen    = tags[GEN] ?? {};
-    const gd     = gen["GD"]         ?? EMPTY;
-    const engine = gen["Engine_1"]   ?? EMPTY;
-    const gvl    = gen["GVL_HMI_3"]  ?? EMPTY;
+    const agc     = gen["AGC_4"]     ?? EMPTY;
+    const engine  = gen["Engine_1"]  ?? EMPTY;
+    const hmi     = gen["GVL_HMI_3"] ?? EMPTY;
+    const alarmas = gen["Alarmas"]   ?? EMPTY;
+    const raiz    = gen["raiz"]      ?? EMPTY;
 
     return (
         <div className="flex flex-col h-[calc(100vh-var(--header-height))] overflow-hidden">
@@ -23,7 +25,7 @@ export default function DashboardGen02() {
             <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
                 <div>
                     <h1 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                        Generador 51 — Monitoreo en Tiempo Real
+                        Generador 55 — Monitoreo en Tiempo Real
                     </h1>
                     {lastUpdate && (
                         <p className="text-[10px] text-muted-foreground">
@@ -33,8 +35,8 @@ export default function DashboardGen02() {
                 </div>
                 <div className="flex items-center gap-2">
                     {error && <span className="text-xs text-red-400">{error}</span>}
-                    <div className={`flex items-center gap-1.5 text-xs ${connected ? "text-[#60a5fa]" : "text-red-400"}`}>
-                        <span className={`w-2 h-2 rounded-full ${connected ? "bg-[#60a5fa] animate-pulse" : "bg-red-500"}`} />
+                    <div className={`flex items-center gap-1.5 text-xs ${connected ? "text-[#00ffc2]" : "text-red-400"}`}>
+                        <span className={`w-2 h-2 rounded-full ${connected ? "bg-[#00ffc2] animate-pulse" : "bg-red-500"}`} />
                         {connected ? "En vivo" : "Desconectado"}
                     </div>
                 </div>
@@ -48,13 +50,13 @@ export default function DashboardGen02() {
                 </TabsList>
 
                 <TabsContent forceMount value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
-                    <TabVistaGeneral gd={gd} engine={engine} />
+                    <TabVistaGeneral agc={agc} engine={engine} raiz={raiz} />
                 </TabsContent>
                 <TabsContent forceMount value="motor"     className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
-                    <TabConjuntoMotor engine={engine} gvl={gvl} />
+                    <TabConjuntoMotor engine={engine} hmi={hmi} alarmas={alarmas} />
                 </TabsContent>
                 <TabsContent forceMount value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
-                    <TabConjuntoElectrico gd={gd} gvl={gvl} />
+                    <TabConjuntoElectrico agc={agc} hmi={hmi} />
                 </TabsContent>
             </Tabs>
         </div>

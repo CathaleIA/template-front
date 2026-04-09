@@ -1,30 +1,29 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "../shared/HalfGauge";
-import { appendChartRow, loadChartHistory } from "@/lib/chartHistory";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Props {
     engine: Record<string, TagValue>;
-    hmi: Record<string, TagValue>;
-    alarmas: Record<string, TagValue>;
+    gvl: Record<string, TagValue>;
 }
 
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
-// Cilindros disponibles en GEN55 Engine_1
-const ALL_CYLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-// Vibraciones disponibles en GVL_HMI_3 (sin cil 4, 9, 10)
-const VIB_CYLS = [1, 2, 3, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const ALL_CYLS = Array.from({ length: 20 }, (_, i) => i + 1);
+const KNOCK_NUMS = Array.from({ length: 20 }, (_, i) => i + 1);
 
 const HISTORY_MS = 5 * 60_000;
-const VIB_COLORS = [
+const KNOCK_COLORS = [
     "#f87171","#fb923c","#fbbf24","#a3e635","#34d399",
     "#22d3ee","#60a5fa","#a78bfa","#f472b6","#e879f9",
     "#ef4444","#f97316","#eab308","#84cc16","#10b981",
-    "#06b6d4","#3b82f6",
+    "#06b6d4","#3b82f6","#8b5cf6","#ec4899","#d946ef",
 ];
 
 function cylCardColors(val: number | null, num: number) {
@@ -32,16 +31,16 @@ function cylCardColors(val: number | null, num: number) {
     const status = getThresholdStatus(`Tem_Cyl_${num}`, val);
     if (status === "critical") return "border-red-500/60 bg-red-500/10 text-red-400";
     if (status === "warning") return "border-yellow-500/60 bg-yellow-500/10 text-yellow-400";
-    return "border-[#00ffc2]/30 bg-[#00ffc2]/5 text-[#00ffc2]";
+    return "border-[#60a5fa]/30 bg-[#60a5fa]/5 text-[#60a5fa]";
 }
 
 function CylCard({ num, value }: { num: number; value: number | null }) {
     return (
-        <div className={`rounded-lg border p-1.5 flex flex-col items-center gap-0 ${cylCardColors(value, num)}`}>
-            <span className="text-[8px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className={`rounded-lg border p-2.5 flex flex-col items-center gap-1 ${cylCardColors(value, num)}`}>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 C{num}
             </span>
-            <span className="text-sm font-bold tabular-nums leading-tight">
+            <span className="text-lg font-bold tabular-nums leading-none">
                 {value !== null ? value.toFixed(0) : "--"}
             </span>
         </div>
@@ -65,7 +64,7 @@ function SectionRow({
         critical: "text-red-500",
         warning: "text-yellow-400",
         info: "text-blue-400",
-        normal: "text-[#00ffc2]",
+        normal: "text-[#60a5fa]",
     };
     return (
         <div className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
@@ -89,7 +88,7 @@ function BarActuator({
     unit?: string;
 }) {
     const pct = value !== null ? Math.min(100, (value / max) * 100) : 0;
-    const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-400" : "bg-[#00ffc2]";
+    const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-400" : "bg-[#60a5fa]";
     return (
         <div className="flex flex-col gap-0.5">
             <div className="flex justify-between items-center">
@@ -106,210 +105,52 @@ function BarActuator({
     );
 }
 
-function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
-    const divRef = useRef<HTMLDivElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const PlotlyRef = useRef<any>(null);
-    const initialized = useRef(false);
+function KnockTrendsChart({ gvl }: { gvl: Record<string, TagValue> }) {
+    const histMap = useRef<Map<number, { t: number; v: number }[]>>(new Map());
+    const [, setRev] = useState(0);
     const [hidden, setHidden] = useState<Set<number>>(new Set());
-    const [activeRangeBtn, setActiveRangeBtn] = useState<"30s" | "1m" | "3m" | "1h" | "∞">("∞");
 
-    // ── LIVE / EXPLORE mode ──────────────────────────────────────────────────
-    // true  = LIVE MODE:    viewport slides with latest data
-    // false = EXPLORE MODE: viewport frozen, user is panning/zooming freely
-    const isLiveModeRef = useRef(true);
-    // Ventana activa en minutos (null = ∞ / autorange)
-    const windowMinsRef = useRef<number | null>(null);
-    // Guard: true while we do internal Plotly calls → listener ignores these
-    const isInternalRef = useRef(false);
+    const toggleKnock = (i: number) =>
+        setHidden(prev => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
 
-    // Button click → activate LIVE MODE and jump to latest data
-    const activateLive = (label: "30s" | "1m" | "3m" | "1h" | "∞", minutes: number | null) => {
-        isLiveModeRef.current = true;
-        windowMinsRef.current = minutes;
-        setActiveRangeBtn(label);
-        if (!PlotlyRef.current || !divRef.current) return;
-        isInternalRef.current = true;
-        const update = minutes === null
-            ? { "xaxis.autorange": true }
-            : { "xaxis.range": [Date.now() - minutes * 60_000, Date.now()], "xaxis.autorange": false };
-        // Keep guard true until the async redraw completes — otherwise the
-        // relayout event from the redraw fires after isInternalRef is cleared
-        // and the listener mistakes it for a user pan, resetting the button
-        PlotlyRef.current.relayout(divRef.current, update)
-            .finally(() => { isInternalRef.current = false; });
-    };
-
-    // Initialize chart — load 12 h history from IndexedDB
     useEffect(() => {
-        if (!divRef.current) return;
-        const div = divRef.current;
-        Promise.all([
-            import("plotly.js-dist-min"),
-            loadChartHistory("gen01_vibrations"),
-        ]).then(([mod, history]) => {
-            if (!div.isConnected) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const Plotly: any = (mod as any).default ?? mod;
-            PlotlyRef.current = Plotly;
-
-            const traceX: number[][] = VIB_CYLS.map(() => []);
-            const traceY: number[][] = VIB_CYLS.map(() => []);
-            history.forEach((row) => {
-                VIB_CYLS.forEach((_, i) => {
-                    const v = row.values[i];
-                    if (v != null && !isNaN(v)) {
-                        traceX[i].push(row.t);
-                        traceY[i].push(v);
-                    }
-                });
-            });
-
-            const traces = VIB_CYLS.map((num, i) => ({
-                x: traceX[i],
-                y: traceY[i],
-                type: "scatter",
-                mode: "lines",
-                name: `C${String(num).padStart(2, "0")}`,
-                showlegend: false,
-                line: { color: VIB_COLORS[i % VIB_COLORS.length], width: 1.5 },
-                hovertemplate: `C${num}: <b>%{y:.2f} mm/s</b>  %{x|%H:%M:%S}<extra></extra>`,
-            }));
-            Plotly.newPlot(div, traces, {
-                uirevision: "vib-chart",
-                autosize: true,
-                margin: { l: 36, r: 8, t: 28, b: 22 },
-                paper_bgcolor: "rgba(0,0,0,0)",
-                plot_bgcolor:  "rgba(0,0,0,0)",
-                showlegend: false,
-                shapes: [
-                    { type:"line", xref:"paper", x0:0, x1:1, y0:7.1,  y1:7.1,  line:{ color:"rgba(250,204,21,0.65)", width:1.5, dash:"dash" } },
-                    { type:"line", xref:"paper", x0:0, x1:1, y0:11.2, y1:11.2, line:{ color:"rgba(239,68,68,0.65)",  width:1.5, dash:"dot"  } },
-                ],
-                annotations: [
-                    { xref:"paper", x:1, yref:"y", y:7.1,  text:"warn", showarrow:false, font:{ size:7, color:"rgba(250,204,21,0.8)" }, xanchor:"right", yanchor:"bottom" },
-                    { xref:"paper", x:1, yref:"y", y:11.2, text:"crit", showarrow:false, font:{ size:7, color:"rgba(239,68,68,0.8)"  }, xanchor:"right", yanchor:"bottom" },
-                ],
-                xaxis: {
-                    type: "date",
-                    tickformat: "%H:%M:%S",
-                    tickfont: { size: 7, color: "#6b7280" },
-                    gridcolor: "rgba(255,255,255,0.05)",
-                    linecolor: "rgba(0,255,194,0.15)",
-                    rangeslider: { visible: true, bgcolor: "rgba(0,0,0,0.15)", bordercolor: "rgba(0,255,194,0.15)", borderwidth: 1, thickness: 0.06 },
-                },
-                yaxis: {
-                    tickfont: { size: 7, color: "#6b7280" },
-                    gridcolor: "rgba(255,255,255,0.05)",
-                    rangemode: "tozero",
-                    fixedrange: false,
-                    title: { text: "mm/s", font: { size: 7, color: "#6b7280" }, standoff: 2 },
-                },
-            }, { displayModeBar: false, responsive: true, scrollZoom: true });
-
-            // Listener: detect manual pan/zoom → switch to EXPLORE MODE
-            (div as any).on("plotly_relayout", (eventData: any) => {
-                if (isInternalRef.current) return;
-                // Manual pan/zoom on X axis → EXPLORE MODE
-                if (eventData["xaxis.range[0]"] !== undefined ||
-                    eventData["xaxis.range"] !== undefined) {
-                    isLiveModeRef.current = false;
-                    setActiveRangeBtn("∞");
-                }
-            });
-
-            initialized.current = true;
-        });
-        return () => {
-            initialized.current = false;
-            PlotlyRef.current?.purge(div);
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // Append new point — ALWAYS persist + extend traces, ONLY move viewport in LIVE MODE
-    useEffect(() => {
-        if (!initialized.current || !PlotlyRef.current || !divRef.current) return;
         const t = Date.now();
-        const values = VIB_CYLS.map((num) => n(hmi[`rVib_Cil_${num}`]) ?? NaN);
-        appendChartRow("gen01_vibrations", t, values);
-
-        const newX: number[][] = [];
-        const newY: number[][] = [];
-        const indices: number[] = [];
-        VIB_CYLS.forEach((_, i) => {
-            const v = values[i];
-            if (isNaN(v)) return;
-            newX.push([t]);
-            newY.push([v]);
-            indices.push(i);
+        const cutoff = t - HISTORY_MS;
+        KNOCK_NUMS.forEach((num, i) => {
+            const v = n(gvl[`rVib_Cil_${num}`]);
+            if (v === null) return;
+            const prev = histMap.current.get(i) ?? [];
+            histMap.current.set(i, [...prev.filter(p => p.t >= cutoff), { t, v }]);
         });
-        if (indices.length === 0) return;
+        setRev(r => r + 1);
+    }, [gvl]);
 
-        // Guard stays true until the FULL async redraw completes.
-        // Plotly fires plotly_relayout during async redraws (e.g. autorange
-        // recalculation). If the guard is already cleared at that point, the
-        // listener mistakes those events for user pan and resets the button.
-        isInternalRef.current = true;
-
-        // ALWAYS extend traces — data accumulates regardless of mode
-        PlotlyRef.current
-            .extendTraces(divRef.current, { x: newX, y: newY }, indices)
-            .then(() => {
-                if (!isLiveModeRef.current) return;
-                const end = Date.now();
-                return PlotlyRef.current.relayout(
-                    divRef.current,
-                    windowMinsRef.current === null
-                        ? { "xaxis.autorange": true }
-                        : { "xaxis.range": [end - windowMinsRef.current * 60_000, end], "xaxis.autorange": false }
-                );
-            })
-            .finally(() => { isInternalRef.current = false; });
-        // EXPLORE MODE: .then() skipped → guard clears via .finally()
-    }, [hmi]);
-
-    // Toggle visibility imperatively (no redraw)
-    const toggleCyl = (i: number) =>
-        setHidden(prev => {
-            const s = new Set(prev);
-            s.has(i) ? s.delete(i) : s.add(i);
-            if (PlotlyRef.current && divRef.current) {
-                PlotlyRef.current.restyle(divRef.current, { visible: [!s.has(i)] }, [i]);
-            }
-            return s;
-        });
+    const traces = KNOCK_NUMS.map((num, i) => {
+        const pts = histMap.current.get(i) ?? [];
+        const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
+        return {
+            x: pts.map(p => p.t),
+            y: pts.map(p => p.v),
+            type: "scatter" as const,
+            mode: "lines" as const,
+            name: `C${String(num).padStart(2,"0")}`,
+            showlegend: false,
+            visible: (hidden.has(i) ? false : true) as boolean,
+            line: { color, width: 1.5 },
+            hovertemplate: `C${num}: <b>%{y:.2f}</b>  %{x|%H:%M:%S}<extra></extra>`,
+        };
+    });
 
     return (
         <div className="flex-1 min-h-0 flex flex-col gap-1">
-            <div className="shrink-0 flex flex-wrap gap-1">
-                {["30s", "1m", "3m", "1h", "∞"].map((label) => {
-                    const isActive = activeRangeBtn === label;
-                    const mins = label === "30s" ? 0.5 : label === "1m" ? 1 : label === "3m" ? 3 : label === "1h" ? 60 : null;
-                    return (
-                        <button
-                            key={label}
-                            onClick={() => activateLive(label as "30s" | "1m" | "3m" | "1h" | "∞", mins)}
-                            className="rounded px-2 py-1 text-[8px] font-semibold leading-none transition-all"
-                            style={{
-                                background: isActive ? "rgba(0,255,194,0.2)" : "transparent",
-                                color: isActive ? "#00ffc2" : "#9ca3af",
-                                border: `1px solid ${isActive ? "rgba(0,255,194,0.5)" : "rgba(0,255,194,0.2)"}`,
-                            }}
-                        >
-                            {label}
-                        </button>
-                    );
-                })}
-            </div>
             <div className="shrink-0 flex flex-wrap gap-0.5">
-                {VIB_CYLS.map((num, i) => {
-                    const color = VIB_COLORS[i % VIB_COLORS.length];
+                {KNOCK_NUMS.map((num, i) => {
+                    const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
                     const off = hidden.has(i);
                     return (
                         <button
                             key={num}
-                            onClick={() => toggleCyl(i)}
+                            onClick={() => toggleKnock(i)}
                             title={off ? `Mostrar C${num}` : `Ocultar C${num}`}
                             className="rounded px-1 py-0.5 text-[8px] font-bold leading-none transition-all"
                             style={{
@@ -321,166 +162,153 @@ function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
                     );
                 })}
             </div>
-            <div ref={divRef} className="flex-1 min-h-0" style={{ width: "100%", height: "100%" }} />
-        </div>
-    );
-}
-
-function VibBar({ num, value }: { num: number; value: number | null }) {
-    const status = value !== null ? getThresholdStatus(`rVib_Cil_${num}`, value) : "normal";
-    const barColor =
-        status === "critical" ? "bg-red-500" : status === "warning" ? "bg-yellow-400" : "bg-[#00ffc2]";
-    const textColor =
-        status === "critical"
-            ? "text-red-500"
-            : status === "warning"
-            ? "text-yellow-400"
-            : "text-[#00ffc2]";
-    // Use an assumed max of 20 mm/s for display scaling
-    const pct = value !== null ? Math.min(100, (value / 20) * 100) : 0;
-    return (
-        <div className="flex flex-col items-center gap-0.5 h-full">
-            <span className={`text-[9px] font-bold tabular-nums ${textColor}`}>
-                {value !== null ? value.toFixed(1) : "--"}
-            </span>
-            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden flex-1">
-                <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${barColor}`}
-                    style={{ height: `${pct}%` }}
+            <div className="flex-1 min-h-0">
+                <Plot
+                    data={traces}
+                    layout={{
+                        uirevision: "knock-chart-gen01",
+                        autosize: true,
+                        margin: { l: 36, r: 8, t: 28, b: 22 },
+                        paper_bgcolor: "rgba(0,0,0,0)",
+                        plot_bgcolor:  "rgba(0,0,0,0)",
+                        showlegend: false,
+                        xaxis: {
+                            type: "date",
+                            tickformat: "%H:%M:%S",
+                            tickfont: { size: 7, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.05)",
+                            linecolor: "rgba(96,165,250,0.15)",
+                            rangeselector: {
+                                buttons: [
+                                    { count: 30, label: "30s", step: "second", stepmode: "backward" },
+                                    { count: 1,  label: "1m",  step: "minute", stepmode: "backward" },
+                                    { count: 3,  label: "3m",  step: "minute", stepmode: "backward" },
+                                    { step: "all", label: "Todo" },
+                                ],
+                                font: { size: 8, color: "#9ca3af" },
+                                bgcolor: "rgba(255,255,255,0.04)",
+                                activecolor: "rgba(96,165,250,0.18)",
+                                bordercolor: "rgba(96,165,250,0.2)",
+                                borderwidth: 1,
+                                x: 0, y: 1.1,
+                            },
+                            rangeslider: {
+                                visible: true,
+                                bgcolor: "rgba(0,0,0,0.15)",
+                                bordercolor: "rgba(96,165,250,0.15)",
+                                borderwidth: 1,
+                                thickness: 0.06,
+                            },
+                        },
+                        yaxis: {
+                            tickfont: { size: 7, color: "#6b7280" },
+                            gridcolor: "rgba(255,255,255,0.05)",
+                            rangemode: "tozero",
+                            fixedrange: false,
+                            title: { text: "Vibración", font: { size: 7, color: "#6b7280" }, standoff: 2 },
+                        },
+                    }}
+                    config={{ displayModeBar: false, responsive: true, scrollZoom: true }}
+                    style={{ width: "100%", height: "100%" }}
+                    useResizeHandler
                 />
             </div>
-            <span className="text-[8px] text-muted-foreground">C{num}</span>
         </div>
     );
 }
 
-export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
+export default function TabConjuntoMotor({ engine, gvl }: Props) {
     const promedio = n(engine["Promedio_tem_cyl"]);
-    const delta = n(engine["delta_temp_cylinders"]);
-    const warning = alarmas["Warning_delta_temp"]?.value;
-    const hasAlarm = warning === "true" || warning === "1";
-
-    const devanadoW = n(engine["Devanado_W"]);
-    const colorDev = devanadoW === null ? "text-foreground"
-        : getThresholdStatus("Devanado_W", devanadoW) === "critical" ? "text-red-500"
-        : getThresholdStatus("Devanado_W", devanadoW) === "warning"  ? "text-yellow-400"
-        : "text-[#00ffc2]";
-
-    const airTags = [
-        ["Blower",  "Temp_Aire_Blower",       "°C"],
-        ["Filtro",  "Temp_Aire_Filtro_Motor",  "°C"],
-        ["MAT",     "MAT",                     "°C"],
-        ["Gas Ent.","Temp_Gas_Entrada",         "°C"],
-    ] as const;
 
     return (
         <div className="h-full flex flex-col gap-2 p-3 overflow-hidden">
 
-            {/* ── FILA TOP compacta: todo en una línea ── */}
             <div className="flex gap-2 items-stretch shrink-0">
-                {/* Gauges */}
                 <div className="w-24 shrink-0">
-                    <HalfGauge label="Prom. Cil." value={promedio} unit="°F" min={400} max={650} warning={580} danger={610} size="sm" />
+                    <HalfGauge
+                        label="Prom. Cil."
+                        value={promedio}
+                        unit="°C"
+                        min={400}
+                        max={650}
+                        warning={580}
+                        danger={610}
+                        size="sm"
+                    />
                 </div>
-                <div className="w-24 shrink-0">
-                    <HalfGauge label="Delta Temp" value={delta} unit="°F" min={0} max={80} warning={30} danger={50} size="sm" />
-                </div>
-
-                {/* Alarma + Dev.W */}
                 <div className="flex gap-1 items-center shrink-0">
-                    <div className={`rounded-lg border px-2 py-1.5 flex items-center gap-1.5 ${hasAlarm ? "border-red-500/60 bg-red-500/10" : "border-border bg-card"}`}>
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${hasAlarm ? "bg-red-500 animate-pulse" : "bg-[#22c55e]"}`} />
-                        <div>
-                            <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Δ Temp</p>
-                            <p className={`text-xs font-bold ${hasAlarm ? "text-red-400" : "text-[#00ffc2]"}`}>{hasAlarm ? "ALARMA" : "Normal"}</p>
-                        </div>
-                    </div>
-                    <div className="rounded-lg border bg-card px-2 py-1.5">
-                        <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Dev. W</p>
-                        <p className={`text-sm font-bold tabular-nums ${colorDev}`}>
-                            {devanadoW !== null ? devanadoW.toFixed(0) : "--"}
-                            <span className="text-[10px] font-normal text-muted-foreground ml-0.5">°C</span>
-                        </p>
-                    </div>
-                </div>
-
-                {/* 4 temps aire */}
-                <div className="flex gap-1 items-center shrink-0">
-                    {airTags.map(([label, key, unit]) => {
-                        const val = n(engine[key]);
-                        const status = val !== null ? getThresholdStatus(key, val) : "normal";
-                        const c = status === "critical" ? "text-red-500" : status === "warning" ? "text-yellow-400" : "text-[#00ffc2]";
+                    {(["U", "V", "W"] as const).map((d) => {
+                        const val = n(engine[`Devanado_${d}`]);
+                        const status = val !== null ? getThresholdStatus(`Devanado_${d}`, val) : "normal";
+                        const color =
+                            status === "critical" ? "text-red-500"
+                            : status === "warning" ? "text-yellow-400"
+                            : val === null ? "text-foreground"
+                            : "text-[#60a5fa]";
                         return (
-                            <div key={key} className="rounded-lg border bg-card px-2 py-1.5">
-                                <p className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none mb-0.5 truncate">{label}</p>
-                                <p className={`text-sm font-bold tabular-nums ${c}`}>
-                                    {val !== null ? val.toFixed(1) : "--"}
-                                    <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{unit}</span>
+                            <div key={d} className="rounded-lg border bg-card px-2 py-1.5 min-w-14">
+                                <p className="text-[8px] uppercase tracking-widest text-muted-foreground">Dev. {d}</p>
+                                <p className={`text-sm font-bold tabular-nums ${color}`}>
+                                    {val !== null ? val.toFixed(0) : "--"}
+                                    <span className="text-[10px] font-normal text-muted-foreground ml-0.5">°C</span>
                                 </p>
                             </div>
                         );
                     })}
                 </div>
-
-                {/* Actuadores en fila horizontal — ocupa el resto */}
                 <div className="flex-1 rounded-lg border bg-card px-3 py-1.5 flex items-center gap-4">
-                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] shrink-0">Actuadores</h3>
-                    <div className="flex-1 grid grid-cols-3 gap-x-4">
-                        <BarActuator label="Throttle"    value={n(engine["Feedback_Throttle"])}  max={100} unit="%" />
-                        <BarActuator label="T. Bypass 1" value={n(engine["Feedback_TBypass_1"])} max={100} unit="%" />
-                        <BarActuator label="T. Bypass 2" value={n(engine["Feedback_TBypass_2"])} max={100} unit="%" />
+                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] shrink-0">Actuadores</h3>
+                    <div className="flex-1 grid grid-cols-4 gap-x-4">
+                        <BarActuator label="Throttle" value={n(engine["pos_throttle"])} max={100} unit="%" />
+                        <BarActuator label="Bypass"   value={n(engine["pos_bypass"])} max={100} unit="%" />
+                        <BarActuator label="3 Vías"   value={n(engine["feedback_3_vias"])} max={100} unit="%" />
+                        <BarActuator label="Mixer"    value={n(engine["MandoMixer"])} max={100} unit="%" />
                     </div>
                 </div>
             </div>
 
-            {/* ── ÁREA PRINCIPAL: sidebar izquierdo + Vibraciones ── */}
             <div className="flex-1 min-h-0 flex gap-2">
 
-                {/* SIDEBAR: cilindros + sistema */}
                 <div className="w-72 shrink-0 flex flex-col gap-2 min-h-0">
 
-                    {/* 20 cilindros grid 5×4 */}
                     <div className="shrink-0">
-                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">
-                            Temperatura Cilindros <span className="normal-case font-normal">(°F)</span>
-                        </p>
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Temperatura Cilindros <span className="normal-case font-normal">(°C)</span></p>
                         <div className="grid grid-cols-5 gap-1">
-                            {ALL_CYLS.map(num => <CylCard key={num} num={num} value={n(engine[`Tem_Cyl_${num}`])} />)}
+                            {ALL_CYLS.map((num) => (
+                                <CylCard key={num} num={num} value={n(engine[`Tem_Cyl_${num}`])} />
+                            ))}
                         </div>
                     </div>
 
-                    {/* Refrigeración + Aceite y Gas — lado a lado */}
-                    <div className="flex-1 min-h-0 grid grid-cols-2 gap-1.5">
-                        <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
-                            <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Refrigeración</h3>
-                            <div className="flex-1 flex flex-col justify-evenly">
-                                <SectionRow label="HT Entrada" value={n(engine["Temp_Refrigerante_HT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Entrada" />
-                                <SectionRow label="HT Salida"  value={n(engine["Temp_Refrigerante_HT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_HT_Salida" />
-                                <SectionRow label="LT Entrada" value={n(engine["Temp_Refrigerante_LT_Entrada"])?.toFixed(1) ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Entrada" />
-                                <SectionRow label="LT Salida"  value={n(engine["Temp_Refrigerante_LT_Salida"])?.toFixed(1)  ?? "--"} unit="°C" tagName="Temp_Refrigerante_LT_Salida" />
-                            </div>
+                    <div className="flex-1 min-h-0 grid grid-cols-2 grid-rows-2 gap-1.5">
+                        <div className="rounded-lg border bg-card p-2">
+                            <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Refrigeración</h3>
+                            <SectionRow label="HT Entrada" value={n(engine["T_HT_ENTREDA"])?.toFixed(1) ?? "--"}         unit="°C"  tagName="T_HT_ENTREDA" />
+                            <SectionRow label="HT Salida"  value={n(engine["Tem_HT_ref_salida"])?.toFixed(1) ?? "--"}    unit="°C"  tagName="Tem_HT_ref_salida" />
+                            <SectionRow label="LT Salida"  value={n(engine["Temp_LT_salida"])?.toFixed(1) ?? "--"}       unit="°C"  tagName="Temp_LT_salida" />
                         </div>
-                        <div className="rounded-lg border bg-card p-2 flex flex-col min-h-0">
-                            <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-1">Aceite y Gas</h3>
-                            <div className="flex-1 flex flex-col justify-evenly">
-                                <SectionRow label="Pres. Aceite" value={n(engine["Pres_Aceite_Motor"])?.toFixed(2)      ?? "--"} unit="bar"  tagName="Pres_Aceite_Motor" />
-                                <SectionRow label="Temp. Aceite" value={n(engine["Temp_Aceite"])?.toFixed(1)            ?? "--"} unit="°C"   tagName="Temp_Aceite" />
-                                <SectionRow label="Gas Entrada"  value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"} unit="bar"  tagName="Pres_Gas_Entrada_Motor" />
-                                <SectionRow label="Gas (PSI)"    value={n(engine["Pres_Gas_Entrada_PSI"])?.toFixed(1)   ?? "--"} unit="PSI"  tagName="Pres_Gas_Entrada_PSI" />
-                                <SectionRow label="MAP P1"       value={n(engine["MAP_P1"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P1" />
-                                <SectionRow label="MAP P2"       value={n(engine["MAP_P2"])?.toFixed(1)                 ?? "--"} unit="mbar" tagName="MAP_P2" />
-                                <SectionRow label="Pres. Diff."  value={n(engine["PresDiff"])?.toFixed(1)               ?? "--"} unit="mbar" tagName="PresDiff" />
-                            </div>
+                        <div className="rounded-lg border bg-card p-2">
+                            <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Aceite</h3>
+                            <SectionRow label="Temp."  value={n(engine["Temperatura_aceite"])?.toFixed(1) ?? "--"}  unit="°C"  tagName="Temperatura_aceite" />
+                            <SectionRow label="Presión" value={n(engine["Presion_aceite"])?.toFixed(2) ?? "--"}    unit="bar" tagName="Presion_aceite" />
+                        </div>
+                        <div className="rounded-lg border bg-card p-2">
+                            <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Gas</h3>
+                            <SectionRow label="Entrada" value={n(engine["Pres_Gas_Entrada_Motor"])?.toFixed(2) ?? "--"} unit="bar"  tagName="Pres_Gas_Entrada_Motor" />
+                            <SectionRow label="MAP"     value={n(engine["MAP"])?.toFixed(1) ?? "--"}                   unit="mbar" tagName="MAP" />
+                        </div>
+                        <div className="rounded-lg border bg-card p-2">
+                            <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1">Filtro / Aire</h3>
+                            <SectionRow label="Filtro" value={n(engine["Tempe_filtro"])?.toFixed(1) ?? "--"} unit="°C" tagName="Tempe_filtro" />
                         </div>
                     </div>
                 </div>
 
-                {/* VIBRACIONES — ocupa todo el espacio restante */}
                 <div className="flex-1 min-h-0 min-w-0 rounded-lg border bg-card p-2.5 flex flex-col">
-                    <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-0.5">
-                        Vibraciones Cilindros
+                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1.5 shrink-0">
+                        Vibraciones Cilindros — 20 Sensores
                     </h3>
-                    <VibTrendsChart hmi={hmi} />
+                    <KnockTrendsChart gvl={gvl} />
                 </div>
             </div>
         </div>

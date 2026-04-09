@@ -234,7 +234,7 @@ export default function TabConjuntoMotor({ engine, gvl }: Props) {
                     <HalfGauge
                         label="Prom. Cil."
                         value={promedio}
-                        unit="°F"
+                        unit="°C"
                         min={400}
                         max={650}
                         warning={580}
@@ -283,7 +283,7 @@ export default function TabConjuntoMotor({ engine, gvl }: Props) {
 
                     {/* 20 Cilindros en 2 filas de 10 */}
                     <div className="shrink-0">
-                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Temperatura Cilindros <span className="normal-case font-normal">(°F)</span></p>
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Temperatura Cilindros <span className="normal-case font-normal">(°C)</span></p>
                         <div className="grid grid-cols-5 gap-1">
                             {ALL_CYLS.map((num) => (
                                 <CylCard key={num} num={num} value={n(engine[`Tem_Cyl_${num}`])} />
