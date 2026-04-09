@@ -1,12 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "@/components/componentsRealTimeGen01/shared/HalfGauge";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import { VibTrendsChart } from "@/components/componentsRealTimeGen01/shared/VibTrendsChart";
 
 interface Props {
     engine: Record<string, TagValue>;
@@ -15,18 +12,7 @@ interface Props {
 
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
-// Todos los cilindros GEN53
 const ALL_CYLS = Array.from({ length: 20 }, (_, i) => i + 1);
-// Todos los knock sensors (1..20)
-const KNOCK_NUMS = Array.from({ length: 20 }, (_, i) => i + 1);
-
-const HISTORY_MS = 5 * 60_000;
-const KNOCK_COLORS = [
-    "#f87171","#fb923c","#fbbf24","#a3e635","#34d399",
-    "#22d3ee","#60a5fa","#a78bfa","#f472b6","#e879f9",
-    "#ef4444","#f97316","#eab308","#84cc16","#10b981",
-    "#06b6d4","#3b82f6","#8b5cf6","#ec4899","#d946ef",
-];
 
 function cylCardColors(val: number | null, num: number) {
     if (val === null) return "border-border bg-card text-muted-foreground";
@@ -102,120 +88,6 @@ function BarActuator({
             </div>
             <div className="w-full h-1.5 rounded-full bg-muted/30">
                 <div className={`h-1.5 rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
-            </div>
-        </div>
-    );
-}
-
-function KnockTrendsChart({ gvl }: { gvl: Record<string, TagValue> }) {
-    const histMap = useRef<Map<number, { t: number; v: number }[]>>(new Map());
-    const [, setRev] = useState(0);
-    const [hidden, setHidden] = useState<Set<number>>(new Set());
-
-    const toggleKnock = (i: number) =>
-        setHidden(prev => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
-
-    useEffect(() => {
-        const t = Date.now();
-        const cutoff = t - HISTORY_MS;
-        KNOCK_NUMS.forEach((num, i) => {
-            const v = n(gvl[`rVib_Cil_${num}`]);
-            if (v === null) return;
-            const prev = histMap.current.get(i) ?? [];
-            histMap.current.set(i, [...prev.filter(p => p.t >= cutoff), { t, v }]);
-        });
-        setRev(r => r + 1);
-    }, [gvl]);
-
-    const traces = KNOCK_NUMS.map((num, i) => {
-        const pts = histMap.current.get(i) ?? [];
-        const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
-        return {
-            x: pts.map(p => p.t),
-            y: pts.map(p => p.v),
-            type: "scatter" as const,
-            mode: "lines" as const,
-            name: `C${String(num).padStart(2,"0")}`,
-            showlegend: false,
-            visible: (hidden.has(i) ? false : true) as boolean,
-            line: { color, width: 1.5 },
-            hovertemplate: `C${num}: <b>%{y:.2f}</b>  %{x|%H:%M:%S}<extra></extra>`,
-        };
-    });
-
-    return (
-        <div className="flex-1 min-h-0 flex flex-col gap-1">
-            {/* Chips toggle por cilindro */}
-            <div className="shrink-0 flex flex-wrap gap-0.5">
-                {KNOCK_NUMS.map((num, i) => {
-                    const color = KNOCK_COLORS[i % KNOCK_COLORS.length];
-                    const off = hidden.has(i);
-                    return (
-                        <button
-                            key={num}
-                            onClick={() => toggleKnock(i)}
-                            title={off ? `Mostrar C${num}` : `Ocultar C${num}`}
-                            className="rounded px-1 py-0.5 text-[8px] font-bold leading-none transition-all"
-                            style={{
-                                background: off ? "transparent" : `${color}22`,
-                                color:      off ? "#374151"     : color,
-                                border:     `1px solid ${off ? "#374151" : `${color}55`}`,
-                            }}
-                        >C{num}</button>
-                    );
-                })}
-            </div>
-            {/* Gráfica */}
-            <div className="flex-1 min-h-0">
-                <Plot
-                    data={traces}
-                    layout={{
-                        uirevision: "knock-chart",
-                        autosize: true,
-                        margin: { l: 36, r: 8, t: 28, b: 22 },
-                        paper_bgcolor: "rgba(0,0,0,0)",
-                        plot_bgcolor:  "rgba(0,0,0,0)",
-                        showlegend: false,
-                        xaxis: {
-                            type: "date",
-                            tickformat: "%H:%M:%S",
-                            tickfont: { size: 7, color: "#6b7280" },
-                            gridcolor: "rgba(255,255,255,0.05)",
-                            linecolor: "rgba(96,165,250,0.15)",
-                            rangeselector: {
-                                buttons: [
-                                    { count: 30, label: "30s", step: "second", stepmode: "backward" },
-                                    { count: 1,  label: "1m",  step: "minute", stepmode: "backward" },
-                                    { count: 3,  label: "3m",  step: "minute", stepmode: "backward" },
-                                    { step: "all", label: "Todo" },
-                                ],
-                                font: { size: 8, color: "#9ca3af" },
-                                bgcolor: "rgba(255,255,255,0.04)",
-                                activecolor: "rgba(96,165,250,0.18)",
-                                bordercolor: "rgba(96,165,250,0.2)",
-                                borderwidth: 1,
-                                x: 0, y: 1.1,
-                            },
-                            rangeslider: {
-                                visible: true,
-                                bgcolor: "rgba(0,0,0,0.15)",
-                                bordercolor: "rgba(96,165,250,0.15)",
-                                borderwidth: 1,
-                                thickness: 0.06,
-                            },
-                        },
-                        yaxis: {
-                            tickfont: { size: 7, color: "#6b7280" },
-                            gridcolor: "rgba(255,255,255,0.05)",
-                            rangemode: "tozero",
-                            fixedrange: false,
-                            title: { text: "Vibración", font: { size: 7, color: "#6b7280" }, standoff: 2 },
-                        },
-                    }}
-                    config={{ displayModeBar: false, responsive: true, scrollZoom: true }}
-                    style={{ width: "100%", height: "100%" }}
-                    useResizeHandler
-                />
             </div>
         </div>
     );
@@ -316,12 +188,11 @@ export default function TabConjuntoMotor({ engine, gvl }: Props) {
                     </div>
                 </div>
 
-                {/* KNOCK CHART — ocupa todo el espacio restante */}
                 <div className="flex-1 min-h-0 min-w-0 rounded-lg border bg-card p-2.5 flex flex-col">
-                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-1.5 shrink-0">
+                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-[#60a5fa] mb-0.5 shrink-0">
                         Vibraciones Cilindros — 20 Sensores
                     </h3>
-                    <KnockTrendsChart gvl={gvl} />
+                    <VibTrendsChart data={gvl} historyKey="gen02_vibrations" accentColor="#60a5fa" />
                 </div>
             </div>
         </div>

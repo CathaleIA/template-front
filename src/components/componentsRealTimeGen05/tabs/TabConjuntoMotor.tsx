@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
 import { TagValue } from "@/context/IoTTagsContext";
 import { getThresholdStatus } from "@/config/thresholds-v2";
 import HalfGauge from "@/components/componentsRealTimeGen01/shared/HalfGauge";
-import { appendChartRow, loadChartHistory } from "@/lib/chartHistory";
+import { VibTrendsChart } from "@/components/componentsRealTimeGen01/shared/VibTrendsChart";
 
 interface Props {
     engine: Record<string, TagValue>;
@@ -15,15 +14,6 @@ interface Props {
 const n = (v?: TagValue) => (v ? parseFloat(v.value) : null);
 
 const ALL_CYLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-const VIB_CYLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
-const HISTORY_MS = 5 * 60_000;
-const VIB_COLORS = [
-    "#f87171","#fb923c","#fbbf24","#a3e635","#34d399",
-    "#22d3ee","#60a5fa","#a78bfa","#f472b6","#e879f9",
-    "#ef4444","#f97316","#eab308","#84cc16","#10b981",
-    "#06b6d4","#3b82f6","#8b5cf6","#ec4899","#d946ef",
-];
 
 function cylCardColors(val: number | null, num: number) {
     if (val === null) return "border-border bg-card text-muted-foreground";
@@ -74,166 +64,10 @@ function BarActuator({ label, value, max = 100, unit = "%" }: { label: string; v
     );
 }
 
-function VibTrendsChart({ hmi }: { hmi: Record<string, TagValue> }) {
-    const divRef = useRef<HTMLDivElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const PlotlyRef = useRef<any>(null);
-    const initialized = useRef(false);
-    const [hidden, setHidden] = useState<Set<number>>(new Set());
-    const [activeRangeBtn, setActiveRangeBtn] = useState<"30s" | "1m" | "3m" | "1h" | "∞">("∞");
-
-    const isLiveModeRef = useRef(true);
-    const windowMinsRef = useRef<number | null>(null);
-    const isInternalRef = useRef(false);
-
-    const activateLive = (label: "30s" | "1m" | "3m" | "1h" | "∞", minutes: number | null) => {
-        isLiveModeRef.current = true;
-        windowMinsRef.current = minutes;
-        setActiveRangeBtn(label);
-        if (!PlotlyRef.current || !divRef.current) return;
-        isInternalRef.current = true;
-        const update = minutes === null
-            ? { "xaxis.autorange": true }
-            : { "xaxis.range": [Date.now() - minutes * 60_000, Date.now()], "xaxis.autorange": false };
-        PlotlyRef.current.relayout(divRef.current, update).finally(() => { isInternalRef.current = false; });
-    };
-
-    useEffect(() => {
-        if (!divRef.current) return;
-        const div = divRef.current;
-        Promise.all([import("plotly.js-dist-min"), loadChartHistory("gen05_vibrations")]).then(([mod, history]) => {
-            if (!div.isConnected) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const Plotly: any = (mod as any).default ?? mod;
-            PlotlyRef.current = Plotly;
-
-            const traceX: number[][] = VIB_CYLS.map(() => []);
-            const traceY: number[][] = VIB_CYLS.map(() => []);
-            history.forEach((row) => {
-                VIB_CYLS.forEach((_, i) => {
-                    const v = row.values[i];
-                    if (v != null && !isNaN(v)) { traceX[i].push(row.t); traceY[i].push(v); }
-                });
-            });
-
-            const traces = VIB_CYLS.map((num, i) => ({
-                x: traceX[i], y: traceY[i], type: "scatter", mode: "lines",
-                name: `C${String(num).padStart(2, "0")}`, showlegend: false,
-                line: { color: VIB_COLORS[i % VIB_COLORS.length], width: 1.5 },
-                hovertemplate: `C${num}: <b>%{y:.2f} mm/s</b>  %{x|%H:%M:%S}<extra></extra>`,
-            }));
-            Plotly.newPlot(div, traces, {
-                uirevision: "vib-chart", autosize: true, margin: { l: 36, r: 8, t: 28, b: 22 },
-                paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", showlegend: false,
-                shapes: [
-                    { type:"line", xref:"paper", x0:0, x1:1, y0:7.1,  y1:7.1,  line:{ color:"rgba(250,204,21,0.65)", width:1.5, dash:"dash" } },
-                    { type:"line", xref:"paper", x0:0, x1:1, y0:11.2, y1:11.2, line:{ color:"rgba(239,68,68,0.65)",  width:1.5, dash:"dot"  } },
-                ],
-                xaxis: { type: "date", tickformat: "%H:%M:%S", tickfont: { size: 7, color: "#6b7280" }, gridcolor: "rgba(255,255,255,0.05)", linecolor: "rgba(0,255,194,0.15)", rangeslider: { visible: true, bgcolor: "rgba(0,0,0,0.15)", bordercolor: "rgba(0,255,194,0.15)", borderwidth: 1, thickness: 0.06 } },
-                yaxis: { tickfont: { size: 7, color: "#6b7280" }, gridcolor: "rgba(255,255,255,0.05)", rangemode: "tozero", fixedrange: false, title: { text: "mm/s", font: { size: 7, color: "#6b7280" }, standoff: 2 } },
-            }, { displayModeBar: false, responsive: true, scrollZoom: true });
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (div as any).on("plotly_relayout", (eventData: any) => {
-                if (isInternalRef.current) return;
-                if (eventData["xaxis.range[0]"] !== undefined || eventData["xaxis.range"] !== undefined) {
-                    isLiveModeRef.current = false;
-                    setActiveRangeBtn("∞");
-                }
-            });
-            initialized.current = true;
-        });
-        return () => { initialized.current = false; PlotlyRef.current?.purge(div); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (!initialized.current || !PlotlyRef.current || !divRef.current) return;
-        const t = Date.now();
-        const values = VIB_CYLS.map((num) => n(hmi[`rVib_Cil_${num}`]) ?? NaN);
-        appendChartRow("gen05_vibrations", t, values);
-
-        const newX: number[][] = [];
-        const newY: number[][] = [];
-        const indices: number[] = [];
-        VIB_CYLS.forEach((_, i) => {
-            const v = values[i];
-            if (isNaN(v)) return;
-            newX.push([t]); newY.push([v]); indices.push(i);
-        });
-        if (indices.length === 0) return;
-
-        isInternalRef.current = true;
-        PlotlyRef.current.extendTraces(divRef.current, { x: newX, y: newY }, indices)
-            .then(() => {
-                if (!isLiveModeRef.current) return;
-                const end = Date.now();
-                return PlotlyRef.current.relayout(divRef.current,
-                    windowMinsRef.current === null
-                        ? { "xaxis.autorange": true }
-                        : { "xaxis.range": [end - windowMinsRef.current * 60_000, end], "xaxis.autorange": false }
-                );
-            })
-            .finally(() => { isInternalRef.current = false; });
-    }, [hmi]);
-
-    const toggleCyl = (i: number) =>
-        setHidden(prev => {
-            const s = new Set(prev);
-            s.has(i) ? s.delete(i) : s.add(i);
-            if (PlotlyRef.current && divRef.current) PlotlyRef.current.restyle(divRef.current, { visible: [!s.has(i)] }, [i]);
-            return s;
-        });
-
-    return (
-        <div className="flex-1 min-h-0 flex flex-col gap-1">
-            <div className="shrink-0 flex flex-wrap gap-1">
-                {["30s", "1m", "3m", "1h", "∞"].map((label) => {
-                    const isActive = activeRangeBtn === label;
-                    const mins = label === "30s" ? 0.5 : label === "1m" ? 1 : label === "3m" ? 3 : label === "1h" ? 60 : null;
-                    return (
-                        <button key={label} onClick={() => activateLive(label as "30s" | "1m" | "3m" | "1h" | "∞", mins)}
-                            className="rounded px-2 py-1 text-[8px] font-semibold leading-none transition-all"
-                            style={{ background: isActive ? "rgba(0,255,194,0.2)" : "transparent", color: isActive ? "#00ffc2" : "#9ca3af", border: `1px solid ${isActive ? "rgba(0,255,194,0.5)" : "rgba(0,255,194,0.2)"}` }}
-                        >{label}</button>
-                    );
-                })}
-            </div>
-            <div className="shrink-0 flex flex-wrap gap-0.5">
-                {VIB_CYLS.map((num, i) => {
-                    const color = VIB_COLORS[i % VIB_COLORS.length];
-                    const off = hidden.has(i);
-                    return (
-                        <button key={num} onClick={() => toggleCyl(i)}
-                            className="rounded px-1 py-0.5 text-[8px] font-bold leading-none transition-all"
-                            style={{ background: off ? "transparent" : `${color}22`, color: off ? "#374151" : color, border: `1px solid ${off ? "#374151" : `${color}55`}` }}
-                        >C{num}</button>
-                    );
-                })}
-            </div>
-            <div ref={divRef} className="flex-1 min-h-0" style={{ width: "100%", height: "100%" }} />
-        </div>
-    );
-}
-
-function VibBar({ num, value }: { num: number; value: number | null }) {
-    const status = value !== null ? getThresholdStatus(`rVib_Cil_${num}`, value) : "normal";
-    const barColor = status === "critical" ? "bg-red-500" : status === "warning" ? "bg-yellow-400" : "bg-[#00ffc2]";
-    const textColor = status === "critical" ? "text-red-500" : status === "warning" ? "text-yellow-400" : "text-[#00ffc2]";
-    const pct = value !== null ? Math.min(100, (value / 20) * 100) : 0;
-    return (
-        <div className="flex flex-col items-center gap-0.5 h-full">
-            <span className={`text-[9px] font-bold tabular-nums ${textColor}`}>{value !== null ? value.toFixed(1) : "--"}</span>
-            <div className="w-full bg-muted/20 rounded-sm relative overflow-hidden flex-1">
-                <div className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${barColor}`} style={{ height: `${pct}%` }} />
-            </div>
-            <span className="text-[8px] text-muted-foreground">C{num}</span>
-        </div>
-    );
-}
-
-// VibBar is defined for potential future use
-void VibBar;
+const GEN05_VIB_SHAPES = [
+    { type: "line", xref: "paper", x0: 0, x1: 1, y0: 7.1,  y1: 7.1,  line: { color: "rgba(250,204,21,0.65)", width: 1.5, dash: "dash" } },
+    { type: "line", xref: "paper", x0: 0, x1: 1, y0: 11.2, y1: 11.2, line: { color: "rgba(239,68,68,0.65)",  width: 1.5, dash: "dot"  } },
+];
 
 export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
     const promedio = n(engine["Promedio_tem_cyl"]);
@@ -351,7 +185,7 @@ export default function TabConjuntoMotor({ engine, hmi, alarmas }: Props) {
                     <h3 className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#00ffc2] mb-0.5">
                         Vibraciones Cilindros
                     </h3>
-                    <VibTrendsChart hmi={hmi} />
+                    <VibTrendsChart data={hmi} historyKey="gen05_vibrations" accentColor="#00ffc2" extraShapes={GEN05_VIB_SHAPES} />
                 </div>
             </div>
         </div>
