@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
+import TabAlarmas, { ALARM_TAGS_GEN55 } from "../componentsRealTimeGen01/shared/TabAlarmas";
 
 const GEN = "generador-55";
 const EMPTY: Record<string, never> = {};
@@ -47,6 +48,7 @@ export default function DashboardGen05() {
                     <TabsTrigger value="general">Vista General</TabsTrigger>
                     <TabsTrigger value="motor">Conjunto Motor</TabsTrigger>
                     <TabsTrigger value="electrico">Conjunto Eléctrico</TabsTrigger>
+                    <TabsTrigger value="alarmas">Alarmas</TabsTrigger>
                 </TabsList>
 
                 <TabsContent forceMount value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
@@ -57,6 +59,9 @@ export default function DashboardGen05() {
                 </TabsContent>
                 <TabsContent forceMount value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                     <TabConjuntoElectrico agc={agc} hmi={hmi} />
+                </TabsContent>
+                <TabsContent forceMount value="alarmas"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
+                    <TabAlarmas alarmas={alarmas} defaultTags={ALARM_TAGS_GEN55} />
                 </TabsContent>
             </Tabs>
         </div>

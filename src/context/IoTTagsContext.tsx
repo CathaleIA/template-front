@@ -42,6 +42,11 @@ export const IoTTagsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const reconnectAttempts = useRef(0);
 
+    // Buffer pending updates; flush once per event-loop tick to avoid
+    // triggering "Maximum update depth exceeded" on rapid WebSocket bursts.
+    const pendingRef = useRef<TagsState>({});
+    const flushScheduledRef = useRef(false);
+
     const handleMessage = useCallback((msg: unknown) => {
         const m = msg as Record<string, unknown>;
 
@@ -59,29 +64,39 @@ export const IoTTagsProvider: React.FC<{ children: React.ReactNode }> = ({ child
             opcTimestamp: number;
         }>;
 
-        setTags((prev) => {
-            const next = { ...prev };
-            if (!next[generador]) next[generador] = {};
-            if (!next[generador][grupo]) next[generador][grupo] = {};
+        // Accumulate into pending buffer
+        if (!pendingRef.current[generador]) pendingRef.current[generador] = {};
+        if (!pendingRef.current[generador][grupo]) pendingRef.current[generador][grupo] = {};
+        for (const tag of tagArray) {
+            pendingRef.current[generador][grupo][tag.displayName] = {
+                value: tag.value,
+                quality: tag.quality,
+                opcTimestamp: tag.opcTimestamp,
+            };
+        }
 
-            const grupoData = { ...next[generador][grupo] };
-            for (const tag of tagArray) {
-                grupoData[tag.displayName] = {
-                    value: tag.value,
-                    quality: tag.quality,
-                    opcTimestamp: tag.opcTimestamp,
-                };
-            }
-            next[generador] = { ...next[generador], [grupo]: grupoData };
-            return next;
-        });
+        // Schedule a single flush per tick
+        if (!flushScheduledRef.current) {
+            flushScheduledRef.current = true;
+            setTimeout(() => {
+                flushScheduledRef.current = false;
+                const pending = pendingRef.current;
+                pendingRef.current = {};
 
-        setLastUpdate(prev => {
-            const now = Date.now();
-            // Solo actualizar si han pasado más de 500ms (evita re-renders excesivos)
-            if (prev && now - prev.getTime() < 500) return prev;
-            return new Date(now);
-        });
+                setTags(prev => {
+                    const next = { ...prev };
+                    for (const gen of Object.keys(pending)) {
+                        next[gen] = { ...next[gen] };
+                        for (const grp of Object.keys(pending[gen])) {
+                            next[gen][grp] = { ...next[gen]?.[grp], ...pending[gen][grp] };
+                        }
+                    }
+                    return next;
+                });
+
+                setLastUpdate(new Date());
+            }, 0);
+        }
     }, []);
 
     useEffect(() => {

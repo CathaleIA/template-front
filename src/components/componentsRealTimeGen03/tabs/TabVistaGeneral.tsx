@@ -291,7 +291,9 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
     const presAceite = n(engine["Presion_aceite"]);
     const tempAceite = n(engine["Temperatura_aceite"]);
     const devanadoU  = n(engine["Devanado_U"]);
-    const energiaExp = n(gd["EnergiaExp"]);
+    const energiaExp  = n(gd["EnergiaExp"]);
+    const engineHrs   = n(gd["EngineHrs"]);
+    const reactivaExp = n(gd["ReactivaExp"]);
     const freqBusBRaw = n(gd["Bus_B_frequency_L1"]);
     const freqBusB    = freqBusBRaw !== null ? freqBusBRaw / 100 : null;
     const iMax = (() => {
@@ -356,11 +358,26 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
                 <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Presion_aceite" />
                 <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temperatura_aceite" />
                 <BottomCard label="Devanado U"      value={devanadoU !== null ? devanadoU.toFixed(0) : "--"} unit="°C" tagName="Devanado_U" />
-                <BottomCard label="Energía Export." value={energiaExp !== null ? energiaExp.toFixed(0) : "--"} unit="kWh" tagName="EnergiaExp" />
-                <BottomCard label="Frec. Bus B L1"  value={freqBusB !== null ? freqBusB.toFixed(2) : "--"} unit="Hz" tagName="Bus_B_frequency_L1" />
+                {/* Acumuladores — col-span-3 */}
+                <div className="col-span-3 rounded-lg border-2 border-[#60a5fa]/30 bg-card px-3 py-1.5 flex flex-col gap-1">
+                    <p className="text-[8px] uppercase tracking-widest text-[#60a5fa]/70 font-bold leading-none">Acumuladores</p>
+                    <div className="flex gap-4 flex-1 items-end">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Motor Hrs</p>
+                            <p className="text-base font-bold tabular-nums text-[#60a5fa] leading-tight">{engineHrs !== null ? engineHrs.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">h</span></p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Energía Exp.</p>
+                            <p className="text-base font-bold tabular-nums text-[#60a5fa] leading-tight">{energiaExp !== null ? energiaExp.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">kWh</span></p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Reactiva Exp.</p>
+                            <p className="text-base font-bold tabular-nums text-[#60a5fa] leading-tight">{reactivaExp !== null ? reactivaExp.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">kVArh</span></p>
+                        </div>
+                    </div>
+                </div>
                 <BottomCard label="I Máx. Gen."     value={iMax !== null ? iMax.toFixed(0) : "--"} unit="A" tagName="Generator_current_L1" />
                 <BottomCard label="Temp. Filtro"    value={tempFiltro !== null ? tempFiltro.toFixed(1) : "--"} unit="°C" tagName="Tempe_filtro" />
-                <BottomCard label="MAP"             value={map !== null ? map.toFixed(1) : "--"} unit="mbar" tagName="MAP" />
                 <BottomCard label="MAT"             value={mat !== null ? mat.toFixed(1) : "--"} unit="°C" tagName="MAT" />
             </div>
 

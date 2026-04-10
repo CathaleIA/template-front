@@ -200,8 +200,10 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
     const presAceite = n(engine["Pres_Aceite_Motor"]);
     const tempAceite = n(engine["Temp_Aceite"]);
     const devanadoW  = n(engine["Devanado_W"]);
-    const energiaExp = n(agc["EnergiaExp"]);
-    const vdcBattery = n(agc["VDCbattery"]);
+    const energiaExp  = n(agc["EnergiaExp"]);
+    const engineHrs   = n(agc["EngineHrs"]);
+    const reactivaExp = n(agc["ReactivaExp"]);
+    const vdcBattery  = n(agc["VDCbattery"]);
     const iexcGen    = n(agc["IexcGen"]);
     const freqEscale = n(agc["FreqEscale"]);
     const tecFlujo   = n(raiz["TEC_FLUJO_CALCULADO"]);
@@ -235,11 +237,26 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Pres_Aceite_Motor" />
                 <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temp_Aceite" />
                 <BottomCard label="Devanado W"      value={devanadoW !== null ? devanadoW.toFixed(0) : "--"} unit="°C" tagName="Devanado_W" />
-                <BottomCard label="Energía Export." value={energiaExp !== null ? energiaExp.toFixed(0) : "--"} unit="kWh" tagName="EnergiaExp" />
+                {/* Acumuladores — col-span-3 */}
+                <div className="col-span-3 rounded-lg border-2 border-[#00ffc2]/30 bg-card px-3 py-1.5 flex flex-col gap-1">
+                    <p className="text-[8px] uppercase tracking-widest text-[#00ffc2]/70 font-bold leading-none">Acumuladores</p>
+                    <div className="flex gap-4 flex-1 items-end">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Motor Hrs</p>
+                            <p className="text-base font-bold tabular-nums text-[#00ffc2] leading-tight">{engineHrs !== null ? engineHrs.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">h</span></p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Energía Exp.</p>
+                            <p className="text-base font-bold tabular-nums text-[#00ffc2] leading-tight">{energiaExp !== null ? energiaExp.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">kWh</span></p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[9px] text-muted-foreground truncate">Reactiva Exp.</p>
+                            <p className="text-base font-bold tabular-nums text-[#00ffc2] leading-tight">{reactivaExp !== null ? reactivaExp.toFixed(0) : "--"}<span className="text-xs font-normal text-muted-foreground ml-0.5">kVArh</span></p>
+                        </div>
+                    </div>
+                </div>
                 <BottomCard label="VDC Battery"     value={vdcBattery !== null ? vdcBattery.toFixed(1) : "--"} unit="VDC" tagName="VDCbattery" />
                 <BottomCard label="IexcGen"         value={iexcGen !== null ? iexcGen.toFixed(2) : "--"} unit="A" tagName="IexcGen" />
-                <BottomCard label="FreqEscale"      value={freqEscale !== null ? freqEscale.toFixed(2) : "--"} unit="" tagName="FreqEscale" />
-                <BottomCard label="Flujo Calc."     value={tecFlujo !== null ? tecFlujo.toFixed(2) : "--"} unit="L/s" tagName="TEC_FLUJO_CALCULADO" />
                 <BottomCard label="MAT"             value={mat !== null ? mat.toFixed(1) : "--"} unit="°C" tagName="MAT" />
             </div>
 

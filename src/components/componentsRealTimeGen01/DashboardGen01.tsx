@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
+import TabAlarmas, { ALARM_TAGS_GD } from "./shared/TabAlarmas";
 
 const GEN = "generador-52";
 const EMPTY: Record<string, never> = {};
@@ -13,9 +14,10 @@ export default function DashboardGen01() {
     const { tags, connected, lastUpdate, error } = useIoTTags();
 
     const gen    = tags[GEN] ?? {};
-    const gd     = gen["GD"]         ?? EMPTY;
-    const engine = gen["Engine_1"]   ?? EMPTY;
-    const gvl    = gen["GVL_HMI_3"]  ?? EMPTY;
+    const gd      = gen["GD"]         ?? EMPTY;
+    const engine  = gen["Engine_1"]   ?? EMPTY;
+    const gvl     = gen["GVL_HMI_3"]  ?? EMPTY;
+    const alarmas = gen["Alarmas"]     ?? EMPTY;
 
     return (
         <div className="flex flex-col h-[calc(100vh-var(--header-height))] overflow-hidden">
@@ -47,6 +49,7 @@ export default function DashboardGen01() {
                         <TabsTrigger value="general">Vista General</TabsTrigger>
                         <TabsTrigger value="motor">Conjunto Motor</TabsTrigger>
                         <TabsTrigger value="electrico">Conjunto Eléctrico</TabsTrigger>
+                        <TabsTrigger value="alarmas">Alarmas</TabsTrigger>
                     </TabsList>
 
                     <TabsContent forceMount value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
@@ -57,6 +60,9 @@ export default function DashboardGen01() {
                     </TabsContent>
                     <TabsContent forceMount value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                         <TabConjuntoElectrico gd={gd} gvl={gvl} />
+                    </TabsContent>
+                    <TabsContent forceMount value="alarmas"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
+                        <TabAlarmas alarmas={alarmas} defaultTags={ALARM_TAGS_GD} />
                     </TabsContent>
                 </Tabs>
         </div>
