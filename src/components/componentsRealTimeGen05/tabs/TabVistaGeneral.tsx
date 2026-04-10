@@ -205,6 +205,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
     const iexcGen    = n(agc["IexcGen"]);
     const freqEscale = n(agc["FreqEscale"]);
     const tecFlujo   = n(raiz["TEC_FLUJO_CALCULADO"]);
+    const mat        = n(engine["MAT"]);
 
     return (
         <div className="h-full flex flex-col gap-2 p-2 overflow-hidden">
@@ -229,7 +230,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-9 gap-1.5 shrink-0">
+            <div className="grid grid-cols-10 gap-1.5 shrink-0">
                 <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°C" tagName="Promedio_tem_cyl" />
                 <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Pres_Aceite_Motor" />
                 <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temp_Aceite" />
@@ -239,6 +240,7 @@ export default function TabVistaGeneral({ agc, engine, raiz }: Props) {
                 <BottomCard label="IexcGen"         value={iexcGen !== null ? iexcGen.toFixed(2) : "--"} unit="A" tagName="IexcGen" />
                 <BottomCard label="FreqEscale"      value={freqEscale !== null ? freqEscale.toFixed(2) : "--"} unit="" tagName="FreqEscale" />
                 <BottomCard label="Flujo Calc."     value={tecFlujo !== null ? tecFlujo.toFixed(2) : "--"} unit="L/s" tagName="TEC_FLUJO_CALCULADO" />
+                <BottomCard label="MAT"             value={mat !== null ? mat.toFixed(1) : "--"} unit="°C" tagName="MAT" />
             </div>
 
             <div className="flex-2 grid grid-cols-2 gap-3 min-h-0">

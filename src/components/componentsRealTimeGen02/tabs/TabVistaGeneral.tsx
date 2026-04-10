@@ -300,6 +300,7 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
     })();
     const tempFiltro = n(engine["Tempe_filtro"]);
     const map        = n(engine["MAP"]);
+    const mat        = n(engine["MAT"]);
 
     return (
         <div className="h-full flex flex-col gap-2 p-2 overflow-hidden">
@@ -350,7 +351,7 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
             </div>
 
             {/* FILA KPIs */}
-            <div className="grid grid-cols-9 gap-1.5 shrink-0">
+            <div className="grid grid-cols-10 gap-1.5 shrink-0">
                 <BottomCard label="Prom. Temp Cil." value={promCyl !== null ? promCyl.toFixed(0) : "--"} unit="°C" tagName="Promedio_tem_cyl" />
                 <BottomCard label="Presión Aceite"  value={presAceite !== null ? presAceite.toFixed(2) : "--"} unit="bar" tagName="Presion_aceite" />
                 <BottomCard label="Temp. Aceite"    value={tempAceite !== null ? tempAceite.toFixed(1) : "--"} unit="°C" tagName="Temperatura_aceite" />
@@ -360,6 +361,7 @@ export default function TabVistaGeneral({ gd, engine }: Props) {
                 <BottomCard label="I Máx. Gen."     value={iMax !== null ? iMax.toFixed(0) : "--"} unit="A" tagName="Generator_current_L1" />
                 <BottomCard label="Temp. Filtro"    value={tempFiltro !== null ? tempFiltro.toFixed(1) : "--"} unit="°C" tagName="Tempe_filtro" />
                 <BottomCard label="MAP"             value={map !== null ? map.toFixed(1) : "--"} unit="mbar" tagName="MAP" />
+                <BottomCard label="MAT"             value={mat !== null ? mat.toFixed(1) : "--"} unit="°C" tagName="MAT" />
             </div>
 
             {/* TABLA ELÉCTRICA: Generador + Bus B */}
