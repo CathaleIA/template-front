@@ -6,6 +6,7 @@ import { AlarmEvent, appendAlarmEvent, loadAlarmEvents, clearAlarmEvents, delete
 
 // ─── Static tag lists (shown even before live data arrives) ───────────────────
 
+
 export const ALARM_TAGS_GD: string[] = [
     // General
     "Ack_All_alarms", "Shutdown", "Warning_delta_temp", "Alarma_knocking",
