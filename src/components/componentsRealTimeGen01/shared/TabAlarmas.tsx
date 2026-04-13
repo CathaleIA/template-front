@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { TagValue } from "@/context/IoTTagsContext";
+import { AlarmEvent, appendAlarmEvent, loadAlarmEvents, clearAlarmEvents, deleteAlarmEventsByTag } from "@/lib/alarmHistory";
 
 // ─── Static tag lists (shown even before live data arrives) ───────────────────
+
 
 export const ALARM_TAGS_GD: string[] = [
     // General
@@ -145,6 +147,7 @@ export const ALARM_TAGS_GEN55: string[] = [
 interface Props {
     alarmas: Record<string, TagValue>;
     defaultTags?: string[];
+    genId?: string;
 }
 
 function getSeverity(tag: string): "shutdown" | "warning" | "info" {
@@ -178,9 +181,13 @@ function getCategory(tag: string): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function TabAlarmas({ alarmas, defaultTags }: Props) {
+export default function TabAlarmas({ alarmas, defaultTags, genId = "gen" }: Props) {
     const [filter, setFilter] = useState<"all" | "active">("all");
     const [search, setSearch] = useState("");
+    const [historyOpen, setHistoryOpen] = useState(true);
+    const [history, setHistory] = useState<AlarmEvent[]>([]);
+    const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+    const prevActiveRef = useRef<Record<string, boolean>>({});
 
     const rows = useMemo(() => {
         // Merge: start with defaultTags (placeholders), override with live data
@@ -244,6 +251,65 @@ export default function TabAlarmas({ alarmas, defaultTags }: Props) {
 
     const total = Object.keys(alarmas).length;
 
+    // Load persisted history on mount / genId change
+    useEffect(() => {
+        loadAlarmEvents(genId).then(setHistory).catch(() => {});
+    }, [genId]);
+
+    // Detect alarm state transitions each time alarmas updates
+    useEffect(() => {
+        const prev = prevActiveRef.current;
+        const ts   = Date.now();
+        const newEvents: Omit<AlarmEvent, "id">[] = [];
+
+        for (const tag of Object.keys(alarmas)) {
+            const tv = alarmas[tag];
+            if (!tv) continue;
+            const isFalla = tag.toLowerCase().startsWith("falla_");
+            const active = isFalla
+                ? (tv.value === "false" || tv.value === "0")
+                : (tv.value === "true"  || tv.value === "1");
+
+            if (!(tag in prev)) {
+                if (active) {
+                    newEvents.push({ ts, genId, tag, category: getCategory(tag), severity: getSeverity(tag), transition: "onset" });
+                }
+            } else if (prev[tag] !== active) {
+                newEvents.push({ ts, genId, tag, category: getCategory(tag), severity: getSeverity(tag), transition: active ? "onset" : "cleared" });
+            }
+            prev[tag] = active;
+        }
+
+        if (newEvents.length > 0) {
+            Promise.all(newEvents.map(e => appendAlarmEvent(e)))
+                .then(() => loadAlarmEvents(genId).then(setHistory).catch(() => {}))
+                .catch(() => {});
+        }
+    }, [alarmas, genId]);
+
+    const handleClearHistory = useCallback(() => {
+        clearAlarmEvents(genId)
+            .then(() => { setHistory([]); setSelectedTags(new Set()); })
+            .catch(() => {});
+    }, [genId]);
+
+    const toggleTagSelection = useCallback((tag: string) => {
+        setSelectedTags(prev => {
+            const next = new Set(prev);
+            if (next.has(tag)) next.delete(tag); else next.add(tag);
+            return next;
+        });
+    }, []);
+
+    const handleClearSelected = useCallback(() => {
+        deleteAlarmEventsByTag(genId, Array.from(selectedTags))
+            .then(() => {
+                setSelectedTags(new Set());
+                return loadAlarmEvents(genId).then(setHistory).catch(() => {});
+            })
+            .catch(() => {});
+    }, [genId, selectedTags]);
+
     return (
         <div className="h-full flex flex-col gap-2 p-3 overflow-hidden">
 
@@ -283,6 +349,118 @@ export default function TabAlarmas({ alarmas, defaultTags }: Props) {
                         }}
                     >Solo activas</button>
                 </div>
+            </div>
+
+            {/* Historial */}
+            <div className="shrink-0 rounded-lg border border-border overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-card border-b border-border/50">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Historial</span>
+                    {history.length > 0 && (
+                        <span className="text-[9px] text-muted-foreground/60">({history.length})</span>
+                    )}
+                    <div className="ml-auto flex items-center gap-1.5">
+                        {selectedTags.size > 0 && (
+                            <>
+                                <button
+                                    onClick={() => setSelectedTags(new Set())}
+                                    className="text-[9px] px-2 py-0.5 rounded text-muted-foreground hover:text-foreground border border-border/50 transition-colors"
+                                >
+                                    Deseleccionar
+                                </button>
+                                <button
+                                    onClick={handleClearSelected}
+                                    className="text-[9px] px-2 py-0.5 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/40 transition-colors"
+                                >
+                                    Limpiar seleccionadas ({selectedTags.size})
+                                </button>
+                            </>
+                        )}
+                        {history.length > 0 && selectedTags.size === 0 && (
+                            <button
+                                onClick={handleClearHistory}
+                                className="text-[9px] px-2 py-0.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-border/50 transition-colors"
+                            >
+                                Limpiar todo
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setHistoryOpen(o => !o)}
+                            className="text-[9px] px-1.5 py-0.5 rounded text-muted-foreground hover:text-foreground border border-border/50 transition-colors"
+                        >
+                            {historyOpen ? "▲" : "▼"}
+                        </button>
+                    </div>
+                </div>
+                {historyOpen && (
+                    <div className="max-h-40 overflow-y-auto">
+                        {history.length === 0 ? (
+                            <div className="px-3 py-3 text-center text-[10px] text-muted-foreground/50">
+                                Sin eventos registrados aún
+                            </div>
+                        ) : (
+                            <table className="w-full text-[10px] border-collapse">
+                                <thead className="sticky top-0 bg-card z-10">
+                                    <tr className="border-b border-border/30">
+                                        <th className="w-7 px-1 py-1"></th>
+                                        <th className="text-left px-3 py-1 text-[8px] uppercase tracking-widest text-muted-foreground font-semibold">Hora</th>
+                                        <th className="text-left px-3 py-1 text-[8px] uppercase tracking-widest text-muted-foreground font-semibold">Tag</th>
+                                        <th className="text-left px-3 py-1 text-[8px] uppercase tracking-widest text-muted-foreground font-semibold">Severidad</th>
+                                        <th className="text-left px-3 py-1 text-[8px] uppercase tracking-widest text-muted-foreground font-semibold">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {history.map((ev) => {
+                                        const time = new Date(ev.ts).toLocaleTimeString();
+                                        const sevColor = ev.severity === "shutdown" ? "text-red-400" : ev.severity === "warning" ? "text-yellow-400" : "text-blue-400";
+                                        const isOnset = ev.transition === "onset";
+                                        const isSelected = selectedTags.has(ev.tag);
+                                        return (
+                                            <tr
+                                                key={ev.id ?? `${ev.ts}-${ev.tag}`}
+                                                onClick={() => toggleTagSelection(ev.tag)}
+                                                className={`border-b border-border/10 cursor-pointer transition-colors ${
+                                                    isSelected ? "bg-blue-500/10 hover:bg-blue-500/15" : "hover:bg-muted/5"
+                                                }`}
+                                            >
+                                                <td className="w-7 px-1" style={{ height: "1px" }}>
+                                                    <div className="h-full flex items-center justify-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={isSelected}
+                                                            className="w-3 h-3 accent-blue-400 cursor-pointer"
+                                                            onClick={e => e.stopPropagation()}
+                                                            onChange={() => toggleTagSelection(ev.tag)}
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="px-3" style={{ height: "1px" }}>
+                                                    <div className="h-full flex items-center py-0.5 font-mono text-muted-foreground/70 whitespace-nowrap">{time}</div>
+                                                </td>
+                                                <td className="px-3" style={{ height: "1px" }}>
+                                                    <div className={`h-full flex items-center py-0.5 font-mono ${isOnset ? sevColor : "text-muted-foreground/60"}`}>{ev.tag}</div>
+                                                </td>
+                                                <td className="px-3" style={{ height: "1px" }}>
+                                                    <div className={`h-full flex items-center py-0.5 text-[8px] uppercase tracking-wider ${isOnset ? sevColor : "text-muted-foreground/40"}`}>
+                                                        {ev.severity === "shutdown" ? "Shutdown" : ev.severity === "warning" ? "Warning" : "Info"}
+                                                    </div>
+                                                </td>
+                                                <td className="px-3" style={{ height: "1px" }}>
+                                                    <div className="h-full flex items-center py-0.5">
+                                                        {isOnset
+                                                            ? <span className="text-red-400 font-semibold">● Activa</span>
+                                                            : <span className="text-green-400 font-semibold">✓ Normal</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Table */}
