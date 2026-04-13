@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabVistaGeneral from "./tabs/TabVistaGeneral";
 import TabConjuntoMotor from "./tabs/TabConjuntoMotor";
 import TabConjuntoElectrico from "./tabs/TabConjuntoElectrico";
+import CapabilityCurve from "@/components/CapabilityCurve";
 
 const GEN = "generador-53";
 const EMPTY: Record<string, never> = {};
@@ -41,10 +42,11 @@ export default function DashboardGen03() {
             </div>
 
             <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-                <TabsList className="shrink-0 mx-4 mt-2 w-fit">
-                    <TabsTrigger value="general">Vista General</TabsTrigger>
-                    <TabsTrigger value="motor">Conjunto Motor</TabsTrigger>
-                    <TabsTrigger value="electrico">Conjunto Eléctrico</TabsTrigger>
+                <TabsList className="shrink-0 mx-4 mt-2 h-auto w-auto max-w-[calc(100%-2rem)] justify-start gap-2 overflow-x-auto rounded-lg p-1.5">
+                    <TabsTrigger className="whitespace-nowrap px-3 py-1.5 text-xs font-medium" value="general">Vista General</TabsTrigger>
+                    <TabsTrigger className="whitespace-nowrap px-3 py-1.5 text-xs font-medium" value="motor">Conjunto Motor</TabsTrigger>
+                    <TabsTrigger className="whitespace-nowrap px-3 py-1.5 text-xs font-medium" value="electrico">Conjunto Eléctrico</TabsTrigger>
+                    <TabsTrigger className="whitespace-nowrap px-3 py-1.5 text-xs font-medium" value="curva-capacidad">Curva de Capacidad</TabsTrigger>
                 </TabsList>
 
                 <TabsContent forceMount value="general"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
@@ -55,6 +57,12 @@ export default function DashboardGen03() {
                 </TabsContent>
                 <TabsContent forceMount value="electrico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
                     <TabConjuntoElectrico gd={gd} gvl={gvl} />
+                </TabsContent>
+                <TabsContent forceMount value="curva-capacidad" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
+                    <CapabilityCurve
+                        activePowerKw={gd["Potencia_Generador"]?.value != null ? parseFloat(gd["Potencia_Generador"].value) : null}
+                        reactivePowerKvar={gd["Generator_reactive_power"]?.value != null ? parseFloat(gd["Generator_reactive_power"].value) : null}
+                    />
                 </TabsContent>
             </Tabs>
         </div>
