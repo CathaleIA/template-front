@@ -61,7 +61,7 @@ export default function DashboardGen05() {
                     <TabConjuntoElectrico agc={agc} hmi={hmi} />
                 </TabsContent>
                 <TabsContent forceMount value="alarmas"   className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col data-[state=inactive]:hidden">
-                    <TabAlarmas alarmas={alarmas} defaultTags={ALARM_TAGS_GEN55} />
+                    <TabAlarmas alarmas={alarmas} defaultTags={ALARM_TAGS_GEN55} genId="gen05" />
                 </TabsContent>
             </Tabs>
         </div>
